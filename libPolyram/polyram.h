@@ -38,23 +38,23 @@
 #include <string>
 #include <regex>
 
-#if defined ( _WINDOWS ) || defined ( _WIN32 ) || defined ( _WIN64 ) || defined ( WIN32 ) || defined ( WIN64 )
-	#define PRPlatformMicrosoftWindowsNT			1
+#if ( defined ( _WINDOWS ) || defined ( _WIN32 ) || defined ( _WIN64 ) || defined ( WIN32 ) || defined ( WIN64 ) )
 	#include <Windows.h>
 	#include <wincodec.h>
-	#pragma comment ( lib, "winmm.lib" )
+	#include <atlconv.h>
 	#pragma comment ( lib, "windowscodecs.lib" )
+	#if WINAPI_FAMILY_PARTITION( WINAPI_PARTITION_DESKTOP ) || !defined ( WINAPI_FAMILY_DESKTOP_APP )
+		#define PRPlatformMicrosoftWindowsNT		1
+		#define PRPlatformMicrosoftWindowsRT		0
+		#pragma comment ( lib, "winmm.lib" )
+	#elif WINAPI_FAMILY_PARTITION ( WINAPI_FAMILY_PC_APP )
+		#define PRPlatformMicrosoftWindowsNT		0
+		#define PRPlatformMicrosoftWindowsRT		1
+		#include <wrl.h>
+		#include <wrl/client.h>
+	#endif
 #else
 	#define PRPlatformMicrosoftWindowsNT			0
-#endif
-#if defined ( __cplusplus_winrt )
-	#define PRPlatformMicrosoftWindowsRT			1
-	#include <SDKDDKVer.h>
-	#include <wrl.h>
-	#include <wrl/client.h>
-	#include <wincodec.h>
-	#pragma comment ( lib, "windowscodecs.lib" )
-#else
 	#define PRPlatformMicrosoftWindowsRT			0
 #endif
 #if defined ( EMSCRIPTEN )
@@ -182,7 +182,7 @@
 		#import <OpenGLES/ES3/glext.h>
 		#import <GLKit/GLKit.h>
 	#elif PRPlatformUNIX
-		#include "./GL/glew.h"
+		#include <GL/glew.h>
 		#include <GL/gl.h>
 		#include <GL/glx.h>
 	#elif PRPlatformGoogleAndroid
@@ -258,81 +258,38 @@ enum PRMouseButton { PRMouseButton_None = 0, PRMouseButton_Left = 1, PRMouseButt
 class PRObject
 {
 public:
-	PRObject () : m_parentObject ( nullptr ), m_childObject ( nullptr ), m_nextObject ( nullptr ) { }
-	virtual ~PRObject () { }
+	PRObject ();
+	virtual ~PRObject ();
 
 public:
-	virtual void onInitialize () { }
-	virtual void onDestroy () { }
-	virtual void onUpdate ( double dt ) { if ( m_childObject ) m_childObject->onUpdate ( dt ); if ( m_nextObject ) m_nextObject->onUpdate ( dt ); }
-	virtual void onDraw ( double dt ) { if ( m_childObject ) m_childObject->onDraw ( dt ); if ( m_nextObject ) m_nextObject->onDraw ( dt ); }
+	virtual void onInitialize ();
+	virtual void onDestroy ();
+	virtual void onUpdate ( double dt );
+	virtual void onDraw ( double dt );
 
 public:
-	virtual void onKeyDown ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyDown ( key ); if ( m_nextObject ) m_nextObject->onKeyDown ( key ); }
-	virtual void onKeyUp ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyUp ( key ); if ( m_nextObject ) m_nextObject->onKeyUp ( key ); }
+	virtual void onKeyDown ( PRKeys key );
+	virtual void onKeyUp ( PRKeys key );
 
 public:
-	virtual void onMouseDown ( PRMouseButton button, int x, int y )
-	{
-		if ( m_childObject ) m_childObject->onMouseDown ( button, x, y );
-		if ( m_nextObject ) m_nextObject->onMouseDown ( button, x, y );
-	}
-	virtual void onMouseUp ( PRMouseButton button, int x, int y )
-	{
-		if ( m_childObject ) m_childObject->onMouseUp ( button, x, y );
-		if ( m_nextObject ) m_nextObject->onMouseUp ( button, x, y );
-	}
-	virtual void onMouseMove ( PRMouseButton button, int x, int y )
-	{
-		if ( m_childObject ) m_childObject->onMouseMove ( button, x, y );
-		if ( m_nextObject ) m_nextObject->onMouseMove ( button, x, y );
-	}
-	virtual void onMouseWheel ( int wheelX, int wheelY )
-	{
-		if ( m_childObject ) m_childObject->onMouseWheel ( wheelX, wheelY );
-		if ( m_nextObject ) m_nextObject->onMouseWheel ( wheelX, wheelY );
-	}
+	virtual void onMouseDown ( PRMouseButton button, int x, int y );
+	virtual void onMouseUp ( PRMouseButton button, int x, int y );
+	virtual void onMouseMove ( PRMouseButton button, int x, int y );
+	virtual void onMouseWheel ( int wheelX, int wheelY );
 
 public:
-	virtual void onActivated () { if ( m_childObject ) m_childObject->onActivated (); if ( m_nextObject ) m_nextObject->onActivated (); }
-	virtual void onDeactivated () { if ( m_childObject ) m_childObject->onDeactivated (); if ( m_nextObject ) m_nextObject->onDeactivated (); }
-	virtual void onResized () { if ( m_childObject ) m_childObject->onResized (); if ( m_nextObject ) m_nextObject->onResized (); }
+	virtual void onActivated ();
+	virtual void onDeactivated ();
+	virtual void onResized ();
 
 public:
-	virtual void onAccelerometer ( float x, float y, float z )
-	{
-		if ( m_childObject ) m_childObject->onAccelerometer ( x, y, z );
-		if ( m_nextObject ) m_nextObject->onAccelerometer ( x, y, z );
-	}
+	virtual void onAccelerometer ( float x, float y, float z );
 
 public:
-	void add ( PRObject * obj )
-	{
-		if ( obj->m_parentObject != nullptr ) throw std::exception ( "This scene already contained to other scene." );
-		obj->m_parentObject = this;
-		if ( this->m_childObject == nullptr ) this->m_childObject = obj;
-		else
-		{
-			PRObject * tempScene = this->m_childObject;
-			while ( tempScene->m_nextObject ) tempScene = tempScene->m_nextObject;
-			tempScene->m_nextObject = obj;
-		}
-	}
-	void remove ( PRObject * obj )
-	{
-		PRObject * tempScene1 = this->m_childObject, * tempScene2 = this->m_childObject;
-		while ( tempScene1 != obj )
-		{
-			tempScene2 = tempScene1;
-			tempScene1 = tempScene1->m_nextObject;
-			if ( tempScene1 == nullptr ) return;
-		}
-		obj->onDestroy ();
-		obj->m_parentObject = nullptr;
-		tempScene2->m_nextObject = tempScene1->m_nextObject;
-	}
+	void add ( PRObject * obj );
+	void remove ( PRObject * obj );
 
-	PRObject * getParent () { return m_parentObject; }
+	PRObject * getParent ();
 
 private:
 	PRObject * m_parentObject;
@@ -364,18 +321,8 @@ public:
 	int major, minor;
 
 public:
-	PRVersion ( std::string & versionString )
-	{
-		std::smatch match;
-		if ( std::regex_match ( versionString, match, std::regex ( "([0-9]+)[.]*([0-9]*)(.*)" ) ) )
-		{
-			major = atoi ( ( *( ++match.begin () ) ).str ().c_str () );
-			if ( match.size () > 2 )
-				minor = atoi ( ( *( ++++match.begin () ) ).str ().c_str () );
-		}
-	}
-
-	PRVersion ( int major, int minor = 0 ) : major ( major ), minor ( minor ) { }
+	PRVersion ( std::string & versionString );
+	PRVersion ( int major, int minor = 0 );
 };
 
 class PRApplication;
@@ -445,7 +392,7 @@ public:
 	~PRGraphicsContext_Direct3D11 ();
 
 public:
-#if PRPlatformWindowsRT
+#if PRPlatformMicrosoftWindowsRT
 	IDXGISwapChain1* dxgiSwapChain;
 #else
 	IDXGISwapChain* dxgiSwapChain;
@@ -503,7 +450,7 @@ public:
 	NSOpenGLContext * glContext;
 #elif PRPlatformAppleiOS
 	EAGLContext * glContext;
-#elif PRPlatformUNIXDesktopFamily
+#elif PRPlatformUNIX
 	GLXContext glContext;
 #elif PRPlatformGoogleAndroid
 	EGLDisplay display;

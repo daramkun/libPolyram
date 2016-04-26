@@ -27,6 +27,90 @@ PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 )
 	return norm;
 }
 
+PRObject::PRObject () : m_parentObject ( nullptr ), m_childObject ( nullptr ), m_nextObject ( nullptr ) { }
+PRObject::~PRObject () { }
+
+void PRObject::onInitialize () { }
+void PRObject::onDestroy () { }
+void PRObject::onUpdate ( double dt ) { if ( m_childObject ) m_childObject->onUpdate ( dt ); if ( m_nextObject ) m_nextObject->onUpdate ( dt ); }
+void PRObject::onDraw ( double dt ) { if ( m_childObject ) m_childObject->onDraw ( dt ); if ( m_nextObject ) m_nextObject->onDraw ( dt ); }
+
+void PRObject::onKeyDown ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyDown ( key ); if ( m_nextObject ) m_nextObject->onKeyDown ( key ); }
+void PRObject::onKeyUp ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyUp ( key ); if ( m_nextObject ) m_nextObject->onKeyUp ( key ); }
+
+void PRObject::onMouseDown ( PRMouseButton button, int x, int y )
+{
+	if ( m_childObject ) m_childObject->onMouseDown ( button, x, y );
+	if ( m_nextObject ) m_nextObject->onMouseDown ( button, x, y );
+}
+void PRObject::onMouseUp ( PRMouseButton button, int x, int y )
+{
+	if ( m_childObject ) m_childObject->onMouseUp ( button, x, y );
+	if ( m_nextObject ) m_nextObject->onMouseUp ( button, x, y );
+}
+void PRObject::onMouseMove ( PRMouseButton button, int x, int y )
+{
+	if ( m_childObject ) m_childObject->onMouseMove ( button, x, y );
+	if ( m_nextObject ) m_nextObject->onMouseMove ( button, x, y );
+}
+void PRObject::onMouseWheel ( int wheelX, int wheelY )
+{
+	if ( m_childObject ) m_childObject->onMouseWheel ( wheelX, wheelY );
+	if ( m_nextObject ) m_nextObject->onMouseWheel ( wheelX, wheelY );
+}
+
+void PRObject::onActivated () { if ( m_childObject ) m_childObject->onActivated (); if ( m_nextObject ) m_nextObject->onActivated (); }
+void PRObject::onDeactivated () { if ( m_childObject ) m_childObject->onDeactivated (); if ( m_nextObject ) m_nextObject->onDeactivated (); }
+void PRObject::onResized () { if ( m_childObject ) m_childObject->onResized (); if ( m_nextObject ) m_nextObject->onResized (); }
+
+void PRObject::onAccelerometer ( float x, float y, float z )
+{
+	if ( m_childObject ) m_childObject->onAccelerometer ( x, y, z );
+	if ( m_nextObject ) m_nextObject->onAccelerometer ( x, y, z );
+}
+
+void PRObject::add ( PRObject * obj )
+{
+	if ( obj->m_parentObject != nullptr ) throw std::runtime_error ( "This scene already contained to other scene." );
+	obj->m_parentObject = this;
+	if ( this->m_childObject == nullptr ) this->m_childObject = obj;
+	else
+	{
+		PRObject * tempScene = this->m_childObject;
+		while ( tempScene->m_nextObject ) tempScene = tempScene->m_nextObject;
+		tempScene->m_nextObject = obj;
+	}
+}
+
+void PRObject::remove ( PRObject * obj )
+{
+	PRObject * tempScene1 = this->m_childObject, *tempScene2 = this->m_childObject;
+	while ( tempScene1 != obj )
+	{
+		tempScene2 = tempScene1;
+		tempScene1 = tempScene1->m_nextObject;
+		if ( tempScene1 == nullptr ) return;
+	}
+	obj->onDestroy ();
+	obj->m_parentObject = nullptr;
+	tempScene2->m_nextObject = tempScene1->m_nextObject;
+}
+
+PRObject * PRObject::getParent () { return m_parentObject; }
+
+PRVersion::PRVersion ( std::string & versionString )
+{
+	std::smatch match;
+	if ( std::regex_match ( versionString, match, std::regex ( "([0-9]+)[.]*([0-9]*)(.*)" ) ) )
+	{
+		major = atoi ( ( *( ++match.begin () ) ).str ().c_str () );
+		if ( match.size () > 2 )
+			minor = atoi ( ( *( ++++match.begin () ) ).str ().c_str () );
+	}
+}
+
+PRVersion::PRVersion ( int _major, int _minor ) { major = _major; minor = _minor; }
+
 #if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
 LARGE_INTEGER performanceFrequency;
 bool isPerformanceFrequencySupport = false;
@@ -82,171 +166,13 @@ PRGraphicsContext::~PRGraphicsContext () { }
 
 PRApplication * g_sharedApplication;
 
-#if PRPlatformMicrosoftWindowsNT
-#include <atlconv.h>
-int g_MouseButton;
-#elif PRPlatformMicrosoftWindowsRT
-namespace liqueur
-{
-	ref class PRWinRTFramework sealed : public Windows::ApplicationModel::Core::IFrameworkView
-	{
-	private:
-		PRRendererInfo rendererInfo;
-
-		bool m_windowClosed;
-		bool m_windowVisible;
-
-	internal:
-		PRWinRTFramework ( PRRendererInfo rendererInfo )
-		{
-			this->rendererInfo = rendererInfo;
-
-			m_windowClosed = false;
-			m_windowVisible = false;
-		}
-
-	public:
-		virtual void Initialize ( Windows::ApplicationModel::Core::CoreApplicationView ^ appView )
-		{
-			using namespace Windows::Foundation;
-			using namespace Windows::ApplicationModel::Core;
-			using namespace Windows::ApplicationModel::Activation;
-			appView->Activated += ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^> ( this, &PRWinRTFramework::OnActivated );
-		}
-
-		virtual void SetWindow ( Windows::UI::Core::CoreWindow ^ window )
-		{
-			PRApplication::sharedApplication ()->window = window;
-
-			using namespace Windows::Foundation;
-			using namespace Windows::UI::Core;
-			window->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^> ( this, &PRWinRTFramework::OnVisibilityChanged );
-			window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^> ( this, &PRWinRTFramework::OnWindowClosed );
-			window->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^> ( this, &PRWinRTFramework::OnResized );
-			window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^> ( this, &PRWinRTFramework::OnKeyDown );
-			window->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^> ( this, &PRWinRTFramework::OnKeyUp );
-			window->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerPressed );
-			window->PointerReleased += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerReleased );
-			window->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerMoved );
-			window->PointerWheelChanged += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerWheel );
-		}
-
-		virtual void Load ( Platform::String ^ entryPoint ) { }
-
-		virtual void Run ()
-		{
-			switch ( rendererInfo.rendererType )
-			{
-			case PRRendererType_Direct3D11:
-				PRApplication::sharedApplication ()->setGraphicsContext ( new PRGraphicsContext_Direct3D11 ( PRApplication::sharedApplication () ) );
-				break;
-			case PRRendererType_Direct3D12:
-				PRApplication::sharedApplication ()->setGraphicsContext ( new PRGraphicsContext_Direct3D12 ( PRApplication::sharedApplication () ) );
-				break;
-			default:
-				throw std::exception ( "Cannot use this renderer version in this platform." );
-			}
-			
-			PRApplication::sharedApplication ()->setScene ( scene );
-
-			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
-			while ( !m_windowClosed )
-			{
-				if ( m_windowVisible )
-				{
-					elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
-					lastTime = currentTime;
-
-					if ( PRApplication::sharedApplication ()->getScene () != nullptr )
-					{
-						PRApplication::sharedApplication ()->->onUpdate ( elapsedTime );
-						PRApplication::sharedApplication ()->->onDraw ( elapsedTime );
-					}
-				}
-
-				window->Dispatcher->ProcessEvents ( Windows::UI::Core::CoreProcessEventsOption::ProcessAllIfPresent );
-			}
-		}
-
-		virtual void Uninitialize () { launcher->setScene ( nullptr ); }
-
-	private:
-		void OnActivated ( Windows::ApplicationModel::Core::CoreApplicationView^ CoreAppView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ Args )
-		{
-			Windows::UI::Core::CoreWindow^ window = Windows::UI::Core::CoreWindow::GetForCurrentThread ();
-			window->Activate ();
-			m_windowClosed = false;
-		}
-
-	private:
-		void OnVisibilityChanged ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ e ) { m_windowVisible = true; }
-		void OnWindowClosed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ e ) { m_windowClosed = true; }
-		void OnResized ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ e )
-		{ if ( launcher->getScene () ) launcher->getScene ()->onResized (); }
-		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
-		{ if ( launcher->getScene () ) launcher->getScene ()->onKeyDown ( keyValueConvertTo ( e->VirtualKey ) ); }
-		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
-		{ if ( launcher->getScene () ) launcher->getScene ()->onKeyUp ( keyValueConvertTo ( e->VirtualKey ) ); }
-		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( launcher->getScene () )
-			{
-				int mouseButton;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApplication::sharedApplication ()->getScene ()->onMouseDown ( ( PRMouseButton ) mouseButton,
-					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
-			}
-		}
-		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
-				int mouseButton;
-				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApplication::sharedApplication ()->getScene ()->onMouseUp ( ( PRMouseButton ) mouseButton,
-					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
-			}
-		}
-		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
-				int mouseButton = PRMouseButton_None;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApplication::sharedApplication ()->getScene ()->onMouseMove ( ( PRMouseButton ) mouseButton,
-					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
-			}
-		}
-
-		void OnPointerWheel ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-				PRApplication::sharedApplication ()->getScene ()->onMouseWheel ( 0, e->CurrentPoint->Properties->MouseWheelDelta );
-		}
-	};
-
-	ref class PRWinRTFrameworkView sealed : public Windows::ApplicationModel::Core::IFrameworkViewSource
-	{
-	private: PRRendererInfo rendererInfo;
-	internal: PRWinRTFrameworkView ( PRRendererInfo rendererInfo ) { this->rendererInfo = rendererInfo; }
-	public: virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView () { return ref new PRWinRTFramework ( rendererInfo ); }
-	};
-}
-#elif PRPlatformAppleOSX
-#define WINDOW_STYLE NSMiniaturizableWindowMask | NSClosableWindowMask | NSTitledWindowMask
-int g_MouseButton;
-int g_MouseX, g_MouseY;
-#endif
-
 PRKeys keyValueConvertTo ( int key )
 {
+#if !PRPlatformMicrosoftWindowsRT
 	switch ( key )
+#else
+	switch ( ( Windows::System::VirtualKey ) key )
+#endif
 	{
 #if PRPlatformMicrosoftWindowsNT
 	case VK_UP: return PRKeys_Up; case VK_DOWN: return PRKeys_Down; case VK_LEFT: return PRKeys_Left; case VK_RIGHT: return PRKeys_Right;
@@ -275,6 +201,7 @@ PRKeys keyValueConvertTo ( int key )
 	case VK_LWIN: return PRKeys_LeftWin; case VK_RWIN: return PRKeys_RightWin;
 	default: return PRKeys_Unknown;
 #elif PRPlatformMicrosoftWindowsRT
+		using namespace Windows::System;
 	case VirtualKey::Left: return PRKeys_Left; case VirtualKey::Right: return PRKeys_Right;
 	case VirtualKey::Up: return PRKeys_Up; case VirtualKey::Down: return PRKeys_Down;
 	case VirtualKey::A: return PRKeys_A; case VirtualKey::B: return PRKeys_B; case VirtualKey::C: return PRKeys_C; case VirtualKey::D: return PRKeys_D;
@@ -301,12 +228,12 @@ PRKeys keyValueConvertTo ( int key )
 	case VirtualKey::Insert: return PRKeys_Insert; case VirtualKey::Delete: return PRKeys_Delete; case VirtualKey::Home: return PRKeys_Home;
 	case VirtualKey::End: return PRKeys_End; case VirtualKey::PageUp: return PRKeys_PageUp; case VirtualKey::PageDown: return PRKeys_PageDown;
 	default:
-		if ( key == ( VirtualKey ) 219 ) return PRKeys_LeftBracket; if ( key == ( VirtualKey ) 221 ) return PRKeys_RightBracket;
-		if ( key == ( VirtualKey ) 220 ) return PRKeys_Backslash; if ( key == ( VirtualKey ) 191 ) return PRKeys_Slash;
-		if ( key == ( VirtualKey ) 188 ) return PRKeys_Comma; if ( key == ( VirtualKey ) 190 ) return PRKeys_Period;
-		if ( key == ( VirtualKey ) 189 ) return PRKeys_Subtract; if ( key == ( VirtualKey ) 187 ) return PRKeys_Equals;
-		if ( key == ( VirtualKey ) 186 ) return PRKeys_Semicolon; if ( key == ( VirtualKey ) 192 ) return PRKeys_Grave;
-		if ( key == ( VirtualKey ) 222 ) return PRKeys_Quotation;
+		if ( key == 219 ) return PRKeys_LeftBracket; if ( key == 221 ) return PRKeys_RightBracket;
+		if ( key == 220 ) return PRKeys_Backslash; if ( key == 191 ) return PRKeys_Slash;
+		if ( key == 188 ) return PRKeys_Comma; if ( key == 190 ) return PRKeys_Period;
+		if ( key == 189 ) return PRKeys_Subtract; if ( key == 187 ) return PRKeys_Equals;
+		if ( key == 186 ) return PRKeys_Semicolon; if ( key == 192 ) return PRKeys_Grave;
+		if ( key == 222 ) return PRKeys_Quotation;
 		break;
 #elif PRPlatformAppleOSX
 	case 0x7E: return PRKeys_Up; case 0x7D: return PRKeys_Down; case 0x7B: return PRKeys_Left; case 0x7C: return PRKeys_Right;
@@ -355,7 +282,7 @@ PRKeys keyValueConvertTo ( int key )
 	case XK_comma: return PRKeys_Comma; case XK_period: return PRKeys_Period; case XK_slash: return PRKeys_Slash;
 	case XK_Insert: return PRKeys_Insert; case XK_Delete: return PRKeys_Delete; case XK_Home: return PRKeys_Home; case XK_End: return PRKeys_End;
 	case XK_Page_Up: return PRKeys_PageUp; case XK_Page_Down: return PRKeys_PageDown;
-	case XK_Control_L: return PRKeys_LeftControl; case XK_Control_R: return PRKeys_RightControl;
+	case XK_Control_L: return PRKeys_LeftCtrl; case XK_Control_R: return PRKeys_RightCtrl;
 	case XK_Alt_L: return PRKeys_LeftAlt; case XK_Alt_R: return PRKeys_RightAlt;
 	case XK_Shift_L: return PRKeys_LeftShift; case XK_Shift_R: return PRKeys_RightShift;
 	case XK_Super_L: return PRKeys_LeftWin; case XK_Super_R: return PRKeys_RightWin;
@@ -364,6 +291,176 @@ PRKeys keyValueConvertTo ( int key )
 	}
 	return PRKeys_Unknown;
 }
+
+#if PRPlatformMicrosoftWindowsNT
+int g_MouseButton;
+#elif PRPlatformMicrosoftWindowsRT
+namespace polyram
+{
+	ref class PRWinRTFramework sealed : public Windows::ApplicationModel::Core::IFrameworkView
+	{
+	private:
+		PRRendererType rendererType;
+
+		bool m_windowClosed;
+		bool m_windowVisible;
+
+	internal:
+		PRWinRTFramework ( PRRendererType rendererType )
+		{
+			this->rendererType = rendererType;
+
+			m_windowClosed = false;
+			m_windowVisible = false;
+		}
+
+	public:
+		virtual void Initialize ( Windows::ApplicationModel::Core::CoreApplicationView ^ appView )
+		{
+			using namespace Windows::Foundation;
+			using namespace Windows::ApplicationModel::Core;
+			using namespace Windows::ApplicationModel::Activation;
+			appView->Activated += ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^> ( this, &PRWinRTFramework::OnActivated );
+		}
+
+		virtual void SetWindow ( Windows::UI::Core::CoreWindow ^ window )
+		{
+			PRApplication::sharedApplication ()->window = window;
+
+			using namespace Windows::Foundation;
+			using namespace Windows::UI::Core;
+			window->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^> ( this, &PRWinRTFramework::OnVisibilityChanged );
+			window->Closed += ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^> ( this, &PRWinRTFramework::OnWindowClosed );
+			window->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^> ( this, &PRWinRTFramework::OnResized );
+			window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^> ( this, &PRWinRTFramework::OnKeyDown );
+			window->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^> ( this, &PRWinRTFramework::OnKeyUp );
+			window->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerPressed );
+			window->PointerReleased += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerReleased );
+			window->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerMoved );
+			window->PointerWheelChanged += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^> ( this, &PRWinRTFramework::OnPointerWheel );
+		}
+
+		virtual void Load ( Platform::String ^ entryPoint ) { }
+
+		virtual void Run ()
+		{
+			switch ( rendererType )
+			{
+			case PRRendererType_Direct3D11:
+				PRApplication::sharedApplication ()->setGraphicsContext ( new PRGraphicsContext_Direct3D11 ( PRApplication::sharedApplication () ) );
+				break;
+			case PRRendererType_Direct3D12:
+				PRApplication::sharedApplication ()->setGraphicsContext ( new PRGraphicsContext_Direct3D12 ( PRApplication::sharedApplication () ) );
+				break;
+			default:
+				throw std::runtime_error ( "Cannot use this renderer version in this platform." );
+			}
+			
+			PRApplication::sharedApplication ()->getScene ()->onInitialize ();
+
+			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
+			while ( !m_windowClosed )
+			{
+				if ( m_windowVisible )
+				{
+					elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+					lastTime = currentTime;
+
+					if ( PRApplication::sharedApplication ()->getScene () != nullptr )
+					{
+						PRApplication::sharedApplication ()->getScene ()->onUpdate ( elapsedTime );
+						PRApplication::sharedApplication ()->getScene ()->onDraw ( elapsedTime );
+					}
+				}
+
+				PRApplication::sharedApplication ()->window->Dispatcher->ProcessEvents ( Windows::UI::Core::CoreProcessEventsOption::ProcessAllIfPresent );
+			}
+		}
+
+		virtual void Uninitialize () { auto scene = PRApplication::sharedApplication ()->getScene (); if ( scene ) scene->onDestroy (); }
+
+	private:
+		void OnActivated ( Windows::ApplicationModel::Core::CoreApplicationView^ CoreAppView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ Args )
+		{
+			Windows::UI::Core::CoreWindow^ window = Windows::UI::Core::CoreWindow::GetForCurrentThread ();
+			window->Activate ();
+			m_windowClosed = false;
+		}
+
+	private:
+		void OnVisibilityChanged ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ e ) { m_windowVisible = true; }
+		void OnWindowClosed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ e ) { m_windowClosed = true; }
+		void OnResized ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ e )
+		{ if ( PRApplication::sharedApplication ()->getScene () ) PRApplication::sharedApplication ()->getScene ()->onResized (); }
+		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () )
+			PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
+		}
+		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () ) 
+			PRApplication::sharedApplication ()->getScene ()->onKeyUp ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
+		}
+		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () )
+			{
+				int mouseButton;
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
+				PRApplication::sharedApplication ()->getScene ()->onMouseDown ( ( PRMouseButton ) mouseButton,
+					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
+			}
+		}
+		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () )
+			{
+				int mouseButton;
+				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
+				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
+				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
+				PRApplication::sharedApplication ()->getScene ()->onMouseUp ( ( PRMouseButton ) mouseButton,
+					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
+			}
+		}
+		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () )
+			{
+				int mouseButton = PRMouseButton_None;
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
+				PRApplication::sharedApplication ()->getScene ()->onMouseMove ( ( PRMouseButton ) mouseButton,
+					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
+			}
+		}
+
+		void OnPointerWheel ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
+		{
+			if ( PRApplication::sharedApplication ()->getScene () )
+				PRApplication::sharedApplication ()->getScene ()->onMouseWheel ( 0, e->CurrentPoint->Properties->MouseWheelDelta );
+		}
+	};
+
+	ref class PRWinRTFrameworkView sealed : public Windows::ApplicationModel::Core::IFrameworkViewSource
+	{
+	private: PRRendererType rendererType;
+	internal: PRWinRTFrameworkView ( PRRendererType rendererType ) { this->rendererType = rendererType; }
+	public: virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView () { return ref new PRWinRTFramework ( rendererType ); }
+	};
+}
+#elif PRPlatformAppleOSX
+#define WINDOW_STYLE NSMiniaturizableWindowMask | NSClosableWindowMask | NSTitledWindowMask
+int g_MouseButton;
+int g_MouseX, g_MouseY;
+#elif PRPlatformUNIX
+int g_MouseButton;
+int g_MouseX, g_MouseY;
+#endif
 
 PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title )
 	: m_scene ( scene ), m_graphicsContext ( nullptr )
@@ -448,7 +545,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	} );
 	wndClass.lpszClassName = TEXT ( "libPolyram" );
 	if ( RegisterClass ( &wndClass ) == 0 )
-		throw std::exception ( "Failed register window class." );
+		throw std::runtime_error ( "Failed register window class." );
 
 	RECT adjust = { 0, 0, width, height };
 	AdjustWindowRect ( &adjust, WS_OVERLAPPEDWINDOW, FALSE );
@@ -460,7 +557,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	m_hWnd = CreateWindow ( TEXT ( "libPolyram" ), A2W ( title.c_str () ),
 		WS_OVERLAPPEDWINDOW, x, y, _width, _height, nullptr, nullptr, wndClass.hInstance, nullptr );
 	if ( m_hWnd == 0 )
-		throw std::exception ( "Failed create window." );
+		throw std::runtime_error ( "Failed create window." );
 
 	switch ( rendererType )
 	{
@@ -477,18 +574,18 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 #elif PRPlatformAppleOSX
 	window = [ [ NSWindow alloc ] initWithContentRect:CGRectMake ( 0, 0, width, height ) styleMask : WINDOW_STYLE backing : NSBackingStoreBuffered defer : NO ];
 	if ( window == nil )
-		throw std::exception ( "Failed create NSWindow." );
+		throw std::runtime_error ( "Failed create NSWindow." );
 	window.title = [ NSString stringWithUTF8String : title ];
 	[window center];
 	[window makeKeyAndOrderFront : window];
 
 	NSView * view = window.contentView;
 	if ( view == nil )
-		throw std::exception ( "Failed to retrieve content view for window." );
+		throw std::runtime_error ( "Failed to retrieve content view for window." );
 
 	NSView * renegaderView = [ [ NSView alloc ] initWithFrame:CGRectMake ( 0, 0, width, height ) ];
 	if ( renegaderView == nil )
-		throw std::exception ( "Failed create NSView." );
+		throw std::runtime_error ( "Failed create NSView." );
 	window.contentView = renegaderView;
 	view = nil;
 
@@ -496,7 +593,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 #elif PRPlatformUNIX
 	display = XOpenDisplay ( nullptr );
 	if ( display == nullptr )
-		throw std::exception ( "Cannot connect to X server." );
+		throw std::runtime_error ( "Cannot connect to X server." );
 
 	Window root = DefaultRootWindow ( display );
 
@@ -507,7 +604,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	};
 	visualInfo = glXChooseVisual ( display, 0, attr );
 	if ( visualInfo == nullptr )
-		throw std::exception ( "No appropriate visual found." );
+		throw std::runtime_error ( "No appropriate visual found." );
 
 	colorMap = XCreateColormap ( display, root, visualInfo->visual, AllocNone );
 
@@ -520,7 +617,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	window = XCreateWindow ( display, root, 0, 0, this->width = width, this->height = height, 0, visualInfo->depth, InputOutput,
 		visualInfo->visual, CWColormap | CWEventMask, &setWindowAttr );
 	if ( !window )
-		throw std::exception ( "Failed create window." );
+		throw std::runtime_error ( "Failed create window." );
 
 	Atom wmDelete = XInternAtom ( display, "WM_DELETE_WINDOW", true );
 	XSetWMProtocols ( display, window, &wmDelete, 1 );
@@ -644,7 +741,7 @@ void PRApplication::run ()
 		}
 	}
 #elif PRPlatformMicrosoftWindowsRT
-	Windows::ApplicationModel::Core::CoreApplication::Run ( ref new PRWinRTFrameworkView ( rendererType ) );
+	Windows::ApplicationModel::Core::CoreApplication::Run ( ref new polyram::PRWinRTFrameworkView ( m_rendererType ) );
 #elif PRPlatformAppleOSX
 	window.isVisible = visible;
 	while ( window.isVisible )
@@ -712,12 +809,13 @@ void PRApplication::run ()
 		}
 	}
 #elif PRPlatformUNIX
+	XEvent xev;
 	bool loopflag = true;
 	while ( loopflag )
 	{
-		if ( XPending ( unix->display ) )
+		if ( XPending ( display ) )
 		{
-			XNextEvent ( unix->display, &xev );
+			XNextEvent ( display, &xev );
 
 			switch ( xev.type )
 			{
@@ -794,7 +892,7 @@ PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app )
 {
 	IDirect3D9 * d3d;
 	if ( !( d3d = Direct3DCreate9 ( D3D_SDK_VERSION ) ) )
-		throw std::exception ( "Failed create Direct3D." );
+		throw std::runtime_error ( "Failed create Direct3D." );
 
 	int windowWidth, windowHeight;
 	app->getClientSize ( &windowWidth, &windowHeight );
@@ -819,7 +917,7 @@ PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app )
 		d3dDevice = nullptr;
 		d3d->Release ();
 		d3d = nullptr;
-		throw std::exception ( "Failed create Direct3D Device." );
+		throw std::runtime_error ( "Failed create Direct3D Device." );
 	}
 }
 
@@ -866,23 +964,23 @@ PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app
 	D3D_FEATURE_LEVEL featureLevel;
 	if ( FAILED ( D3D11CreateDeviceAndSwapChain ( nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, flag,
 		nullptr, 0, D3D11_SDK_VERSION, &swapChainDesc, &dxgiSwapChain, &d3dDevice, &featureLevel, &immediateContext ) ) )
-		throw std::exception ( "Failed create Direct3D device and Swap Chain." );
+		throw std::runtime_error ( "Failed create Direct3D device and Swap Chain." );
 #elif PRPlatformMicrosoftWindowsRT
 	D3D_FEATURE_LEVEL featureLevel;
 	if ( FAILED ( D3D11CreateDevice ( nullptr, D3D_DRIVER_TYPE_HARDWARE, 0, flag, nullptr, 0, D3D11_SDK_VERSION,
 		&d3dDevice, &featureLevel, &immediateContext ) ) )
-		throw std::exception ( "Failed create Direct3D device." );
+		throw std::runtime_error ( "Failed create Direct3D device." );
 
 	IDXGIDevice2 * dxgiDevice;
 	d3dDevice->QueryInterface<IDXGIDevice2> ( &dxgiDevice );
 
 	IDXGIAdapter * dxgiAdapter;
 	if ( FAILED ( dxgiDevice->GetAdapter ( &dxgiAdapter ) ) )
-		throw std::exception ( "Cannot get IDXGIFactory." );
+		throw std::runtime_error ( "Cannot get IDXGIFactory." );
 
 	IDXGIFactory2 * dxgiFactory;
 	if ( FAILED ( dxgiAdapter->GetParent ( __uuidof ( IDXGIFactory2 ), ( void** ) &dxgiFactory ) ) )
-		throw std::exception ( "Cannot get IDXGIFactory." );
+		throw std::runtime_error ( "Cannot get IDXGIFactory." );
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0, };
 	swapChainDesc.Width = windowWidth;
@@ -899,17 +997,17 @@ PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app
 
 	if ( FAILED ( dxgiFactory->CreateSwapChainForCoreWindow ( d3dDevice, reinterpret_cast< IUnknown* >( app->window ),
 		&swapChainDesc, nullptr, &dxgiSwapChain ) ) )
-		throw std::exception ( "Failed create DXGI Swap chain." );
+		throw std::runtime_error ( "Failed create DXGI Swap chain." );
 
 	dxgiDevice->SetMaximumFrameLatency ( 1 );
 #endif
 
 	ID3D11Texture2D * backBuffer;
 	if ( FAILED ( dxgiSwapChain->GetBuffer ( 0, __uuidof ( ID3D11Texture2D ), ( void ** ) &backBuffer ) ) )
-		throw std::exception ( "Failed get buffer from Swap Chain." );
+		throw std::runtime_error ( "Failed get buffer from Swap Chain." );
 
 	if ( FAILED ( d3dDevice->CreateRenderTargetView ( backBuffer, nullptr, &renderTargetView ) ) )
-		throw std::exception ( "Failed create Render target view." );
+		throw std::runtime_error ( "Failed create Render target view." );
 
 	D3D11_TEXTURE2D_DESC descBack;
 	backBuffer->GetDesc ( &descBack );
@@ -926,10 +1024,10 @@ PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
 	if ( FAILED ( d3dDevice->CreateTexture2D ( &descDepth, NULL, &depthStencilBuffer ) ) )
-		throw std::exception ( "Failed create Depth-stencil buffer." );
+		throw std::runtime_error ( "Failed create Depth-stencil buffer." );
 
 	if ( FAILED ( d3dDevice->CreateDepthStencilView ( depthStencilBuffer, nullptr, &depthStencilView ) ) )
-		throw std::exception ( "Failed create Depth-stencil view." );
+		throw std::runtime_error ( "Failed create Depth-stencil view." );
 
 	immediateContext->OMSetRenderTargets ( 1, &renderTargetView, depthStencilView );
 	backBuffer->Release ();
@@ -968,15 +1066,15 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 	{
 		IDXGIFactory2 * dxgiFactory;
 		if ( FAILED ( CreateDXGIFactory2 ( 0, __uuidof ( IDXGIFactory2 ), ( void** ) &dxgiFactory ) ) )
-			throw std::exception ( "Failed create DXGI factory." );
+			throw std::runtime_error ( "Failed create DXGI factory." );
 
 		IDXGIAdapter1 * dxgiAdapter;
 		if ( FAILED ( dxgiFactory->EnumAdapters1 ( 0, &dxgiAdapter ) ) )
-			throw std::exception ( "Failed enumeration DXGI Adapters." );
+			throw std::runtime_error ( "Failed enumeration DXGI Adapters." );
 
 		if ( FAILED ( D3D12CreateDevice ( dxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof ( ID3D12Device ), ( void** ) &d3dDevice ) ) )
 			if ( FAILED ( D3D12CreateDevice ( dxgiAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof ( ID3D12Device ), ( void** ) &d3dDevice ) ) )
-				throw std::exception ( "Failed create Device." );
+				throw std::runtime_error ( "Failed create Device." );
 
 		D3D12_COMMAND_QUEUE_DESC commandQueueDesc = { };
 		commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -984,7 +1082,7 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		commandQueueDesc.NodeMask = 0;
 		commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		if ( FAILED ( d3dDevice->CreateCommandQueue ( &commandQueueDesc, __uuidof ( ID3D12CommandQueue ), ( void** ) &commandQueue ) ) )
-			throw std::exception ( "Failed create Command queue." );
+			throw std::runtime_error ( "Failed create Command queue." );
 
 #if PRPlatformMicrosoftWindowsNT
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = { 0, };
@@ -1004,9 +1102,9 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		swapChainDesc.Windowed = true;
 		IDXGISwapChain * dxgiSwapChain;
 		if ( FAILED ( dxgiFactory->CreateSwapChain ( commandQueue, &swapChainDesc, &dxgiSwapChain ) ) )
-			throw std::exception ( "Failed create Swap Chain." );
+			throw std::runtime_error ( "Failed create Swap Chain." );
 		if ( FAILED ( dxgiSwapChain->QueryInterface ( __uuidof ( IDXGISwapChain3 ), ( void** ) &this->dxgiSwapChain ) ) )
-			throw std::exception ( "Cannot query interface from IDXGISwapChain to IDXGISwapChain3." );
+			throw std::runtime_error ( "Cannot query interface from IDXGISwapChain to IDXGISwapChain3." );
 #elif PRPlatformMicrosoftWindowsRT
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0, };
 		swapChainDesc.Width = windowWidth;
@@ -1024,9 +1122,9 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		IDXGISwapChain1 * dxgiSwapChain;
 		if ( FAILED ( dxgiFactory->CreateSwapChainForCoreWindow ( commandQueue, reinterpret_cast< IUnknown* >( app->window ),
 			&swapChainDesc, nullptr, &dxgiSwapChain ) ) )
-			throw std::exception ( "Failed create DXGI Swap chain." );
+			throw std::runtime_error ( "Failed create DXGI Swap chain." );
 		if ( FAILED ( dxgiSwapChain->QueryInterface ( __uuidof ( IDXGISwapChain3 ), ( void** ) &this->dxgiSwapChain ) ) )
-			throw std::exception ( "Cannot query interface from IDXGISwapChain to IDXGISwapChain3." );
+			throw std::runtime_error ( "Cannot query interface from IDXGISwapChain to IDXGISwapChain3." );
 #endif
 
 		dxgiFactory->Release ();
@@ -1037,20 +1135,20 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		descHeapDesc.NumDescriptors = 2;
 		descHeapDesc.NodeMask = 0;
 		if ( FAILED ( d3dDevice->CreateDescriptorHeap ( &descHeapDesc, __uuidof ( ID3D12DescriptorHeap ), ( void** ) &descriptorHeap ) ) )
-			throw std::exception ( "Failed create Descriptor Heap." );
+			throw std::runtime_error ( "Failed create Descriptor Heap." );
 		descriptorHandleIncrementSize = d3dDevice->GetDescriptorHandleIncrementSize ( D3D12_DESCRIPTOR_HEAP_TYPE_RTV );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart ();
 		for ( UINT n = 0; n < 2; n++ )
 		{
 			if ( FAILED ( dxgiSwapChain->GetBuffer ( n, __uuidof ( ID3D12Resource ), ( void** ) &renderTargets [ n ] ) ) )
-				throw std::exception ( "Failed create Render Target View." );
+				throw std::runtime_error ( "Failed create Render Target View." );
 			d3dDevice->CreateRenderTargetView ( renderTargets [ n ], nullptr, descriptorHandle );
 			descriptorHandle.ptr += descriptorHandleIncrementSize;
 		}
 
 		if ( FAILED ( d3dDevice->CreateCommandAllocator ( D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof ( ID3D12CommandAllocator ), ( void** ) &commandAllocator ) ) )
-			throw std::exception ( "Failed create Command Allocator." );
+			throw std::runtime_error ( "Failed create Command Allocator." );
 	}
 
 	{
@@ -1063,34 +1161,34 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		rootSignatureDesc.pStaticSamplers = nullptr;
 		rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 		if ( FAILED ( D3D12SerializeRootSignature ( &rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error ) ) )
-			throw std::exception ( "Failed serialize Root Signature." );
+			throw std::runtime_error ( "Failed serialize Root Signature." );
 		if ( FAILED ( d3dDevice->CreateRootSignature ( 0, signature->GetBufferPointer (), signature->GetBufferSize (),
 			__uuidof ( ID3D12RootSignature ), ( void** ) &rootSignature ) ) )
-			throw std::exception ( "Failed create Root Signature." );
+			throw std::runtime_error ( "Failed create Root Signature." );
 	}
 
 	{
 		if ( FAILED ( d3dDevice->CreateFence ( 0, D3D12_FENCE_FLAG_NONE, __uuidof ( ID3D12Fence ), ( void** ) &fence ) ) )
-			throw std::exception ( "Failed create Fence." );
+			throw std::runtime_error ( "Failed create Fence." );
 		fenceValue = 1;
 
 		fenceEvent = CreateEventEx ( nullptr, FALSE, FALSE, EVENT_ALL_ACCESS );
 		if ( fenceEvent == nullptr )
 		{
-			throw std::exception ( "Cannot create Event. check GetLastError ()." );
+			throw std::runtime_error ( "Cannot create Event. check GetLastError ()." );
 		}
 
 		// Synchronization
 		{
 			const UINT64 myFence = fenceValue;
 			if ( FAILED ( commandQueue->Signal ( fence, myFence ) ) )
-				throw std::exception ( "Command Qeue Signal failed." );
+				throw std::runtime_error ( "Command Qeue Signal failed." );
 			fenceValue++;
 
 			if ( fence->GetCompletedValue () < myFence )
 			{
 				if ( FAILED ( fence->SetEventOnCompletion ( myFence, fenceEvent ) ) )
-					throw std::exception ( "Cannot set Event on completion." );
+					throw std::runtime_error ( "Cannot set Event on completion." );
 				WaitForSingleObject ( fenceEvent, INFINITE );
 			}
 
@@ -1158,13 +1256,13 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	};
 	int pixelFormat = ChoosePixelFormat ( hDC, &pixelFormatDescriptor );
 	if ( !SetPixelFormat ( hDC, pixelFormat, &pixelFormatDescriptor ) )
-		throw std::exception ( "Failed SetPixelFormat in OpenGL initialize." );
+		throw std::runtime_error ( "Failed SetPixelFormat in OpenGL initialize." );
 
 	glContext = wglCreateContext ( hDC );
 	if ( glContext == 0 )
-		throw std::exception ( "Failed wglCreateContext in OpenGL initialize." );
+		throw std::runtime_error ( "Failed wglCreateContext in OpenGL initialize." );
 	if ( !wglMakeCurrent ( hDC, glContext ) )
-		throw std::exception ( "Failed wglMakeCurrent." );
+		throw std::runtime_error ( "Failed wglMakeCurrent." );
 
 	if ( rendererType > PRRendererType_OpenGL1 )
 	{
@@ -1192,11 +1290,11 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 				if ( temp == nullptr ) { --attribs [ 3 ]; continue; }
 				wglDeleteContext ( glContext );
 				glContext = temp;
-				if ( !wglMakeCurrent ( hDC, glContext ) ) throw std::exception ( "Failed wglMakeCurrent." );
+				if ( !wglMakeCurrent ( hDC, glContext ) ) throw std::runtime_error ( "Failed wglMakeCurrent." );
 			}
 
 			if ( temp == nullptr )
-				throw std::exception ( "Failed create new attribs context." );
+				throw std::runtime_error ( "Failed create new attribs context." );
 		}
 	}
 #elif PRPlatformAppleOSX
@@ -1229,7 +1327,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	case PRRendererType_OpenGLES1: api = kEAGLRenderingAPIOpenGLES1; break;
 	case PRRendererType_OpenGLES2: api = kEAGLRenderingAPIOpenGLES2; break;
 	case PRRendererType_OpenGLES3: api = kEAGLRenderingAPIOpenGLES3; break;
-	default: throw std::exception ( "Invaild OpenGL ES version." );
+	default: throw std::runtime_error ( "Invaild OpenGL ES version." );
 	}
 	glContext = [ [ EAGLContext alloc ] initWithAPI:api ];
 
@@ -1239,7 +1337,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
 	view.drawableStencilFormat = GLKViewDrawableStencilFormat8;
 #elif PRPlatformUNIX
-	const char * glxExts = glXQueryExtensionsString ( wnd->display, DefaultScreen ( wnd->display ) );
+	const char * glxExts = glXQueryExtensionsString ( app->display, DefaultScreen ( app->display ) );
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = ( GLXCREATECONTEXTATTRIBSARBPROC ) glXGetProcAddressARB ( ( const GLubyte * ) "glXCreateContextAttribsARB" );
 
 	if ( !isExtensionSupported ( glxExts, "GLX_ARB_create_context" ) || glXCreateContextAttribsARB == nullptr )
@@ -1255,25 +1353,25 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 		};
 		GLint contextAttribs [] =
 		{
-			GLX_CONTEXT_MAJOR_VERSION_ARB, version.major,
-			GLX_CONTEXT_MINOR_VERSION_ARB, version.minor,
+			GLX_CONTEXT_MAJOR_VERSION_ARB, ( rendererType - PRRendererType_OpenGL1 ) + 1,
+			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
 			GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
 			None,
 		};
 
 		int nelements;
-		GLXFBConfig * config = glXChooseFBConfig ( wnd->display, DefaultScreen ( wnd->display ), visualAttr, &nelements );
+		GLXFBConfig * config = glXChooseFBConfig ( app->display, DefaultScreen ( app->display ), visualAttr, &nelements );
 		if ( nelements == 0 )
-			throw PRException ( "FBConfig's count is zero." );
+			throw std::runtime_error ( "FBConfig's count is zero." );
 
-		glContext = glXCreateContextAttribsARB ( wnd->display, config [ 0 ], nullptr, true, contextAttribs );
+		glContext = glXCreateContextAttribsARB ( app->display, config [ 0 ], nullptr, true, contextAttribs );
 	}
 
 	if ( glContext == nullptr )
-		throw std::exception ( "Failed create OpenGL context." );
+		throw std::runtime_error ( "Failed create OpenGL context." );
 
-	if ( !glXMakeCurrent ( wnd->display, wnd->window, glContext ) )
-		throw std::exception ( "Failed make current." );
+	if ( !glXMakeCurrent ( app->display, app->window, glContext ) )
+		throw std::runtime_error ( "Failed make current." );
 #elif PRPlatformGoogleAndroid
 	const EGLint attribs [] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
@@ -1304,7 +1402,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	context = eglCreateContext ( display, config, NULL, NULL );
 
 	if ( eglMakeCurrent ( display, surface, surface, context ) == EGL_FALSE )
-		throw std::exception ( "Unable to eglMakeCurrent" );
+		throw std::runtime_error ( "Unable to eglMakeCurrent" );
 
 	egPRuerySurface ( display, surface, EGL_WIDTH, &w );
 	egPRuerySurface ( display, surface, EGL_HEIGHT, &h );
@@ -1315,14 +1413,14 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 #endif
 	GLenum errorCode = glGetError ();
 	if ( errorCode != GL_NO_ERROR )
-		throw std::exception ( "OpenGL Error." );
+		throw std::runtime_error ( "OpenGL Error." );
 
 #if PRPlatformDesktops
 	PRPrintLog ( "OGL ERR: %d", glGetError () );
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit ();
 	if ( glewError != GLEW_OK )
-		throw std::exception ( ( const char* ) glewGetErrorString ( glewError ) );
+		throw std::runtime_error ( ( const char* ) glewGetErrorString ( glewError ) );
 	PRPrintLog ( "OGL ERR in GLEW: %d", glGetError () );
 #endif
 
@@ -1346,8 +1444,9 @@ PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL ()
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformUNIX
-	glXMakeCurrent ( display, 0, 0 );
-	glXDestroyContext ( display, glContext );
+	PRApplication * app = PRApplication::sharedApplication ();
+	glXMakeCurrent ( app->display, 0, 0 );
+	glXDestroyContext ( app->display, glContext );
 #elif PRPlatformGoogleAndroid
 	if ( display != EGL_NO_DISPLAY ) {
 		eglMakeCurrent ( display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
@@ -1374,7 +1473,8 @@ void PRGraphicsContext_OpenGL::makeCurrent ()
 #elif PRPlatformAppleiOS
 	[ EAGLContext setCurrentContext : glContext ];
 #elif PRPlatformUNIX
-	glXMakeCurrent ( display, window, glContext );
+	PRApplication * app = PRApplication::sharedApplication ();
+	glXMakeCurrent ( app->display, app->window, glContext );
 #elif PRPlatformGoogleAndroid
 	eglMakeCurrent ( display, surface, surface, context );
 #endif
@@ -1390,7 +1490,8 @@ void PRGraphicsContext_OpenGL::swapBuffers ()
 #elif PRPlatformAppleiOS
 	[ glContext presentRenderbuffer : 0 ];
 #elif PRPlatformUNIX
-	glXSwapBuffers ( display, window );
+	PRApplication * app = PRApplication::sharedApplication ();
+	glXSwapBuffers ( app->display, app->window );
 #elif PRPlatformGoogleAndroid
 	eglSwapBuffers ( display, surface );
 #endif
@@ -2922,23 +3023,31 @@ bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
 		PRIsEquals ( v1._41, v2._41 ) && PRIsEquals ( v1._42, v2._42 ) && PRIsEquals ( v1._43, v2._43 ) && PRIsEquals ( v1._44, v2._44 );
 }
 
-inline PRImageLoader::PRImageLoader ( std::string & filename )
+#if PRPlatformUNIX
+#include <SOIL/SOIL.h>
+#endif
+
+PRImageLoader::PRImageLoader ( std::string & filename )
 {
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
 	char path [ 1024 ];
 	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
-		throw std::exception ( "Cannot get resource directory path." );
+		throw std::runtime_error ( "Cannot get resource directory path." );
 	CFRelease ( resourceURL );
 
 	chdir ( path );
 #endif
 
-#if !PRPlatformMicrosoftWindowsFamily
+#if PRPlatformUNIX
+	m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
+	if ( m_data == nullptr )
+		throw std::runtime_error ( "Error from SOIL_load_image ()." );
+#elif !PRPlatformMicrosoftWindowsFamily
 	m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
 	if ( m_data == nullptr )
-		throw std::exception ( stbi_failure_reason () );
+		throw std::runtime_error ( stbi_failure_reason () );
 #else
 	USES_CONVERSION;
 
@@ -2955,17 +3064,17 @@ inline PRImageLoader::PRImageLoader ( std::string & filename )
 	strcat_s ( fullpath, 2048, filename.c_str () );
 
 	if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
-		throw std::exception ( "Cannot create IWICImagingFactory." );
+		throw std::runtime_error ( "Cannot create IWICImagingFactory." );
 
 	if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
-		throw std::exception ( "Cannot load image file." );
+		throw std::runtime_error ( "Cannot load image file." );
 
 	decoder->GetFrame ( 0, &frameDecode );
 	frameDecode->GetSize ( &m_width, &m_height );
 
 	factory->CreateFormatConverter ( &formatConverter );
 	if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
-		throw std::exception ( "Cannot create format converter." );
+		throw std::runtime_error ( "Cannot create format converter." );
 
 	m_data = new int [ m_width * m_height ];
 	formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
@@ -2977,7 +3086,7 @@ inline PRImageLoader::PRImageLoader ( std::string & filename )
 #endif
 }
 
-inline PRImageLoader::~PRImageLoader () { if ( m_data ) free ( ( unsigned char * ) m_data ); }
+PRImageLoader::~PRImageLoader () { if ( m_data ) free ( ( unsigned char * ) m_data ); }
 
 unsigned PRImageLoader::getWidth () { return m_width; }
 unsigned PRImageLoader::getHeight () { return m_height; }
@@ -2990,7 +3099,7 @@ PRDataLoader::PRDataLoader ( std::string & filename )
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
 	char path [ 1024 ];
 	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
-		throw std::exception ( "Cannot get resource directory path." );
+		throw std::runtime_error ( "Cannot get resource directory path." );
 	CFRelease ( resourceURL );
 
 	chdir ( path );
@@ -3005,7 +3114,11 @@ PRDataLoader::PRDataLoader ( std::string & filename )
 	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
 	strcat_s ( fullpath, 2048, "\\" );
 #endif
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
 	strcat_s ( fullpath, 2048, filename.c_str () );
+#else
+	strcat ( fullpath, filename.c_str () );
+#endif
 
 #if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
 	FILE * fp;
@@ -3014,7 +3127,7 @@ PRDataLoader::PRDataLoader ( std::string & filename )
 	FILE * fp = fopen ( fullpath, "rb" );
 #endif
 	if ( fp == nullptr )
-		throw std::exception ( "File Not Found." );
+		throw std::runtime_error ( "File Not Found." );
 	fseek ( fp, 0, SEEK_END );
 	m_dataSize = ( unsigned ) ftell ( fp );
 	fseek ( fp, 0, SEEK_SET );

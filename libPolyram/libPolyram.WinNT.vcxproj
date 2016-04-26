@@ -19,9 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="glxext.h" />
     <ClInclude Include="GL\glew.h" />
-    <ClInclude Include="GL\glxew.h" />
     <ClInclude Include="GL\wglew.h" />
     <ClInclude Include="polyram.h" />
     <ClInclude Include="wglext.h" />

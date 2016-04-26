@@ -27,13 +27,7 @@
     <ClInclude Include="GL\glew.h">
       <Filter>External Libraries\GLEW</Filter>
     </ClInclude>
-    <ClInclude Include="GL\glxew.h">
-      <Filter>External Libraries\GLEW</Filter>
-    </ClInclude>
     <ClInclude Include="GL\wglew.h">
-      <Filter>External Libraries\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="glxext.h">
       <Filter>External Libraries\GLEW</Filter>
     </ClInclude>
     <ClInclude Include="wglext.h">

@@ -1,9 +1,11 @@
 #define POLYRAM_OPENGL
 #include "polyram.h"
-#ifdef _AMD64_
-#pragma comment ( lib, "..\\Build\\x64\\libPolyram.WinNT.lib" )
-#else
-#pragma comment ( lib, "..\\Build\\Win32\\libPolyram.WinNT.lib" )
+#if PRPlatformMicrosoftWindowsNT
+	#ifdef _AMD64_
+		#pragma comment ( lib, "..\\Build\\x64\\libPolyram.WinNT.lib" )
+	#else
+		#pragma comment ( lib, "..\\Build\\Win32\\libPolyram.WinNT.lib" )
+	#endif
 #endif
 
 class MyScene : public PRObject
@@ -11,7 +13,8 @@ class MyScene : public PRObject
 public:
 	void onInitialize ()
 	{
-		PRVersion version ( std::string ( ( const char * ) glGetString ( GL_VERSION ) ) );
+		std::string oglver ( ( const char * ) glGetString ( GL_VERSION ) );
+		PRVersion version ( oglver );
 		PRPrintLog ( "OpenGL Version: %d.%d", version.major, version.minor );
 	}
 
@@ -43,6 +46,7 @@ MAIN_FUNCTION_ATTR
 MAIN_FUNCTION_RTTP MAIN_FUNCTION_NAME ( MAIN_FUNCTION_ARGS )
 {
 	MyScene scene;
-	PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, std::string ( "Test" ) );
+	std::string title ( "Test" );
+	PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
 	application.run ();
 }
