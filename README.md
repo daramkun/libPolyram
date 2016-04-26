@@ -28,7 +28,7 @@ libPolyram is a Little Framework for Study of 3D Programming. Name from "Polygon
 * X11
 * libGL and libGLU (for OpenGL, apt-get install libgl1-mesa-dev libglu1-mesa-dev)
 * GLEW (for OpenGL, Precompiled, apt-get install libglew-dev)
-* Vulkan SDK (for Vulkan)
+* Vulkan SDK (for Vulkan), not support yet.
 
 ### iOS
 * not support yet.
