@@ -156,7 +156,7 @@ void PRPrintLog ( const char * format, ... )
 	text [ len + 1 ] = '\0';
 	OutputDebugStringA ( text );
 #elif PRPlatformGoogleAndroid
-	__android_log_print ( ANDROID_LOG_INFO, "libLiqueur", text );
+	__android_log_print ( ANDROID_LOG_INFO, "libPolyram", text );
 #else
 	size_t len = strlen ( text );
 	text [ len ] = '\n';
@@ -465,7 +465,11 @@ int g_MouseButton;
 int g_MouseX, g_MouseY;
 #endif
 
-PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title )
+PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title
+#if PRPlatformGoogleAndroid
+	, struct android_app * state
+#endif
+)
 	: m_scene ( scene ), m_graphicsContext ( nullptr )
 {
 	g_sharedApplication = this;
@@ -647,7 +651,53 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid
+	m_rendererType = rendererType;
+	memset ( &this->engine, 0, sizeof ( this->engine ) );
+	state->userData = &engine;
+	state->onAppCmd = [] ( struct android_app* app, int32_t cmd )
+	{
+		switch ( cmd )
+		{
+		case APP_CMD_SAVE_STATE:
+			break;
+		case APP_CMD_INIT_WINDOW:
+			switch ( PRApplication::sharedApplication ()->m_rendererType )
+			{
+			case PRRendererType_OpenGLES1:
+			case PRRendererType_OpenGLES2:
+			case PRRendererType_OpenGLES3: PRApplication::sharedApplication ()->m_graphicsContext = 
+				new PRGraphicsContext_OpenGL ( PRApplication::sharedApplication (), PRApplication::sharedApplication ()->m_rendererType ); break;
+			}
+			break;
+		case APP_CMD_TERM_WINDOW:
+			break;
+		case APP_CMD_GAINED_FOCUS:
+			if ( PRApplication::sharedApplication ()->engine.accelerometerSensor != nullptr ) {
+				ASensorEventQueue_enableSensor ( PRApplication::sharedApplication ()->engine.sensorEventQueue,
+					PRApplication::sharedApplication ()->engine.accelerometerSensor );
+				ASensorEventQueue_setEventRate ( PRApplication::sharedApplication ()->engine.sensorEventQueue,
+					PRApplication::sharedApplication ()->engine.accelerometerSensor, ( 1000L / 60 ) * 1000 );
+			}
+			break;
+		case APP_CMD_LOST_FOCUS:
+			PRApplication::sharedApplication ()->engine.animating = 0;
+			break;
+		}
+	};
+	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t
+	{
+		struct engine* engine = ( struct engine* ) app->userData;
+	};
+	this->engine.app = state;
 
+	this->engine.sensorManager = ASensorManager_getInstance ();
+	this->engine.accelerometerSensor = ASensorManager_getDefaultSensor ( engine.sensorManager,
+		ASENSOR_TYPE_ACCELEROMETER);
+	this->engine.sensorEventQueue = ASensorManager_createEventQueue ( engine.sensorManager,
+		state->looper, LOOPER_ID_USER, NULL, NULL );
+
+	if ( state->savedState != NULL )
+		engine.state = state->savedState;
 #elif PRPlatformWeb
 
 #endif
@@ -698,7 +748,8 @@ void PRApplication::getClientSize ( int * width, int * height )
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid
-
+	if ( width ) *width = engine.width;
+	if ( height ) *height = engine.height;
 #elif PRPlatformWeb
 
 #endif
@@ -731,11 +782,11 @@ void PRApplication::run ()
 {
 	double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
 
-	if ( m_scene ) m_scene->onInitialize ();
-
 #if PRPlatformMicrosoftWindowsNT
 	ShowWindow ( m_hWnd, SW_SHOW );
 	UpdateWindow ( m_hWnd );
+
+	if ( m_scene ) m_scene->onInitialize ();
 
 	MSG msg;
 	while ( IsWindow ( m_hWnd ) )
@@ -764,6 +815,9 @@ void PRApplication::run ()
 	Windows::ApplicationModel::Core::CoreApplication::Run ( ref new polyram::PRWinRTFrameworkView ( m_rendererType ) );
 #elif PRPlatformAppleOSX
 	window.isVisible = visible;
+
+	if ( m_scene ) m_scene->onInitialize ();
+
 	while ( window.isVisible )
 	{
 		NSEvent * event = [ [ NSApplication sharedApplication ] nextEventMatchingMask:NSAnyEventMask untilDate:nil inMode:NSDefaultRunLoopMode dequeue:YES ];
@@ -829,6 +883,8 @@ void PRApplication::run ()
 		}
 	}
 #elif PRPlatformUNIX
+	if ( m_scene ) m_scene->onInitialize ();
+
 	XEvent xev;
 	bool loopflag = true;
 	while ( loopflag )
@@ -898,7 +954,48 @@ void PRApplication::run ()
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid
+	engine.animating = 1;
+	while ( 1 )
+	{
+		int ident;
+		int events;
+		struct android_poll_source* source;
 
+		while ( ( ident = ALooper_pollAll ( engine.animating ? 0 : -1, NULL, &events, ( void** ) &source ) ) >= 0 )
+		{
+			if ( source != nullptr )
+				source->process ( this->engine.app, source );
+
+			if ( ident == LOOPER_ID_USER )
+			{
+				if ( engine.accelerometerSensor != nullptr )
+				{
+					ASensorEvent event;
+					while ( ASensorEventQueue_getEvents ( engine.sensorEventQueue, &event, 1 ) > 0 )
+						if ( m_scene ) m_scene->onAccelerometer ( event.acceleration.x, event.acceleration.y, event.acceleration.z );
+				}
+			}
+
+			if ( this->engine.app->destroyRequested != 0 )
+			{
+				if ( m_scene )
+					m_scene->onDestroy ();
+				return;
+			}
+		}
+
+		if ( engine.animating )
+		{
+			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+			lastTime = currentTime;
+
+			if ( m_scene != nullptr )
+			{
+				m_scene->onUpdate ( elapsedTime );
+				m_scene->onDraw ( elapsedTime );
+			}
+		}
+	}
 #elif PRPlatformWeb
 
 #endif
@@ -1398,8 +1495,8 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 		EGL_BLUE_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_RED_SIZE, 8,
-		EGL_DEPTH_SIZE, rendererInfo.depthBufferSize,
-		EGL_STENCIL_SIZE, rendererInfo.stencilBufferSize,
+		EGL_DEPTH_SIZE, 24,
+		EGL_STENCIL_SIZE, 8,
 		EGL_NONE
 	};
 	EGLint w, h, format;
@@ -1416,20 +1513,23 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 
 	eglGetConfigAttrib ( display, config, EGL_NATIVE_VISUAL_ID, &format );
 
-	ANativeWindow_setBuffersGeometry ( wnd->window, 0, 0, format );
+	ANativeWindow_setBuffersGeometry ( PRApplication::sharedApplication ()->engine.app->window, 0, 0, format );
 
-	surface = eglCreateWindowSurface ( display, config, wnd->window, NULL );
+	surface = eglCreateWindowSurface ( display, config, PRApplication::sharedApplication ()->engine.app->window, NULL );
 	context = eglCreateContext ( display, config, NULL, NULL );
 
 	if ( eglMakeCurrent ( display, surface, surface, context ) == EGL_FALSE )
 		throw std::runtime_error ( "Unable to eglMakeCurrent" );
 
-	egPRuerySurface ( display, surface, EGL_WIDTH, &w );
-	egPRuerySurface ( display, surface, EGL_HEIGHT, &h );
+	eglQuerySurface ( display, surface, EGL_WIDTH, &w );
+	eglQuerySurface ( display, surface, EGL_HEIGHT, &h );
 
-	display = display;
-	context = context;
-	surface = surface;
+	this->display = display;
+	this->context = context;
+	this->surface = surface;
+
+	PRApplication::sharedApplication ()->engine.width = w;
+	PRApplication::sharedApplication ()->engine.height = h;
 #endif
 	GLenum errorCode = glGetError ();
 	if ( errorCode != GL_NO_ERROR )
@@ -1478,6 +1578,7 @@ PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL ()
 		}
 		eglTerminate ( display );
 	}
+	PRApplication::sharedApplication ()->engine.animating = 0;
 	display = EGL_NO_DISPLAY;
 	context = EGL_NO_CONTEXT;
 	surface = EGL_NO_SURFACE;
@@ -3045,6 +3146,8 @@ bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
 
 #if PRPlatformUNIX
 #include <SOIL/SOIL.h>
+#elif PRPlatformGoogleAndroid
+#include "stb_image/stb_image_aug.h"
 #endif
 
 PRImageLoader::PRImageLoader ( std::string & filename )

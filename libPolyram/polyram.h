@@ -78,6 +78,7 @@
 	#define PRPlatformAppleiOS						0
 #endif
 #if defined ( __ANDROID__ )
+	#include <jni.h>
 	#include <sys/time.h>
 	#include <android/api-level.h>
 	#include <android/native_activity.h>
@@ -93,6 +94,21 @@
 	#include <android/storage_manager.h>
 	#include <android/log.h>
 	#include "android_native_app_glue/android_native_app_glue.h"
+
+struct engine {
+	struct android_app* app;
+
+	ASensorManager* sensorManager;
+	const ASensor* accelerometerSensor;
+	ASensorEventQueue* sensorEventQueue;
+
+	int animating;
+	int32_t width;
+	int32_t height;
+
+	void * state;
+};
+
 	#define PRPlatformGoogleAndroid					1
 #else
 	#define PRPlatformGoogleAndroid					0
@@ -332,7 +348,11 @@ class PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
 class PRApplication
 {
 public:
-	PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title );
+	PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title
+#if PRPlatformGoogleAndroid
+		, struct android_app * state
+#endif
+	);
 	~PRApplication ();
 
 public:
@@ -353,7 +373,7 @@ public:
 private:
 	PRObject * m_scene;
 	PRGraphicsContext * m_graphicsContext;
-#if PRPlatformMicrosoftWindowsRT
+#if PRPlatformMicrosoftWindowsRT || PRPlatformGoogleAndroid
 	PRRendererType m_rendererType;
 #endif
 
@@ -370,6 +390,8 @@ public:
 	Colormap colorMap;
 	Window window;
 	unsigned width, height;
+#elif PRPlatformGoogleAndroid
+	struct engine engine;
 #endif
 };
 
@@ -933,6 +955,11 @@ private:
 #define MAIN_FUNCTION_RTTP int
 #define MAIN_FUNCTION_NAME main
 #define MAIN_FUNCTION_ARGS int argc, char ** argv
+#elif PRPlatformGoogleAndroid
+#define MAIN_FUNCTION_ATTR
+#define MAIN_FUNCTION_RTTP void
+#define MAIN_FUNCTION_NAME android_main
+#define MAIN_FUNCTION_ARGS struct android_app* state
 #endif
 
 #endif

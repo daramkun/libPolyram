@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="polyram.h" />
+    <ClInclude Include="android_native_app_glue\android_native_app_glue.h">
+      <Filter>External Libraries\android natvie app glue</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image\image_DXT.h">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image\image_helper.h">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image\stb_image_aug.h">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image\stbi_DDS_aug.h">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image\stbi_DDS_aug_c.h">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="polyram.cpp" />
+    <ClCompile Include="android_native_app_glue\android_native_app_glue.c">
+      <Filter>External Libraries\android natvie app glue</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image\image_DXT.c">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image\image_helper.c">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image\stb_image_aug.c">
+      <Filter>External Libraries\stb_image</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="External Libraries">
+      <UniqueIdentifier>{3d45ddb7-db9e-467e-9810-05cd42a75f52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\android natvie app glue">
+      <UniqueIdentifier>{04368d7a-252e-4a7b-acad-04072d44ebc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\stb_image">
+      <UniqueIdentifier>{39cf29db-835f-4699-9bf2-2f3da2fd10e2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
