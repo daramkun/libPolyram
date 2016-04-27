@@ -158,6 +158,9 @@ void PRPrintLog ( const char * format, ... )
 #elif PRPlatformGoogleAndroid
 	__android_log_print ( ANDROID_LOG_INFO, "libLiqueur", text );
 #else
+	size_t len = strlen ( text );
+	text [ len ] = '\n';
+	text [ len + 1 ] = '\0';
 	fprintf ( stderr, text );
 #endif
 }
@@ -590,6 +593,15 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	view = nil;
 
 	[window makeKeyWindow];
+
+	switch ( rendererType )
+	{
+	case PRRendererType_OpenGL1:
+	case PRRendererType_OpenGL2:
+	case PRRendererType_OpenGL3:
+	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+	case PRRendererType_Metal: m_graphicsContext = new PRGraphicsContext_Metal ( this ); break;
+	}
 #elif PRPlatformUNIX
 	display = XOpenDisplay ( nullptr );
 	if ( display == nullptr )
@@ -624,6 +636,14 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 
 	XStoreName ( display, window, "libPolyram" );
 	XMapWindow ( display, window );
+
+	switch ( rendererType )
+	{
+	case PRRendererType_OpenGL1:
+	case PRRendererType_OpenGL2:
+	case PRRendererType_OpenGL3:
+	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+	}
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid

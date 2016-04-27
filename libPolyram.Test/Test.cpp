@@ -13,9 +13,10 @@ class MyScene : public PRObject
 public:
 	void onInitialize ()
 	{
-		std::string oglver ( ( const char * ) glGetString ( GL_VERSION ) );
-		PRVersion version ( oglver );
-		PRPrintLog ( "OpenGL Version: %d.%d", version.major, version.minor );
+		//std::string oglver ( ( const char * ) glGetString ( GL_VERSION ) );
+		//PRVersion version ( oglver );
+		//PRPrintLog ( "OpenGL Version: %d.%d", version.major, version.minor );
+		PRPrintLog ( ( const char * ) glGetString ( GL_VERSION ) );
 	}
 
 	void onDestroy ()
@@ -34,7 +35,7 @@ public:
 
 		//float color [] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		//graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, color );
-		glClearColor ( 0, 0, 0, 1 );
+		glClearColor ( 1, 0, 0, 1 );
 		glClear ( GL_COLOR_BUFFER_BIT );
 
 		//graphicsContext->dxgiSwapChain->Present ( 1, 0 );
