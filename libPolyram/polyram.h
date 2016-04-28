@@ -217,6 +217,13 @@ struct engine {
 		#error You cannot use Metal API from this platform.
 	#endif
 #endif
+#if defined ( POLYRAM_VULKAN )
+	/*#include <vulkan/vulkan.h>
+	#include <vulkan/vk_sdk_platform.h>
+	#if PRPlatformMicrosoftWindowsNT
+		#pragma comment ( lib, "vulkan-1.lib" )
+	#endif*/
+#endif
 
 #define SAFE_RELEASE(x)							if ( x ) x->Release (); x = nullptr;
 #define SAFE_DELETE(x)							if ( x ) delete x; x = nullptr;
@@ -494,6 +501,21 @@ public:
 	id<MTLCommandQueue> commandQueue;
 	id<MTLCommandBuffer> commandBuffer;
 };
+#endif
+#if defined ( POLYRAM_VULKAN )
+/*class PRGraphicsContext_Vulkan : public PRGraphicsContext
+{
+public:
+	PRGraphicsContext_Vulkan ( PRApplication * app );
+	~PRGraphicsContext_Vulkan ();
+
+public:
+	VkInstance instance;
+	VkDevice device;
+	VkQueue queue;
+
+	VkSwapchainKHR swapChain;
+};*/
 #endif
 
 struct PRVector2

@@ -575,6 +575,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+	//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
 	}
 #elif PRPlatformMicrosoftWindowsRT
 	m_rendererType = rendererType;
@@ -686,7 +687,17 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	};
 	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t
 	{
-		struct engine* engine = ( struct engine* ) app->userData;
+		switch ( AInputEvent_getType ( event ) )
+		{
+		case AINPUT_EVENT_TYPE_KEY:
+
+			break;
+		case AINPUT_EVENT_TYPE_MOTION:
+			if ( PRApplication::sharedApplication ()->getScene () )
+				PRApplication::sharedApplication ()->getScene ()->onMouseMove ( PRMouseButton_Left,
+					AMotionEvent_getX ( event, 0 ), AMotionEvent_getY ( event, 0 ) );
+			break;
+		}
 	};
 	this->engine.app = state;
 
@@ -1635,6 +1646,86 @@ PRGraphicsContext_Metal::~PRGraphicsContext_Metal ()
 	commandQueue = nil;
 	device = nil;
 }
+#endif
+
+#if defined ( POLYRAM_VULKAN )
+/*PRGraphicsContext_Vulkan::PRGraphicsContext_Vulkan ( PRApplication * app )
+{
+	VkApplicationInfo applicationInfo;
+	VkInstanceCreateInfo instanceInfo;
+
+	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	applicationInfo.pNext = nullptr;
+	applicationInfo.pApplicationName = "libPolyram";
+	applicationInfo.pEngineName = "libPolyram";
+	applicationInfo.engineVersion = 1;
+	applicationInfo.apiVersion = VK_API_VERSION;
+
+	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	instanceInfo.pNext = nullptr;
+	instanceInfo.flags = 0;
+	instanceInfo.pApplicationInfo = &applicationInfo;
+	instanceInfo.enabledLayerCount = 0;
+	instanceInfo.ppEnabledLayerNames = nullptr;
+	instanceInfo.enabledExtensionCount = 0;
+	instanceInfo.ppEnabledExtensionNames = nullptr;
+
+	VkResult result = vkCreateInstance ( &instanceInfo, nullptr, &instance );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed to create Vulkan instance." );
+
+	uint32_t deviceCount = 0;
+	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, nullptr );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed to query the number of physical devices present." );
+
+	if ( deviceCount == 0 )
+		throw std::runtime_error ( "Couldn't detect any device present with Vulkan support." );
+
+	std::vector<VkPhysicalDevice> physicalDevices ( deviceCount );
+	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, &physicalDevices [ 0 ] );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Faied to enumerate physical devices presen." );
+
+	VkDeviceCreateInfo deviceInfo;
+	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceInfo.pNext = nullptr;
+	deviceInfo.flags = 0;
+	deviceInfo.enabledLayerCount = 0;
+	deviceInfo.ppEnabledLayerNames = nullptr;
+	deviceInfo.enabledExtensionCount = 0;
+	deviceInfo.ppEnabledExtensionNames = nullptr;
+	deviceInfo.pEnabledFeatures = nullptr;
+
+	float queuePriorities [] = { 1.0f };
+	VkDeviceQueueCreateInfo deviceQueueInfo;
+	deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	deviceQueueInfo.pNext = nullptr;
+	deviceQueueInfo.flags = 0;
+	deviceQueueInfo.queueFamilyIndex = 0;
+	deviceQueueInfo.queueCount = 1;
+	deviceQueueInfo.pQueuePriorities = queuePriorities;
+
+	deviceInfo.queueCreateInfoCount = 1;
+	deviceInfo.pQueueCreateInfos = &deviceQueueInfo;
+
+	result = vkCreateDevice ( physicalDevices [ 0 ], &deviceInfo, nullptr, &device );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed creating logical device." );
+
+	vkGetDeviceQueue ( device, 0, 0, &queue );
+}
+
+PRGraphicsContext_Vulkan::~PRGraphicsContext_Vulkan ()
+{
+	if ( device != VK_NULL_HANDLE )
+	{
+		vkDeviceWaitIdle ( device );
+		vkDestroyDevice ( device, nullptr );
+	}
+	if ( instance != VK_NULL_HANDLE )
+		vkDestroyInstance ( instance, nullptr );
+}*/
 #endif
 
 PRVector2::PRVector2 () : x ( 0 ), y ( 0 ) { }
