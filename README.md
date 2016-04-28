@@ -40,8 +40,8 @@ libPolyram is a Little Framework for Study of 3D Programming. Name from "Polygon
 
 ### Android
 * not support yet.
-Android 5.9(Lollipop) or higher (if you use Vulkan, require the Android 7.0)
+Android 5.0(Lollipop) or higher (if you use Vulkan, require the Android 7.0)
 * stb_image
 * Android NDK R10 or higher
 * Android Native App Glue
-* LLVM with C++11 features (if you want to use GCC, change settings of project.)
+* LLVM with C++11 features
