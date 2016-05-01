@@ -1476,7 +1476,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	{
 		GLint visualAttr [] =
 		{
-			GLX_RGBA, GLX_DEPTH_SIZE, 16, GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, true, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+			GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, true, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 			GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR, None
 		};
 		GLint contextAttribs [] =
@@ -3356,3 +3356,456 @@ PRDataLoader::~PRDataLoader () { SAFE_DELETE_ARRAY ( m_data ); }
 
 const void * PRDataLoader::getData () { return m_data; }
 unsigned PRDataLoader::getDataSize () { return m_dataSize; }
+
+struct vertex {
+	PRVector3 position;
+	PRVector2 texCoord;
+	PRVector4 diffuse;
+};
+struct polygonTriangle {
+	vertex v1, v2, v3;
+};
+struct polygonLine {
+	vertex v1, v2;
+};
+
+void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
+//void generateTeapot ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+//	void** result, unsigned * length );
+
+PRDefaultModelGenerator::PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
+	PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale )
+{
+	switch ( modelType )
+	{
+	case PRDefaultModelType_Box:
+		generateCube ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	case PRDefaultModelType_Rectangle:
+		generateRect ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	case PRDefaultModelType_Sphere:
+		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	case PRDefaultModelType_Circle:
+		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	case PRDefaultModelType_Grid:
+		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	case PRDefaultModelType_Guide:
+		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize );
+		break;
+	//case LqDefaultModelType_Teapot:
+	//	generateTeapot ( properties, tcs, scale, &m_data, &m_dataSize );
+	//	break;
+	}
+}
+
+const void* PRDefaultModelGenerator::getData () { return m_data; }
+unsigned PRDefaultModelGenerator::getDataSize () { return m_dataSize; }
+
+PRDefaultModelGenerator::~PRDefaultModelGenerator ()
+{
+	SAFE_DELETE_ARRAY ( m_data );
+}
+
+void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	polygonTriangle *vertices = ( polygonTriangle* ) data;
+
+	std::vector<float> vv;
+	for ( unsigned i = 0; i < dataSize / sizeof ( polygonTriangle ); ++i )
+	{
+		PRVector3 norm = PRCalculateNormal ( vertices->v1.position, vertices->v2.position, vertices->v3.position );
+
+		PRVector3 p1 = vertices->v1.position;
+		if ( scale != nullptr ) p1 = p1 * *scale;
+		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
+
+		if ( properties & PRDefaultModelProperty_Normal )
+		{
+			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
+		}
+
+		if ( properties & PRDefaultModelProperty_TexCoord )
+		{
+			vv.push_back ( vertices->v1.texCoord.x );
+			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+		}
+
+		if ( properties & PRDefaultModelProperty_Diffuse )
+		{
+			vv.push_back ( vertices->v1.diffuse.x );
+			vv.push_back ( vertices->v1.diffuse.y );
+			vv.push_back ( vertices->v1.diffuse.z );
+			vv.push_back ( vertices->v1.diffuse.w );
+		}
+
+		PRVector3 p2 = vertices->v2.position;
+		if ( scale != nullptr ) p2 = p2 * *scale;
+		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
+
+		if ( properties & PRDefaultModelProperty_Normal )
+		{
+			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
+		}
+
+		if ( properties & PRDefaultModelProperty_TexCoord )
+		{
+			vv.push_back ( vertices->v2.texCoord.x );
+			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+		}
+
+		if ( properties & PRDefaultModelProperty_Diffuse )
+		{
+			vv.push_back ( vertices->v2.diffuse.x );
+			vv.push_back ( vertices->v2.diffuse.y );
+			vv.push_back ( vertices->v2.diffuse.z );
+			vv.push_back ( vertices->v2.diffuse.w );
+		}
+
+		PRVector3 p3 = vertices->v3.position;
+		if ( scale != nullptr ) p3 = p3 * *scale;
+		vv.push_back ( p3.x ); vv.push_back ( p3.y ); vv.push_back ( p3.z );
+
+		if ( properties & PRDefaultModelProperty_Normal )
+		{
+			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
+		}
+
+		if ( properties & PRDefaultModelProperty_TexCoord )
+		{
+			vv.push_back ( vertices->v3.texCoord.x );
+			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v3.texCoord.y : vertices->v3.texCoord.y );
+		}
+
+		if ( properties & PRDefaultModelProperty_Diffuse )
+		{
+			vv.push_back ( vertices->v3.diffuse.x );
+			vv.push_back ( vertices->v3.diffuse.y );
+			vv.push_back ( vertices->v3.diffuse.z );
+			vv.push_back ( vertices->v3.diffuse.w );
+		}
+
+		++vertices;
+	}
+
+	*result = new float [ vv.size () ];
+	*length = ( unsigned ) vv.size () * sizeof ( float );
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	memcpy_s ( *result, *length, &vv [ 0 ], *length );
+#else
+	memcpy ( *result, &vv [ 0 ], *length );
+#endif
+}
+
+void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs,
+	const PRVector3 * scale, void** result, unsigned * length )
+{
+	polygonLine *vertices = ( polygonLine* ) data;
+
+	std::vector<float> vv;
+	for ( unsigned i = 0; i < dataSize / sizeof ( polygonLine ); ++i )
+	{
+		PRVector3 norm = vertices->v2.position - vertices->v1.position;
+
+		PRVector3 p1 = vertices->v1.position;
+		if ( scale != nullptr ) p1 = p1 * *scale;
+		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
+
+		if ( properties & PRDefaultModelProperty_Normal )
+		{
+			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
+		}
+
+		if ( properties & PRDefaultModelProperty_TexCoord )
+		{
+			vv.push_back ( vertices->v1.texCoord.x );
+			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+		}
+
+		if ( properties & PRDefaultModelProperty_Diffuse )
+		{
+			vv.push_back ( vertices->v1.diffuse.x );
+			vv.push_back ( vertices->v1.diffuse.y );
+			vv.push_back ( vertices->v1.diffuse.z );
+			vv.push_back ( vertices->v1.diffuse.w );
+		}
+
+		PRVector3 p2 = vertices->v2.position;
+		if ( scale != nullptr ) p2 = p2 * *scale;
+		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
+
+		if ( properties & PRDefaultModelProperty_Normal )
+		{
+			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
+		}
+
+		if ( properties & PRDefaultModelProperty_TexCoord )
+		{
+			vv.push_back ( vertices->v2.texCoord.x );
+			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+		}
+
+		if ( properties & PRDefaultModelProperty_Diffuse )
+		{
+			vv.push_back ( vertices->v2.diffuse.x );
+			vv.push_back ( vertices->v2.diffuse.y );
+			vv.push_back ( vertices->v2.diffuse.z );
+			vv.push_back ( vertices->v2.diffuse.w );
+		}
+
+		++vertices;
+	}
+
+	*result = new float [ vv.size () ];
+	*length = ( unsigned ) vv.size () * sizeof ( float );
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	memcpy_s ( *result, *length, &vv [ 0 ], *length );
+#else
+	memcpy ( *result, &vv [ 0 ], *length );
+#endif
+}
+
+void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	vertex cube [] = {
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+
+		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+
+		{ { -0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+
+		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } }
+	};
+	generateTriangleModel ( cube, sizeof ( cube ), properties, tcs, scale, result, length );
+}
+
+void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	vertex rect [] = {
+		{ { -0.5f, -0.5f, 0 }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, 0 }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, 0 }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, 0 }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+	};
+	generateTriangleModel ( rect, sizeof ( rect ), properties, tcs, scale, result, length );
+}
+
+void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	// Source from "http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c"
+
+	const unsigned rings = scale == nullptr ? 20 : ( unsigned ) scale->x * 10;
+	const unsigned sectors = scale == nullptr ? 20 : ( unsigned ) scale->y * 10;
+
+	float const R = 1.0f / ( float ) ( rings - 1 );
+	float const S = 1.0f / ( float ) ( sectors - 1 );
+	unsigned r, s;
+
+	std::vector<PRVector3> vertices;
+	std::vector<PRVector2> texcoords;
+	std::vector<unsigned> indices;
+
+	for ( r = 0; r < rings; r++ )
+	{
+		for ( s = 0; s < sectors; s++ )
+		{
+			float const y = sin ( -PRPIover2 + PRPI * r * R );
+			float const x = cos ( 2 * PRPI * s * S ) * sin ( PRPI * r * R );
+			float const z = sin ( 2 * PRPI * s * S ) * sin ( PRPI * r * R );
+
+			vertices.push_back ( PRVector3 ( x, y, z ) * 0.5f );
+			texcoords.push_back ( PRVector2 ( s * S, r * R ) );
+		}
+	}
+
+	for ( r = 0; r < rings - 1; r++ )
+	{
+		for ( s = 0; s < sectors - 1; s++ )
+		{
+			int curRow = r * sectors;
+			int nextRow = ( r + 1 ) * sectors;
+
+			indices.push_back ( curRow + s );
+			indices.push_back ( nextRow + s );
+			indices.push_back ( nextRow + ( s + 1 ) );
+
+			indices.push_back ( curRow + s );
+			indices.push_back ( nextRow + ( s + 1 ) );
+			indices.push_back ( curRow + ( s + 1 ) );
+		}
+	}
+
+	std::vector<vertex> sphere;
+	sphere.resize ( indices.size () );
+	int j = 0;
+	for ( auto i = indices.begin (); i != indices.end (); ++i )
+	{
+		//if ( *i >= vertices.size () ) continue;
+
+		vertex vtx;
+		vtx.position = vertices [ *i ];
+		vtx.texCoord = texcoords [ *i ];
+		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		sphere [ j++ ] = vtx;
+	}
+
+	float * temp = new float [ sphere.size () * sizeof ( vertex ) ];
+	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * sphere.size () );
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	memcpy_s ( temp, templen, &sphere [ 0 ], templen );
+#else
+	memcpy ( temp, &sphere [ 0 ], templen );
+#endif
+
+	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
+
+	delete [] temp;
+}
+
+void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	unsigned sectors = scale == nullptr ? 20 : ( unsigned ) PRMax ( scale->x, scale->y ) * 10;
+
+	std::vector<vertex> vertices;
+	for ( float r = 0; r <= PR2PI; r += ( PR2PI / sectors ) )
+	{
+		vertex vtx;
+
+		vtx.position = PRVector3 ( 0, 0, 0 );
+		vtx.texCoord = PRVector2 ( 0.5f, 0.5f );
+		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		vertices.push_back ( vtx );
+
+		vtx.position = PRVector3 ( cos ( r ), sin ( r ), 0 ) * 0.5f;
+		vtx.texCoord = PRVector2 ( vtx.position.x + 0.5f, vtx.position.y + 0.5f );
+		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		vertices.push_back ( vtx );
+
+		vtx.position = PRVector3 ( cos ( r + ( PR2PI / sectors ) ), sin ( r + ( PR2PI / sectors ) ), 0 ) * 0.5f;
+		vtx.texCoord = PRVector2 ( vtx.position.x + 0.5f, vtx.position.y + 0.5f );
+		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		vertices.push_back ( vtx );
+	}
+
+	float * temp = new float [ vertices.size () * sizeof ( vertex ) ];
+	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * vertices.size () );
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	memcpy_s ( temp, templen, &vertices [ 0 ], templen );
+#else
+	memcpy ( temp, &vertices [ 0 ], templen );
+#endif
+
+	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
+
+	delete [] temp;
+}
+
+void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	polygonLine vertices [ 202 ];
+	unsigned index = 0;
+	for ( unsigned z = 0; z <= 100; ++z )
+	{
+		vertices [ index ].v1.position = PRVector3 ( -50, 0, ( float ) z - 50 );
+		vertices [ index ].v1.texCoord = PRVector2 ( 0, 0 );
+		vertices [ index ].v1.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		vertices [ index ].v2.position = PRVector3 ( 50, 0, ( float ) z - 50 );
+		vertices [ index ].v2.texCoord = PRVector2 ( 1, 0 );
+		vertices [ index ].v2.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		++index;
+	}
+	for ( unsigned x = 0; x <= 100; ++x )
+	{
+		vertices [ index ].v1.position = PRVector3 ( ( float ) x - 50, 0, -50 );
+		vertices [ index ].v1.texCoord = PRVector2 ( 0, 0 );
+		vertices [ index ].v1.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		vertices [ index ].v2.position = PRVector3 ( ( float ) x - 50, 0, 50 );
+		vertices [ index ].v2.texCoord = PRVector2 ( 0, 1 );
+		vertices [ index ].v2.diffuse = PRVector4 ( 1, 1, 1, 1 );
+		++index;
+	}
+	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
+}
+
+void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+	void** result, unsigned * length )
+{
+	polygonLine vertices [ 3 ];
+	vertices [ 0 ].v1.position = PRVector3 ();
+	vertices [ 0 ].v1.texCoord = PRVector2 ( 0, 0 );
+	vertices [ 0 ].v1.diffuse = PRVector4 ( 1, 0, 0, 1 );
+	vertices [ 0 ].v2.position = PRVector3 ( 1, 0, 0 );
+	vertices [ 0 ].v2.texCoord = PRVector2 ( 1, 0 );
+	vertices [ 0 ].v2.diffuse = PRVector4 ( 1, 0, 0, 1 );
+
+	vertices [ 1 ].v1.position = PRVector3 ();
+	vertices [ 1 ].v1.texCoord = PRVector2 ( 0, 0 );
+	vertices [ 1 ].v1.diffuse = PRVector4 ( 0, 1, 0, 1 );
+	vertices [ 1 ].v2.position = PRVector3 ( 0, 1, 0 );
+	vertices [ 1 ].v2.texCoord = PRVector2 ( 1, 0 );
+	vertices [ 1 ].v2.diffuse = PRVector4 ( 0, 1, 0, 1 );
+
+	vertices [ 2 ].v1.position = PRVector3 ();
+	vertices [ 2 ].v1.texCoord = PRVector2 ( 0, 0 );
+	vertices [ 2 ].v1.diffuse = PRVector4 ( 0, 0, 1, 1 );
+	vertices [ 2 ].v2.position = PRVector3 ( 0, 0, 1 );
+	vertices [ 2 ].v2.texCoord = PRVector2 ( 0, 1 );
+	vertices [ 2 ].v2.diffuse = PRVector4 ( 0, 0, 1, 1 );
+	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
+}
