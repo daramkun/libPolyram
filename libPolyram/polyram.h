@@ -58,6 +58,7 @@
 	#define PRPlatformMicrosoftWindowsRT			0
 #endif
 #if defined ( EMSCRIPTEN )
+	#include <emscripten/emscripten.h>
 	#define PRPlatformWeb							1
 #else
 	#define PRPlatformWeb							0
@@ -952,6 +953,47 @@ class PRDataLoader
 public:
 	PRDataLoader ( std::string & filename );
 	~PRDataLoader ();
+
+public:
+	const void* getData ();
+	unsigned getDataSize ();
+
+private:
+	void * m_data;
+	unsigned m_dataSize;
+};
+
+enum PRDefaultModelType
+{
+	PRDefaultModelType_Box,
+	PRDefaultModelType_Rectangle,
+	PRDefaultModelType_Sphere,
+	PRDefaultModelType_Circle,
+	PRDefaultModelType_Grid,
+	PRDefaultModelType_Guide,
+	//PRDefaultModelType_Teapot,
+};
+
+enum PRDefaultModelProperty
+{
+	PRDefaultModelProperty_Position = 0,
+	PRDefaultModelProperty_Normal = 1 << 0,
+	PRDefaultModelProperty_TexCoord = 1 << 1,
+	PRDefaultModelProperty_Diffuse = 1 << 2,
+};
+
+enum PRDefaultModelTexCoordSystem
+{
+	PRDefaultModelTexCoordSystem_UV,
+	PRDefaultModelTexCoordSystem_ST,
+};
+
+class PRDefaultModelGenerator
+{
+public:
+	PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
+		PRDefaultModelTexCoordSystem tcs = PRDefaultModelTexCoordSystem_UV, const PRVector3 * scale = nullptr );
+	~PRDefaultModelGenerator ();
 
 public:
 	const void* getData ();

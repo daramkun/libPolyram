@@ -17,6 +17,7 @@ libPolyram is a Little Framework for Study of 3D Programming. Name from "Polygon
 * not support yet.
 * OS X 10.11 or higher
 * stb_image
+* LLVM with Objective-C++ and C++11 standard features
 * Cocoa.framework
 * OpenGL.framework (for OpenGL)
 * GLEW (for OpenGL)
@@ -34,14 +35,15 @@ libPolyram is a Little Framework for Study of 3D Programming. Name from "Polygon
 * not support yet.
 * iOS 8 or higher
 * stb_image
+* LLVM with Objective-C++ and C++11 standard features
 * UIKit.framework
 * GLKit.framework (for OpenGL ES)
 * Metal.framework (for Metal)
 
 ### Android
 * not support yet.
-Android 5.0(Lollipop) or higher (if you use Vulkan, require the Android 7.0)
+* Android 5.0(Lollipop) or higher (if you use Vulkan, require the Android 7.0)
 * stb_image
 * Android NDK R10 or higher
 * Android Native App Glue
-* LLVM with C++11 features
+* LLVM with C++11 standard features
