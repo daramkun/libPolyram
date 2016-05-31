@@ -1,7 +1,8 @@
 #include "polyram.h"
 
 PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 ) {
-	return PRVector3::cross ( v2 - v1, v3 - v1 ).normalize ();
+	PRVector3 temp1 = v2 - v1, temp2 = v3 - v1;
+	return PRVector3::cross ( temp1, temp2 ).normalize ();
 }
 
 PRGame::PRGame () { }
@@ -28,7 +29,8 @@ void PRGame::onAccelerometer ( float x, float y, float z ) { }
 
 PRVersion::PRVersion ( std::string & versionString ) {
 	std::smatch match;
-	if ( std::regex_match ( versionString, match, std::regex ( "([0-9]+)[.]*([0-9]*)(.*)" ) ) ) {
+	std::regex versionChecker ( "([0-9]+)[.]*([0-9]*)(.*)" );
+	if ( std::regex_match ( versionString, match, versionChecker ) ) {
 		major = atoi ( ( *( ++match.begin () ) ).str ().c_str () );
 		if ( match.size () > 2 )
 			minor = atoi ( ( *( ++++match.begin () ) ).str ().c_str () );
