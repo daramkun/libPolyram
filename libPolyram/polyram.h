@@ -39,62 +39,63 @@
 #include <regex>
 
 #if ( defined ( _WINDOWS ) || defined ( _WIN32 ) || defined ( _WIN64 ) || defined ( WIN32 ) || defined ( WIN64 ) )
-	#include <Windows.h>
-	#include <wincodec.h>
-	#include <atlconv.h>
-	#pragma comment ( lib, "windowscodecs.lib" )
-	#if WINAPI_FAMILY_PARTITION( WINAPI_PARTITION_DESKTOP ) || !defined ( WINAPI_FAMILY_DESKTOP_APP )
-		#define PRPlatformMicrosoftWindowsNT		1
-		#define PRPlatformMicrosoftWindowsRT		0
-		#pragma comment ( lib, "winmm.lib" )
-	#elif WINAPI_FAMILY_PARTITION ( WINAPI_FAMILY_PC_APP )
-		#define PRPlatformMicrosoftWindowsNT		0
-		#define PRPlatformMicrosoftWindowsRT		1
-		#include <wrl.h>
-		#include <wrl/client.h>
-	#endif
+#	include <Windows.h>
+#	include <wincodec.h>
+#	include <atlconv.h>
+#	pragma comment ( lib, "windowscodecs.lib" )
+#	if WINAPI_FAMILY_PARTITION( WINAPI_PARTITION_DESKTOP ) || !defined ( WINAPI_FAMILY_DESKTOP_APP )
+#		define PRPlatformMicrosoftWindowsNT		1
+#		define PRPlatformMicrosoftWindowsRT		0
+#		pragma comment ( lib, "winmm.lib" )
+#	elif WINAPI_FAMILY_PARTITION ( WINAPI_FAMILY_PC_APP )
+#		define PRPlatformMicrosoftWindowsNT		0
+#		define PRPlatformMicrosoftWindowsRT		1
+#		include <wrl.h>
+#		include <wrl/client.h>
+#	endif
 #else
-	#define PRPlatformMicrosoftWindowsNT			0
-	#define PRPlatformMicrosoftWindowsRT			0
+#	define PRPlatformMicrosoftWindowsNT			0
+#	define PRPlatformMicrosoftWindowsRT			0
 #endif
 #if defined ( EMSCRIPTEN )
-	#include <emscripten/emscripten.h>
-	#define PRPlatformWeb							1
+#	include <emscripten/emscripten.h>
+#	include <emscripten/html5.h>
+#	define PRPlatformWeb						1
 #else
-	#define PRPlatformWeb							0
+#	define PRPlatformWeb						0
 #endif
 #if defined ( __APPLE__ )
-	#include <TargetConditionals.h>
-	#define PRPlatformAppleOSX						TARGET_OS_MAC && !( TARGET_OS_IOS || TARGET_OS_SIMULATOR )
-	#define PRPlatformAppleiOS						TARGET_OS_IOS || TARGET_OS_SIMULATOR
-	#import <Foundation/Foundation.h>
-	#include <sys/time.h>
-	#if ( PRPlatformAppleOSX )
-		#import <Cocoa/Cocoa.h>
-	#else
-		#import <UIKit/UIKit.h>
-	#endif
+#	include <TargetConditionals.h>
+#	define PRPlatformAppleOSX						TARGET_OS_MAC && !( TARGET_OS_IOS || TARGET_OS_SIMULATOR )
+#	define PRPlatformAppleiOS						TARGET_OS_IOS || TARGET_OS_SIMULATOR
+#	import <Foundation/Foundation.h>
+#	include <sys/time.h>
+#	if ( PRPlatformAppleOSX )
+#		import <Cocoa/Cocoa.h>
+#	else
+#		import <UIKit/UIKit.h>
+#	endif
 #else
-	#define PRPlatformAppleOSX						0
-	#define PRPlatformAppleiOS						0
+#	define PRPlatformAppleOSX					0
+#	define PRPlatformAppleiOS					0
 #endif
 #if defined ( __ANDROID__ )
-	#include <jni.h>
-	#include <sys/time.h>
-	#include <android/api-level.h>
-	#include <android/native_activity.h>
-	#include <android/native_window.h>
-	#include <android/input.h>
-	#include <android/window.h>
-	#include <android/configuration.h>
-	#include <android/asset_manager.h>
-	#include <android/obb.h>
-	#include <android/looper.h>
-	#include <android/keycodes.h>
-	#include <android/sensor.h>
-	#include <android/storage_manager.h>
-	#include <android/log.h>
-	#include "android_native_app_glue/android_native_app_glue.h"
+#	include <jni.h>
+#	include <sys/time.h>
+#	include <android/api-level.h>
+#	include <android/native_activity.h>
+#	include <android/native_window.h>
+#	include <android/input.h>
+#	include <android/window.h>
+#	include <android/configuration.h>
+#	include <android/asset_manager.h>
+#	include <android/obb.h>
+#	include <android/looper.h>
+#	include <android/keycodes.h>
+#	include <android/sensor.h>
+#	include <android/storage_manager.h>
+#	include <android/log.h>
+#	include "android_native_app_glue/android_native_app_glue.h"
 
 struct engine {
 	struct android_app* app;
@@ -110,17 +111,17 @@ struct engine {
 	void * state;
 };
 
-	#define PRPlatformGoogleAndroid					1
+#	define PRPlatformGoogleAndroid				1
 #else
-	#define PRPlatformGoogleAndroid					0
+#	define PRPlatformGoogleAndroid				0
 #endif
 #if ( defined ( __unix__ ) || defined ( __linux__ ) ) && !defined ( __ANDROID__ )
-	#include <sys/time.h>
-	#include <X11/X.h>
-	#include <X11/Xlib.h>
-	#define PRPlatformUNIX							1
+#	include <sys/time.h>
+#	include <X11/X.h>
+#	include <X11/Xlib.h>
+#	define PRPlatformUNIX						1
 #else
-	#define PRPlatformUNIX							0
+#	define PRPlatformUNIX						0
 #endif
 #define PRPlatformMicrosoftWindowsFamily		( PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT )
 #define PRPlatformAppleFamily					( PRPlatformAppleOSX || PRPlatformAppleiOS )
@@ -129,118 +130,120 @@ struct engine {
 #define PRPlatformMobiles						( PRPlatformMicrosoftWindowsRT || PRPlatformAppleiOS || PRPlatformGoogleAndroid )
 
 #if defined ( POLYRAM_D3D9 )
-	#if ( !PRPlatformMicrosoftWindowsNT )
-		#error Direct3D9 is for Windows NT only in this framework.
-	#endif
-	#include <d3d9.h>
-	#pragma comment ( lib, "d3d9.lib" )
+#	if ( !PRPlatformMicrosoftWindowsNT )
+#		error Direct3D9 is for Windows NT only in this framework.
+#	endif
+#	include <d3d9.h>
+#	pragma comment ( lib, "d3d9.lib" )
 #endif
 #if defined ( POLYRAM_D3D11 )
-	#if ( !PRPlatformMicrosoftWindowsFamily )
-		#error Direct3D11 is for Windows Family only.
-	#endif
-	#include <d3dcommon.h>
-	#include <d3d11.h>
-	#include <dxgi.h>
-	#if defined ( NTDDI_WIN8)
-		#include <d3d11_1.h>
-	#endif
-	#if defined ( NTDDI_WINBLUE )
-		#include <d3d11_2.h>
-		#include <dxgi1_2.h>
-	#endif
-	#if defined ( NTDDI_WIN10 )
-		#include <d3d11_3.h>
-		#include <dxgi1_3.h>
-	#endif
-	#pragma comment ( lib, "d3d11.lib" )
-	#pragma comment ( lib, "dxgi.lib" )
-	#pragma comment ( lib, "dxguid.lib" )
+#	if ( !PRPlatformMicrosoftWindowsFamily )
+#		error Direct3D11 is for Windows Family only.
+#	endif
+#	include <d3dcommon.h>
+#	include <d3d11.h>
+#	include <dxgi.h>
+#	if defined ( NTDDI_WIN8)
+#		include <d3d11_1.h>
+#	endif
+#	if defined ( NTDDI_WINBLUE )
+#		include <d3d11_2.h>
+#		include <dxgi1_2.h>
+#	endif
+#	if defined ( NTDDI_WIN10 )
+#		include <d3d11_3.h>
+#		include <dxgi1_3.h>
+#	endif
+#	pragma comment ( lib, "d3d11.lib" )
+#	pragma comment ( lib, "dxgi.lib" )
+#	pragma comment ( lib, "dxguid.lib" )
 #endif
 #if defined ( POLYRAM_D3D12 )
-	#if ( !PRPlatformMicrosoftWindowsFamily )
-		#error Direct3D12 is for Windows Family only.
-	#endif
-	#if !defined ( NTDDI_WIN10 )
-		#error You cannot build for Direct3D 12 because your build target is not Windows 10 or higher.
-	#endif
-	#include <d3dcommon.h>
-	#include <d3d12.h>
-	#include <dxgi.h>
-	#include <dxgi1_4.h>
-	#pragma comment ( lib, "d3d12.lib" )
-	#pragma comment ( lib, "dxgi.lib" )
-	#pragma comment ( lib, "dxguid.lib" )
+#	if ( !PRPlatformMicrosoftWindowsFamily )
+#		error Direct3D12 is for Windows Family only.
+#	endif
+#	if !defined ( NTDDI_WIN10 )
+#		error You cannot build for Direct3D 12 because your build target is not Windows 10 or higher.
+#	endif
+#	include <d3dcommon.h>
+#	include <d3d12.h>
+#	include <dxgi.h>
+#	include <dxgi1_4.h>
+#	pragma comment ( lib, "d3d12.lib" )
+#	pragma comment ( lib, "dxgi.lib" )
+#	pragma comment ( lib, "dxguid.lib" )
 #endif
 #if defined ( POLYRAM_OPENGL )
-	#if PRPlatformDesktops && !defined ( GLEW_STATIC )
-		#define GLEW_STATIC
-	#endif
-	#if PRPlatformMicrosoftWindowsNT
-		#include <GL/glew.h>
-		#include <gl/gl.h>
-		#include <gl/glu.h>
-		#pragma comment ( lib, "OpenGL32.lib" )
-		#pragma comment ( lib, "GLU32.lib" )
-	#elif PRPlatformMicrosoftWindowsRT
-		#error You cannot use OpenGL in Windows RT.
-	#elif PRPlatformAppleOSX
-		#include "./GL/glew.h"
-		#import <OpenGL/OpenGL.h>
-	#elif PRPlatformAppleiOS
-		#import <OpenGLES/EAGL.h>
-		#import <OpenGLES/EAGLDrawable.h>
-		#import <OpenGLES/gltypes.h>
-		#import <OpenGLES/ES1/gl.h>
-		#import <OpenGLES/ES1/glext.h>
-		#import <OpenGLES/ES2/gl.h>
-		#import <OpenGLES/ES2/glext.h>
-		#import <OpenGLES/ES3/gl.h>
-		#import <OpenGLES/ES3/glext.h>
-		#import <GLKit/GLKit.h>
-	#elif PRPlatformUNIX
-		#include <GL/glew.h>
-		#include <GL/gl.h>
-		#include <GL/glx.h>
-	#elif PRPlatformGoogleAndroid
-		#include <EGL/egl.h>
-		#include <EGL/eglext.h>
-		#include <EGL/eglplatform.h>
-		#include <GLES2/gl2.h>
-		#include <GLES2/gl2ext.h>
-		#include <GLES2/gl2platform.h>
-	#endif
+#	if PRPlatformDesktops && !defined ( GLEW_STATIC )
+#		define GLEW_STATIC
+#	endif
+#	if PRPlatformMicrosoftWindowsNT
+#		include <GL/glew.h>
+#		include <gl/gl.h>
+#		include <gl/glu.h>
+#		pragma comment ( lib, "OpenGL32.lib" )
+#		pragma comment ( lib, "GLU32.lib" )
+#	elif PRPlatformMicrosoftWindowsRT
+#		error You cannot use OpenGL in Windows RT.
+#	elif PRPlatformAppleOSX
+#		include "./GL/glew.h"
+#		import <OpenGL/OpenGL.h>
+#	elif PRPlatformAppleiOS
+#		import <OpenGLES/EAGL.h>
+#		import <OpenGLES/EAGLDrawable.h>
+#		import <OpenGLES/gltypes.h>
+#		import <OpenGLES/ES1/gl.h>
+#		import <OpenGLES/ES1/glext.h>
+#		import <OpenGLES/ES2/gl.h>
+#		import <OpenGLES/ES2/glext.h>
+#		import <OpenGLES/ES3/gl.h>
+#		import <OpenGLES/ES3/glext.h>
+#		import <GLKit/GLKit.h>
+#	elif PRPlatformUNIX
+#		include <GL/glew.h>
+#		include <GL/gl.h>
+#		include <GL/glx.h>
+#	elif PRPlatformGoogleAndroid
+#		include <EGL/egl.h>
+#		include <EGL/eglext.h>
+#		include <EGL/eglplatform.h>
+#		include <GLES2/gl2.h>
+#		include <GLES2/gl2ext.h>
+#		include <GLES2/gl2platform.h>
+#	endif
 #endif
 #if defined ( POLYRAM_METAL )
-	#if PRPlatformAppleFamily
-		#import <Metal/Metal.h>
-	#else
-		#error You cannot use Metal API from this platform.
-	#endif
+#	if PRPlatformAppleFamily
+#		import <Metal/Metal.h>
+#	else
+#		error You cannot use Metal API from this platform.
+#	endif
 #endif
 #if defined ( POLYRAM_VULKAN )
-	/*#include <vulkan/vulkan.h>
-	#include <vulkan/vk_sdk_platform.h>
-	#if PRPlatformMicrosoftWindowsNT
-		#pragma comment ( lib, "vulkan-1.lib" )
-	#endif*/
+/*
+#	include <vulkan/vulkan.h>
+#	include <vulkan/vk_sdk_platform.h>
+#	if PRPlatformMicrosoftWindowsNT
+#		pragma comment ( lib, "vulkan-1.lib" )
+#	endif
+*/
 #endif
 
 #define SAFE_RELEASE(x)							if ( x ) x->Release (); x = nullptr;
 #define SAFE_DELETE(x)							if ( x ) delete x; x = nullptr;
 #define SAFE_DELETE_ARRAY(x)					if ( x ) delete [] x; x = nullptr;
 
-extern const float PREpsilon;
-extern const float PRNaN;
-extern const float PRPositiveInfinite;
-extern const float PRNegativeInfinite;
-extern const float PRPI;
-extern const float PRPIover2;
-extern const float PRPIover4;
-extern const float PR2PI;
-extern const float PRE;
-extern const float PRLog10E;
-extern const float PRLog2E;
+#define PR_Epsilon				1.0E-8f
+#define PR_NaN					NAN;
+#define PR_PositiveInfinite		HUGE_VALF
+#define PR_NegativeInfinite		-HUGE_VALF
+#define PR_PI					3.1415926536f
+#define PR_PIover2				1.5707963268f
+#define PR_PIover4				0.7853981634f
+#define PR_2PI					6.2831853072f
+#define PR_E					2.7182818285f
+#define PR_Log10E				0.4342944819f
+#define PR_Log2E				1.4426950409f
 
 struct PRVector2;
 struct PRVector3;
@@ -248,21 +251,20 @@ struct PRVector4;
 struct PRQuaternion;
 struct PRMatrix4x4;
 
-float PRMin ( float x, float y );
-float PRMax ( float x, float y );
-float PRPow2 ( float x );
-float PRPow3 ( float x );
-float PRToDegree ( float x );
-float PRToRadian ( float x );
+#define PRMin( x, y )			( x > y ) ? y : x
+#define PRMax( x, y )			( x > y ) ? x : y
+#define PRPow2( x )				x * x
+#define PRPow3( x )				x * x * x
+#define PRToDegree( x )			x * 180 / PR_PI
+#define PRToRadian( x )			x * PR_PI / 180
 
-bool PRIsEquals ( float v1, float v2 );
+#define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
 PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 );
 
 double PRGetCurrentSecond ();
 void PRPrintLog ( const char * format, ... );
 
-enum PRKeys
-{
+enum PRKeys {
 	PRKeys_Unknown,
 	PRKeys_Up, PRKeys_Down, PRKeys_Left, PRKeys_Right,
 	PRKeys_Return, PRKeys_Space, PRKeys_Backspace, PRKeys_Tab, PRKeys_Escape, PRKeys_CapsLock,
@@ -279,11 +281,10 @@ enum PRKeys
 
 enum PRMouseButton { PRMouseButton_None = 0, PRMouseButton_Left = 1, PRMouseButton_Right = 2, PRMouseButton_Middle = 4, };
 
-class PRObject
-{
+class PRGame {
 public:
-	PRObject ();
-	virtual ~PRObject ();
+	PRGame ();
+	virtual ~PRGame ();
 
 public:
 	virtual void onInitialize ();
@@ -308,21 +309,9 @@ public:
 
 public:
 	virtual void onAccelerometer ( float x, float y, float z );
-
-public:
-	void add ( PRObject * obj );
-	void remove ( PRObject * obj );
-
-	PRObject * getParent ();
-
-private:
-	PRObject * m_parentObject;
-	PRObject * m_childObject;
-	PRObject * m_nextObject;
 };
 
-enum PRRendererType
-{
+enum PRRendererType {
 	PRRendererType_Unknown,
 	PRRendererType_Direct3D9,
 	PRRendererType_Direct3D11,
@@ -339,12 +328,9 @@ enum PRRendererType
 	PRRendererType_Metal1,
 };
 
-struct PRVersion
-{
-public:
+struct PRVersion {
 	int major, minor;
 
-public:
 	PRVersion ( std::string & versionString );
 	PRVersion ( int major, int minor = 0 );
 };
@@ -353,10 +339,9 @@ class PRApplication;
 
 class PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
 
-class PRApplication
-{
+class PRApplication {
 public:
-	PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title
+	PRApplication ( PRGame * game, PRRendererType rendererType, int width, int height, std::string & title
 #if PRPlatformGoogleAndroid
 		, struct android_app * state
 #endif
@@ -364,7 +349,7 @@ public:
 	~PRApplication ();
 
 public:
-	PRObject * getScene ();
+	PRGame * getScene ();
 	PRGraphicsContext * getGraphicsContext ();
 	void setGraphicsContext ( PRGraphicsContext * graphicsContext );
 	void getClientSize ( int * width, int * height );
@@ -379,7 +364,7 @@ public:
 	static PRApplication * sharedApplication ();
 
 private:
-	PRObject * m_scene;
+	PRGame * m_game;
 	PRGraphicsContext * m_graphicsContext;
 #if PRPlatformMicrosoftWindowsRT || PRPlatformGoogleAndroid
 	PRRendererType m_rendererType;
@@ -404,8 +389,7 @@ public:
 };
 
 #if defined ( POLYRAM_D3D9 )
-class PRGraphicsContext_Direct3D9 : public PRGraphicsContext
-{
+class PRGraphicsContext_Direct3D9 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D9 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D9 ();
@@ -415,8 +399,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_D3D11 )
-class PRGraphicsContext_Direct3D11 : public PRGraphicsContext
-{
+class PRGraphicsContext_Direct3D11 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D11 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D11 ();
@@ -435,11 +418,13 @@ public:
 };
 #endif
 #if defined ( POLYRAM_D3D12 )
-class PRGraphicsContext_Direct3D12 : public PRGraphicsContext
-{
+class PRGraphicsContext_Direct3D12 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D12 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D12 ();
+
+public:
+	void Synchronization ();
 
 public:
 #ifdef _DEBUG
@@ -462,8 +447,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_OPENGL )
-class PRGraphicsContext_OpenGL : public PRGraphicsContext
-{
+class PRGraphicsContext_OpenGL : public PRGraphicsContext {
 public:
 	PRGraphicsContext_OpenGL ( PRApplication * app, PRRendererType rendererType );
 	~PRGraphicsContext_OpenGL ();
@@ -490,8 +474,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_METAL )
-class PRGraphicsContext_Metal : public PRGraphicsContext
-{
+class PRGraphicsContext_Metal : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Metal ( PRApplication * app );
 	~PRGraphicsContext_Metal ();
@@ -504,8 +487,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_VULKAN )
-/*class PRGraphicsContext_Vulkan : public PRGraphicsContext
-{
+/*class PRGraphicsContext_Vulkan : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Vulkan ( PRApplication * app );
 	~PRGraphicsContext_Vulkan ();
@@ -519,8 +501,9 @@ public:
 };*/
 #endif
 
-struct PRVector2
-{
+#define GETGRAPHICSCONTEXT(x) auto graphicsContext = static_cast<x*> ( PRApplication::sharedApplication ()->getGraphicsContext () )
+
+struct PRVector2 {
 public:
 	float x, y;
 
@@ -592,8 +575,7 @@ PRVector2 operator/ ( const PRVector2 & v1, const PRVector2 & v2 );
 PRVector2 operator/ ( const PRVector2 & v1, float v2 );
 bool operator== ( const PRVector2 & v1, const PRVector2 & v2 );
 
-struct PRVector3
-{
+struct PRVector3 {
 public:
 	float x, y, z;
 
@@ -672,8 +654,7 @@ PRVector3 operator/ ( const PRVector3 & v1, const PRVector3 & v2 );
 PRVector3 operator/ ( const PRVector3 & v1, float v2 );
 bool operator== ( const PRVector3 & v1, const PRVector3 & v2 );
 
-struct PRVector4
-{
+struct PRVector4 {
 public:
 	float x, y, z, w;
 
@@ -748,8 +729,7 @@ PRVector4 operator/ ( const PRVector4 & v1, const PRVector4 & v2 );
 PRVector4 operator/ ( const PRVector4 & v1, float v2 );
 bool operator== ( const PRVector4 & v1, const PRVector4 & v2 );
 
-struct PRQuaternion
-{
+struct PRQuaternion {
 public:
 	float x, y, z, w;
 
@@ -821,8 +801,7 @@ PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 );
 PRQuaternion operator/ ( const PRQuaternion & v1, float v2 );
 bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 );
 
-struct PRMatrix4x4
-{
+struct PRMatrix4x4 {
 public:
 	float _11, _12, _13, _14,
 		_21, _22, _23, _24,
@@ -931,8 +910,7 @@ PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
 PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, float v2 );
 bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
 
-class PRImageLoader
-{
+class PRImageLoader {
 public:
 	PRImageLoader ( std::string & filename );
 	~PRImageLoader ();
@@ -948,8 +926,7 @@ private:
 	unsigned m_width, m_height;
 };
 
-class PRDataLoader
-{
+class PRDataLoader {
 public:
 	PRDataLoader ( std::string & filename );
 	~PRDataLoader ();
@@ -963,8 +940,7 @@ private:
 	unsigned m_dataSize;
 };
 
-enum PRDefaultModelType
-{
+enum PRDefaultModelType {
 	PRDefaultModelType_Box,
 	PRDefaultModelType_Rectangle,
 	PRDefaultModelType_Sphere,
@@ -974,22 +950,19 @@ enum PRDefaultModelType
 	//PRDefaultModelType_Teapot,
 };
 
-enum PRDefaultModelProperty
-{
+enum PRDefaultModelProperty {
 	PRDefaultModelProperty_Position = 0,
 	PRDefaultModelProperty_Normal = 1 << 0,
 	PRDefaultModelProperty_TexCoord = 1 << 1,
 	PRDefaultModelProperty_Diffuse = 1 << 2,
 };
 
-enum PRDefaultModelTexCoordSystem
-{
+enum PRDefaultModelTexCoordSystem {
 	PRDefaultModelTexCoordSystem_UV,
 	PRDefaultModelTexCoordSystem_ST,
 };
 
-class PRDefaultModelGenerator
-{
+class PRDefaultModelGenerator {
 public:
 	PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
 		PRDefaultModelTexCoordSystem tcs = PRDefaultModelTexCoordSystem_UV, const PRVector3 * scale = nullptr );
@@ -1005,25 +978,25 @@ private:
 };
 
 #if PRPlatformMicrosoftWindowsNT
-#define MAIN_FUNCTION_ATTR 
-#define MAIN_FUNCTION_RTTP int
-#define MAIN_FUNCTION_NAME WINAPI WinMain
-#define MAIN_FUNCTION_ARGS HINSTANCE, HINSTANCE, LPSTR, int
+#	define MAIN_FUNC_ATTR 
+#	define MAIN_FUNC_RTTP int
+#	define MAIN_FUNC_NAME WINAPI WinMain
+#	define MAIN_FUNC_ARGS HINSTANCE, HINSTANCE, LPSTR, int
 #elif PRPlatformMicrosoftWindowsRT
-#define MAIN_FUNCTION_ATTR [Platform::MTAThread]
-#define MAIN_FUNCTION_RTTP int
-#define MAIN_FUNCTION_NAME main
-#define MAIN_FUNCTION_ARGS Platform::Array<Platform::String^>^ args
+#	define MAIN_FUNC_ATTR [Platform::MTAThread]
+#	define MAIN_FUNC_RTTP int
+#	define MAIN_FUNC_NAME main
+#	define MAIN_FUNC_ARGS Platform::Array<Platform::String^>^ args
 #elif PRPlatformAppleFamily || PRPlatformUNIX
-#define MAIN_FUNCTION_ATTR 
-#define MAIN_FUNCTION_RTTP int
-#define MAIN_FUNCTION_NAME main
-#define MAIN_FUNCTION_ARGS int argc, char ** argv
+#	define MAIN_FUNC_ATTR 
+#	define MAIN_FUNC_RTTP int
+#	define MAIN_FUNC_NAME main
+#	define MAIN_FUNC_ARGS int argc, char ** argv
 #elif PRPlatformGoogleAndroid
-#define MAIN_FUNCTION_ATTR
-#define MAIN_FUNCTION_RTTP void
-#define MAIN_FUNCTION_NAME android_main
-#define MAIN_FUNCTION_ARGS struct android_app* state
+#	define MAIN_FUNC_ATTR
+#	define MAIN_FUNC_RTTP void
+#	define MAIN_FUNC_NAME android_main
+#	define MAIN_FUNC_ARGS struct android_app* state
 #endif
 
 #endif

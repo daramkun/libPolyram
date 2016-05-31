@@ -1,108 +1,34 @@
 #include "polyram.h"
 
-const float PREpsilon = 1.0E-8f;
-const float PRNaN = NAN;
-const float PRPositiveInfinite = HUGE_VALF;
-const float PRNegativeInfinite = -HUGE_VALF;
-const float PRPI = 3.1415926536f;
-const float PRPIover2 = 1.5707963268f;
-const float PRPIover4 = 0.7853981634f;
-const float PR2PI = 6.2831853072f;
-const float PRE = 2.7182818285f;
-const float PRLog10E = 0.4342944819f;
-const float PRLog2E = 1.4426950409f;
-
-float PRMin ( float x, float y ) { return ( x > y ) ? y : x; }
-float PRMax ( float x, float y ) { return ( x > y ) ? x : y; }
-float PRPow2 ( float x ) { return x * x; }
-float PRPow3 ( float x ) { return x * x * x; }
-float PRToDegree ( float x ) { return x * 180 / PRPI; }
-float PRToRadian ( float x ) { return x * PRPI / 180; }
-
-bool PRIsEquals ( float v1, float v2 ) { if ( v1 == v2 ) return true; return fabs ( v1 - v2 ) < PREpsilon; }
-PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 )
-{
-	PRVector3 dir = PRVector3::cross ( v2 - v1, v3 - v1 );
-	PRVector3 norm = dir.normalize ();
-	return norm;
+PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 ) {
+	return PRVector3::cross ( v2 - v1, v3 - v1 ).normalize ();
 }
 
-PRObject::PRObject () : m_parentObject ( nullptr ), m_childObject ( nullptr ), m_nextObject ( nullptr ) { }
-PRObject::~PRObject () { }
+PRGame::PRGame () { }
+PRGame::~PRGame () { }
 
-void PRObject::onInitialize () { }
-void PRObject::onDestroy () { }
-void PRObject::onUpdate ( double dt ) { if ( m_childObject ) m_childObject->onUpdate ( dt ); if ( m_nextObject ) m_nextObject->onUpdate ( dt ); }
-void PRObject::onDraw ( double dt ) { if ( m_childObject ) m_childObject->onDraw ( dt ); if ( m_nextObject ) m_nextObject->onDraw ( dt ); }
+void PRGame::onInitialize () { }
+void PRGame::onDestroy () { }
+void PRGame::onUpdate ( double dt ) { }
+void PRGame::onDraw ( double dt ) { }
 
-void PRObject::onKeyDown ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyDown ( key ); if ( m_nextObject ) m_nextObject->onKeyDown ( key ); }
-void PRObject::onKeyUp ( PRKeys key ) { if ( m_childObject ) m_childObject->onKeyUp ( key ); if ( m_nextObject ) m_nextObject->onKeyUp ( key ); }
+void PRGame::onKeyDown ( PRKeys key ) { }
+void PRGame::onKeyUp ( PRKeys key ) { }
 
-void PRObject::onMouseDown ( PRMouseButton button, int x, int y )
-{
-	if ( m_childObject ) m_childObject->onMouseDown ( button, x, y );
-	if ( m_nextObject ) m_nextObject->onMouseDown ( button, x, y );
-}
-void PRObject::onMouseUp ( PRMouseButton button, int x, int y )
-{
-	if ( m_childObject ) m_childObject->onMouseUp ( button, x, y );
-	if ( m_nextObject ) m_nextObject->onMouseUp ( button, x, y );
-}
-void PRObject::onMouseMove ( PRMouseButton button, int x, int y )
-{
-	if ( m_childObject ) m_childObject->onMouseMove ( button, x, y );
-	if ( m_nextObject ) m_nextObject->onMouseMove ( button, x, y );
-}
-void PRObject::onMouseWheel ( int wheelX, int wheelY )
-{
-	if ( m_childObject ) m_childObject->onMouseWheel ( wheelX, wheelY );
-	if ( m_nextObject ) m_nextObject->onMouseWheel ( wheelX, wheelY );
-}
+void PRGame::onMouseDown ( PRMouseButton button, int x, int y ) { }
+void PRGame::onMouseUp ( PRMouseButton button, int x, int y ) { }
+void PRGame::onMouseMove ( PRMouseButton button, int x, int y ) { }
+void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
 
-void PRObject::onActivated () { if ( m_childObject ) m_childObject->onActivated (); if ( m_nextObject ) m_nextObject->onActivated (); }
-void PRObject::onDeactivated () { if ( m_childObject ) m_childObject->onDeactivated (); if ( m_nextObject ) m_nextObject->onDeactivated (); }
-void PRObject::onResized () { if ( m_childObject ) m_childObject->onResized (); if ( m_nextObject ) m_nextObject->onResized (); }
+void PRGame::onActivated () { }
+void PRGame::onDeactivated () { }
+void PRGame::onResized () { }
 
-void PRObject::onAccelerometer ( float x, float y, float z )
-{
-	if ( m_childObject ) m_childObject->onAccelerometer ( x, y, z );
-	if ( m_nextObject ) m_nextObject->onAccelerometer ( x, y, z );
-}
+void PRGame::onAccelerometer ( float x, float y, float z ) { }
 
-void PRObject::add ( PRObject * obj )
-{
-	if ( obj->m_parentObject != nullptr ) throw std::runtime_error ( "This scene already contained to other scene." );
-	obj->m_parentObject = this;
-	if ( this->m_childObject == nullptr ) this->m_childObject = obj;
-	else
-	{
-		PRObject * tempScene = this->m_childObject;
-		while ( tempScene->m_nextObject ) tempScene = tempScene->m_nextObject;
-		tempScene->m_nextObject = obj;
-	}
-}
-
-void PRObject::remove ( PRObject * obj )
-{
-	PRObject * tempScene1 = this->m_childObject, *tempScene2 = this->m_childObject;
-	while ( tempScene1 != obj )
-	{
-		tempScene2 = tempScene1;
-		tempScene1 = tempScene1->m_nextObject;
-		if ( tempScene1 == nullptr ) return;
-	}
-	obj->onDestroy ();
-	obj->m_parentObject = nullptr;
-	tempScene2->m_nextObject = tempScene1->m_nextObject;
-}
-
-PRObject * PRObject::getParent () { return m_parentObject; }
-
-PRVersion::PRVersion ( std::string & versionString )
-{
+PRVersion::PRVersion ( std::string & versionString ) {
 	std::smatch match;
-	if ( std::regex_match ( versionString, match, std::regex ( "([0-9]+)[.]*([0-9]*)(.*)" ) ) )
-	{
+	if ( std::regex_match ( versionString, match, std::regex ( "([0-9]+)[.]*([0-9]*)(.*)" ) ) ) {
 		major = atoi ( ( *( ++match.begin () ) ).str ().c_str () );
 		if ( match.size () > 2 )
 			minor = atoi ( ( *( ++++match.begin () ) ).str ().c_str () );
@@ -116,12 +42,10 @@ LARGE_INTEGER performanceFrequency;
 bool isPerformanceFrequencySupport = false;
 #endif
 
-double PRGetCurrentSecond ()
-{
+double PRGetCurrentSecond () {
 #if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
 	isPerformanceFrequencySupport = QueryPerformanceFrequency ( &performanceFrequency ) ? true : false;
-	if ( isPerformanceFrequencySupport )
-	{
+	if ( isPerformanceFrequencySupport ) {
 		LARGE_INTEGER getTime;
 		QueryPerformanceCounter ( &getTime );
 		return ( getTime.QuadPart / ( double ) performanceFrequency.QuadPart );
@@ -139,8 +63,7 @@ double PRGetCurrentSecond ()
 #endif
 }
 
-void PRPrintLog ( const char * format, ... )
-{
+void PRPrintLog ( const char * format, ... ) {
 	va_list vl;
 	va_start ( vl, format );
 	char text [ 1024 ];
@@ -169,8 +92,7 @@ PRGraphicsContext::~PRGraphicsContext () { }
 
 PRApplication * g_sharedApplication;
 
-PRKeys keyValueConvertTo ( int key )
-{
+PRKeys keyValueConvertTo ( int key ) {
 #if !PRPlatformMicrosoftWindowsRT
 	switch ( key )
 #else
@@ -298,10 +220,8 @@ PRKeys keyValueConvertTo ( int key )
 #if PRPlatformMicrosoftWindowsNT
 int g_MouseButton;
 #elif PRPlatformMicrosoftWindowsRT
-namespace polyram
-{
-	ref class PRWinRTFramework sealed : public Windows::ApplicationModel::Core::IFrameworkView
-	{
+namespace polyram {
+	ref class PRWinRTFramework sealed : public Windows::ApplicationModel::Core::IFrameworkView {
 	private:
 		PRRendererType rendererType;
 
@@ -309,8 +229,7 @@ namespace polyram
 		bool m_windowVisible;
 
 	internal:
-		PRWinRTFramework ( PRRendererType rendererType )
-		{
+		PRWinRTFramework ( PRRendererType rendererType ) {
 			this->rendererType = rendererType;
 
 			m_windowClosed = false;
@@ -318,16 +237,14 @@ namespace polyram
 		}
 
 	public:
-		virtual void Initialize ( Windows::ApplicationModel::Core::CoreApplicationView ^ appView )
-		{
+		virtual void Initialize ( Windows::ApplicationModel::Core::CoreApplicationView ^ appView ) {
 			using namespace Windows::Foundation;
 			using namespace Windows::ApplicationModel::Core;
 			using namespace Windows::ApplicationModel::Activation;
 			appView->Activated += ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^> ( this, &PRWinRTFramework::OnActivated );
 		}
 
-		virtual void SetWindow ( Windows::UI::Core::CoreWindow ^ window )
-		{
+		virtual void SetWindow ( Windows::UI::Core::CoreWindow ^ window ) {
 			PRApplication::sharedApplication ()->window = window;
 
 			using namespace Windows::Foundation;
@@ -345,10 +262,8 @@ namespace polyram
 
 		virtual void Load ( Platform::String ^ entryPoint ) { }
 
-		virtual void Run ()
-		{
-			switch ( rendererType )
-			{
+		virtual void Run () {
+			switch ( rendererType ) {
 			case PRRendererType_Direct3D11:
 				PRApplication::sharedApplication ()->setGraphicsContext ( new PRGraphicsContext_Direct3D11 ( PRApplication::sharedApplication () ) );
 				break;
@@ -362,15 +277,12 @@ namespace polyram
 			PRApplication::sharedApplication ()->getScene ()->onInitialize ();
 
 			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
-			while ( !m_windowClosed )
-			{
-				if ( m_windowVisible )
-				{
+			while ( !m_windowClosed ) {
+				if ( m_windowVisible ) {
 					elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 					lastTime = currentTime;
 
-					if ( PRApplication::sharedApplication ()->getScene () != nullptr )
-					{
+					if ( PRApplication::sharedApplication ()->getScene () != nullptr ) {
 						PRApplication::sharedApplication ()->getScene ()->onUpdate ( elapsedTime );
 						PRApplication::sharedApplication ()->getScene ()->onDraw ( elapsedTime );
 					}
@@ -380,11 +292,10 @@ namespace polyram
 			}
 		}
 
-		virtual void Uninitialize () { auto scene = PRApplication::sharedApplication ()->getScene (); if ( scene ) scene->onDestroy (); }
+		virtual void Uninitialize () { auto game = PRApplication::sharedApplication ()->getScene (); if ( game ) game->onDestroy (); }
 
 	private:
-		void OnActivated ( Windows::ApplicationModel::Core::CoreApplicationView^ CoreAppView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ Args )
-		{
+		void OnActivated ( Windows::ApplicationModel::Core::CoreApplicationView^ CoreAppView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ Args ) {
 			Windows::UI::Core::CoreWindow^ window = Windows::UI::Core::CoreWindow::GetForCurrentThread ();
 			window->Activate ();
 			m_windowClosed = false;
@@ -395,20 +306,16 @@ namespace polyram
 		void OnWindowClosed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ e ) { m_windowClosed = true; }
 		void OnResized ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ e )
 		{ if ( PRApplication::sharedApplication ()->getScene () ) PRApplication::sharedApplication ()->getScene ()->onResized (); }
-		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
-		{
+		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
 			if ( PRApplication::sharedApplication ()->getScene () )
 			PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
 		}
-		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e )
-		{
+		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
 			if ( PRApplication::sharedApplication ()->getScene () ) 
 			PRApplication::sharedApplication ()->getScene ()->onKeyUp ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
 		}
-		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
+		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
+			if ( PRApplication::sharedApplication ()->getScene () ) {
 				int mouseButton;
 				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
 				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
@@ -417,10 +324,8 @@ namespace polyram
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
-		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
+		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
+			if ( PRApplication::sharedApplication ()->getScene () ) {
 				int mouseButton;
 				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
 				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
@@ -429,10 +334,8 @@ namespace polyram
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
-		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
+		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
+			if ( PRApplication::sharedApplication ()->getScene () ) {
 				int mouseButton = PRMouseButton_None;
 				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
 				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
@@ -442,15 +345,13 @@ namespace polyram
 			}
 		}
 
-		void OnPointerWheel ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e )
-		{
+		void OnPointerWheel ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
 			if ( PRApplication::sharedApplication ()->getScene () )
 				PRApplication::sharedApplication ()->getScene ()->onMouseWheel ( 0, e->CurrentPoint->Properties->MouseWheelDelta );
 		}
 	};
 
-	ref class PRWinRTFrameworkView sealed : public Windows::ApplicationModel::Core::IFrameworkViewSource
-	{
+	ref class PRWinRTFrameworkView sealed : public Windows::ApplicationModel::Core::IFrameworkViewSource {
 	private: PRRendererType rendererType;
 	internal: PRWinRTFrameworkView ( PRRendererType rendererType ) { this->rendererType = rendererType; }
 	public: virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView () { return ref new PRWinRTFramework ( rendererType ); }
@@ -465,13 +366,11 @@ int g_MouseButton;
 int g_MouseX, g_MouseY;
 #endif
 
-PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, int width, int height, std::string & title
+PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int width, int height, std::string & title
 #if PRPlatformGoogleAndroid
 	, struct android_app * state
 #endif
-)
-	: m_scene ( scene ), m_graphicsContext ( nullptr )
-{
+) : m_game ( game ), m_graphicsContext ( nullptr ) {
 	g_sharedApplication = this;
 #if PRPlatformMicrosoftWindowsNT
 	WNDCLASS wndClass = { 0, };
@@ -479,10 +378,8 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	wndClass.hInstance = GetModuleHandle ( nullptr );
 	wndClass.hIcon = LoadIcon ( nullptr, IDI_APPLICATION );
 	wndClass.hCursor = LoadCursor ( nullptr, IDC_ARROW );
-	wndClass.lpfnWndProc = static_cast<WNDPROC> ( [] ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) -> LRESULT
-	{
-		switch ( uMsg )
-		{
+	wndClass.lpfnWndProc = static_cast<WNDPROC> ( [] ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) -> LRESULT {
+		switch ( uMsg ) {
 		case WM_KEYDOWN:
 			if ( PRApplication::sharedApplication ()->getScene () )
 				PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) wParam ) );
@@ -536,8 +433,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 			break;
 
 		case WM_ACTIVATE:
-			if ( PRApplication::sharedApplication ()->getScene () )
-			{
+			if ( PRApplication::sharedApplication ()->getScene () ) {
 				if ( wParam != WA_INACTIVE ) PRApplication::sharedApplication ()->getScene ()->onActivated ();
 				else PRApplication::sharedApplication ()->getScene ()->onDeactivated ();
 			}
@@ -566,8 +462,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	if ( m_hWnd == 0 )
 		throw std::runtime_error ( "Failed create window." );
 
-	switch ( rendererType )
-	{
+	switch ( rendererType ) {
 	case PRRendererType_Direct3D9: m_graphicsContext = new PRGraphicsContext_Direct3D9 ( this ); break;
 	case PRRendererType_Direct3D11: m_graphicsContext = new PRGraphicsContext_Direct3D11 ( this ); break;
 	case PRRendererType_Direct3D12: m_graphicsContext = new PRGraphicsContext_Direct3D12 ( this ); break;
@@ -599,8 +494,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 
 	[window makeKeyWindow];
 
-	switch ( rendererType )
-	{
+	switch ( rendererType ) {
 	case PRRendererType_OpenGL1:
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
@@ -614,8 +508,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 
 	Window root = DefaultRootWindow ( display );
 
-	GLint attr [] =
-	{
+	GLint attr [] = {
 		GLX_RGBA, GLX_DEPTH_SIZE, 16, GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, true, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 		GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR, None
 	};
@@ -642,8 +535,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	XStoreName ( display, window, "libPolyram" );
 	XMapWindow ( display, window );
 
-	switch ( rendererType )
-	{
+	switch ( rendererType ) {
 	case PRRendererType_OpenGL1:
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
@@ -655,15 +547,12 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	m_rendererType = rendererType;
 	memset ( &this->engine, 0, sizeof ( this->engine ) );
 	state->userData = &engine;
-	state->onAppCmd = [] ( struct android_app* app, int32_t cmd )
-	{
-		switch ( cmd )
-		{
+	state->onAppCmd = [] ( struct android_app* app, int32_t cmd ) {
+		switch ( cmd ) {
 		case APP_CMD_SAVE_STATE:
 			break;
 		case APP_CMD_INIT_WINDOW:
-			switch ( PRApplication::sharedApplication ()->m_rendererType )
-			{
+			switch ( PRApplication::sharedApplication ()->m_rendererType ) {
 			case PRRendererType_OpenGLES1:
 			case PRRendererType_OpenGLES2:
 			case PRRendererType_OpenGLES3: PRApplication::sharedApplication ()->m_graphicsContext = 
@@ -685,12 +574,9 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 			break;
 		}
 	};
-	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t
-	{
-		switch ( AInputEvent_getType ( event ) )
-		{
+	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t {
+		switch ( AInputEvent_getType ( event ) ) {
 		case AINPUT_EVENT_TYPE_KEY:
-
 			break;
 		case AINPUT_EVENT_TYPE_MOTION:
 			if ( PRApplication::sharedApplication ()->getScene () )
@@ -702,10 +588,8 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 	this->engine.app = state;
 
 	this->engine.sensorManager = ASensorManager_getInstance ();
-	this->engine.accelerometerSensor = ASensorManager_getDefaultSensor ( engine.sensorManager,
-		ASENSOR_TYPE_ACCELEROMETER);
-	this->engine.sensorEventQueue = ASensorManager_createEventQueue ( engine.sensorManager,
-		state->looper, LOOPER_ID_USER, NULL, NULL );
+	this->engine.accelerometerSensor = ASensorManager_getDefaultSensor ( engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+	this->engine.sensorEventQueue = ASensorManager_createEventQueue ( engine.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL );
 
 	if ( state->savedState != NULL )
 		engine.state = state->savedState;
@@ -714,8 +598,7 @@ PRApplication::PRApplication ( PRObject * scene, PRRendererType rendererType, in
 #endif
 }
 
-PRApplication::~PRApplication ()
-{
+PRApplication::~PRApplication () {
 	SAFE_DELETE ( m_graphicsContext );
 #if PRPlatformMicrosoftWindowsNT
 	DestroyWindow ( m_hWnd );
@@ -736,12 +619,11 @@ PRApplication::~PRApplication ()
 #endif
 }
 
-PRObject * PRApplication::getScene () { return m_scene; }
+PRGame * PRApplication::getScene () { return m_game; }
 PRGraphicsContext * PRApplication::getGraphicsContext () { return m_graphicsContext; }
 void PRApplication::setGraphicsContext ( PRGraphicsContext * graphicsContext ) { m_graphicsContext = graphicsContext; }
 
-void PRApplication::getClientSize ( int * width, int * height )
-{
+void PRApplication::getClientSize ( int * width, int * height ) {
 #if PRPlatformMicrosoftWindowsNT
 	RECT rect;
 	GetClientRect ( m_hWnd, &rect );
@@ -766,8 +648,7 @@ void PRApplication::getClientSize ( int * width, int * height )
 #endif
 }
 
-void PRApplication::setCursorPosition ( int x, int y )
-{
+void PRApplication::setCursorPosition ( int x, int y ) {
 #if PRPlatformMicrosoftWindowsNT
 	POINT pos;
 	ClientToScreen ( m_hWnd, &pos );
@@ -789,34 +670,28 @@ void PRApplication::setCursorPosition ( int x, int y )
 #endif
 }
 
-void PRApplication::run ()
-{
+void PRApplication::run () {
 	double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
 
 #if PRPlatformMicrosoftWindowsNT
 	ShowWindow ( m_hWnd, SW_SHOW );
 	UpdateWindow ( m_hWnd );
 
-	if ( m_scene ) m_scene->onInitialize ();
+	if ( m_game ) m_game->onInitialize ();
 
 	MSG msg;
-	while ( IsWindow ( m_hWnd ) )
-	{
-		if ( PeekMessage ( &msg, NULL, 0, 0, PM_NOREMOVE ) )
-		{
+	while ( IsWindow ( m_hWnd ) ) {
+		if ( PeekMessage ( &msg, NULL, 0, 0, PM_NOREMOVE ) ) {
 			if ( !GetMessage ( &msg, NULL, 0, 0 ) )break;
 			TranslateMessage ( &msg );
 			DispatchMessage ( &msg );
-		}
-		else
-		{
+		} else {
 			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 			lastTime = currentTime;
 
-			if ( m_scene != nullptr )
-			{
-				m_scene->onUpdate ( elapsedTime );
-				m_scene->onDraw ( elapsedTime );
+			if ( m_game != nullptr ) {
+				m_game->onUpdate ( elapsedTime );
+				m_game->onDraw ( elapsedTime );
 			}
 
 			Sleep ( 1 );
@@ -827,13 +702,11 @@ void PRApplication::run ()
 #elif PRPlatformAppleOSX
 	window.isVisible = visible;
 
-	if ( m_scene ) m_scene->onInitialize ();
+	if ( m_game ) m_game->onInitialize ();
 
-	while ( window.isVisible )
-	{
+	while ( window.isVisible ) {
 		NSEvent * event = [ [ NSApplication sharedApplication ] nextEventMatchingMask:NSAnyEventMask untilDate:nil inMode:NSDefaultRunLoopMode dequeue:YES ];
-		switch ( event.type )
-		{
+		switch ( event.type ) {
 		case NSKeyDown:
 			if ( LqLauncher::getInstance ()->getScene () )
 				LqLauncher::getInstance ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) event.keyCode ) );
@@ -887,25 +760,21 @@ void PRApplication::run ()
 		elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 		lastTime = currentTime;
 
-		if ( m_scene != nullptr )
-		{
-			m_scene->onUpdate ( elapsedTime );
-			m_scene->onDraw ( elapsedTime );
+		if ( m_game != nullptr ) {
+			m_game->onUpdate ( elapsedTime );
+			m_game->onDraw ( elapsedTime );
 		}
 	}
 #elif PRPlatformUNIX
-	if ( m_scene ) m_scene->onInitialize ();
+	if ( m_game ) m_game->onInitialize ();
 
 	XEvent xev;
 	bool loopflag = true;
-	while ( loopflag )
-	{
-		if ( XPending ( display ) )
-		{
+	while ( loopflag ) {
+		if ( XPending ( display ) ) {
 			XNextEvent ( display, &xev );
 
-			switch ( xev.type )
-			{
+			switch ( xev.type ) {
 			case KeyPress:
 				if ( PRApplication::sharedApplication ()->getScene () )
 					PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( xev.xkey.keycode ) );
@@ -917,8 +786,7 @@ void PRApplication::run ()
 
 			case ButtonPress:
 				PRMouseButton button;
-				switch ( xev.xbutton.window )
-				{
+				switch ( xev.xbutton.window ) {
 				case Button1: button = PRMouseButton_Left; break;
 				case Button2: button = PRMouseButton_Right; break;
 				case Button3: button = PRMouseButton_Middle; break;
@@ -928,11 +796,9 @@ void PRApplication::run ()
 				if ( PRApplication::sharedApplication ()->getScene () )
 					PRApplication::sharedApplication ()->getScene ()->onMouseDown ( button, g_MouseX, g_MouseY );
 				break;
-			case ButtonRelease:
-			{
+			case ButtonRelease: {
 				PRMouseButton button;
-				switch ( xev.xbutton.window )
-				{
+				switch ( xev.xbutton.window ) {
 				case Button1: button = PRMouseButton_Left; break;
 				case Button2: button = PRMouseButton_Right; break;
 				case Button3: button = PRMouseButton_Middle; break;
@@ -956,68 +822,59 @@ void PRApplication::run ()
 		elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 		lastTime = currentTime;
 
-		if ( m_scene != nullptr )
-		{
-			m_scene->onUpdate ( elapsedTime );
-			m_scene->onDraw ( elapsedTime );
+		if ( m_game != nullptr ) {
+			m_game->onUpdate ( elapsedTime );
+			m_game->onDraw ( elapsedTime );
 		}
 	}
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid
 	engine.animating = 1;
-	while ( 1 )
-	{
+	while ( 1 ) {
 		int ident;
 		int events;
 		struct android_poll_source* source;
 
-		while ( ( ident = ALooper_pollAll ( engine.animating ? 0 : -1, NULL, &events, ( void** ) &source ) ) >= 0 )
-		{
+		while ( ( ident = ALooper_pollAll ( engine.animating ? 0 : -1, NULL, &events, ( void** ) &source ) ) >= 0 ) {
 			if ( source != nullptr )
 				source->process ( this->engine.app, source );
 
-			if ( ident == LOOPER_ID_USER )
-			{
-				if ( engine.accelerometerSensor != nullptr )
-				{
+			if ( ident == LOOPER_ID_USER ) {
+				if ( engine.accelerometerSensor != nullptr ) {
 					ASensorEvent event;
 					while ( ASensorEventQueue_getEvents ( engine.sensorEventQueue, &event, 1 ) > 0 )
-						if ( m_scene ) m_scene->onAccelerometer ( event.acceleration.x, event.acceleration.y, event.acceleration.z );
+						if ( m_game ) m_game->onAccelerometer ( event.acceleration.x, event.acceleration.y, event.acceleration.z );
 				}
 			}
 
-			if ( this->engine.app->destroyRequested != 0 )
-			{
-				if ( m_scene )
-					m_scene->onDestroy ();
+			if ( this->engine.app->destroyRequested != 0 ) {
+				if ( m_game )
+					m_game->onDestroy ();
 				return;
 			}
 		}
 
-		if ( engine.animating )
-		{
+		if ( engine.animating ) {
 			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 			lastTime = currentTime;
 
-			if ( m_scene != nullptr )
-			{
-				m_scene->onUpdate ( elapsedTime );
-				m_scene->onDraw ( elapsedTime );
+			if ( m_game != nullptr ) {
+				m_game->onUpdate ( elapsedTime );
+				m_game->onDraw ( elapsedTime );
 			}
 		}
 	}
 #elif PRPlatformWeb
 
 #endif
-	if ( m_scene ) m_scene->onDestroy ();
+	if ( m_game ) m_game->onDestroy ();
 }
 
 PRApplication * PRApplication::sharedApplication () { return g_sharedApplication; }
 
 #if POLYRAM_D3D9
-PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app )
-{
+PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app ) {
 	IDirect3D9 * d3d;
 	if ( !( d3d = Direct3DCreate9 ( D3D_SDK_VERSION ) ) )
 		throw std::runtime_error ( "Failed create Direct3D." );
@@ -1040,8 +897,7 @@ PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app )
 	D3DCAPS9 caps;
 	d3d->GetDeviceCaps ( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps );
 	if ( FAILED ( d3d->CreateDevice ( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, app->m_hWnd,
-		caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT ? D3DCREATE_HARDWARE_VERTEXPROCESSING : D3DCREATE_SOFTWARE_VERTEXPROCESSING, &pp, &d3dDevice ) ) )
-	{
+		caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT ? D3DCREATE_HARDWARE_VERTEXPROCESSING : D3DCREATE_SOFTWARE_VERTEXPROCESSING, &pp, &d3dDevice ) ) ) {
 		d3dDevice = nullptr;
 		d3d->Release ();
 		d3d = nullptr;
@@ -1049,8 +905,7 @@ PRGraphicsContext_Direct3D9::PRGraphicsContext_Direct3D9 ( PRApplication * app )
 	}
 }
 
-PRGraphicsContext_Direct3D9::~PRGraphicsContext_Direct3D9 ()
-{
+PRGraphicsContext_Direct3D9::~PRGraphicsContext_Direct3D9 () {
 	IDirect3D9 * d3dFactory = nullptr;
 	if ( d3dDevice ) d3dDevice->GetDirect3D ( &d3dFactory );
 	SAFE_RELEASE ( d3dDevice );
@@ -1059,8 +914,7 @@ PRGraphicsContext_Direct3D9::~PRGraphicsContext_Direct3D9 ()
 #endif
 
 #if POLYRAM_D3D11
-PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app )
-{
+PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app ) {
 	int windowWidth, windowHeight;
 	app->getClientSize ( &windowWidth, &windowHeight );
 
@@ -1170,8 +1024,7 @@ PRGraphicsContext_Direct3D11::PRGraphicsContext_Direct3D11 ( PRApplication * app
 	immediateContext->RSSetViewports ( 1, &viewport );
 }
 
-PRGraphicsContext_Direct3D11::~PRGraphicsContext_Direct3D11 ()
-{
+PRGraphicsContext_Direct3D11::~PRGraphicsContext_Direct3D11 () {
 	SAFE_RELEASE ( depthStencilView );
 	SAFE_RELEASE ( depthStencilBuffer );
 	SAFE_RELEASE ( renderTargetView );
@@ -1182,8 +1035,7 @@ PRGraphicsContext_Direct3D11::~PRGraphicsContext_Direct3D11 ()
 #endif
 
 #if POLYRAM_D3D12
-PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app )
-{
+PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app ) {
 	int windowWidth, windowHeight;
 	app->getClientSize ( &windowWidth, &windowHeight );
 
@@ -1202,7 +1054,11 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 
 		if ( FAILED ( D3D12CreateDevice ( dxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof ( ID3D12Device ), ( void** ) &d3dDevice ) ) )
 			if ( FAILED ( D3D12CreateDevice ( dxgiAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof ( ID3D12Device ), ( void** ) &d3dDevice ) ) )
-				throw std::runtime_error ( "Failed create Device." );
+				if ( FAILED ( D3D12CreateDevice ( dxgiAdapter, D3D_FEATURE_LEVEL_9_3, __uuidof ( ID3D12Device ), ( void** ) &d3dDevice ) ) )
+					throw std::runtime_error ( "Failed create Device." );
+
+		dxgiAdapter->Release ();
+		dxgiFactory->Release ();
 
 		D3D12_COMMAND_QUEUE_DESC commandQueueDesc = { };
 		commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -1293,6 +1149,8 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 		if ( FAILED ( d3dDevice->CreateRootSignature ( 0, signature->GetBufferPointer (), signature->GetBufferSize (),
 			__uuidof ( ID3D12RootSignature ), ( void** ) &rootSignature ) ) )
 			throw std::runtime_error ( "Failed create Root Signature." );
+		signature->Release ();
+		if ( error ) error->Release ();
 	}
 
 	{
@@ -1306,27 +1164,16 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApplication * app
 			throw std::runtime_error ( "Cannot create Event. check GetLastError ()." );
 		}
 
-		// Synchronization
-		{
-			const UINT64 myFence = fenceValue;
-			if ( FAILED ( commandQueue->Signal ( fence, myFence ) ) )
-				throw std::runtime_error ( "Command Qeue Signal failed." );
-			fenceValue++;
-
-			if ( fence->GetCompletedValue () < myFence )
-			{
-				if ( FAILED ( fence->SetEventOnCompletion ( myFence, fenceEvent ) ) )
-					throw std::runtime_error ( "Cannot set Event on completion." );
-				WaitForSingleObject ( fenceEvent, INFINITE );
-			}
-
-			frameIndex = dxgiSwapChain->GetCurrentBackBufferIndex ();
-		}
+		Synchronization ();
 	}
 }
 
-PRGraphicsContext_Direct3D12::~PRGraphicsContext_Direct3D12 ()
-{
+#if defined ( POLYRAM_D3D12 )
+#include <dxgidebug.h>
+#endif
+
+PRGraphicsContext_Direct3D12::~PRGraphicsContext_Direct3D12 () {
+	Synchronization ();
 	CloseHandle ( fenceEvent );
 	SAFE_RELEASE ( fence );
 	SAFE_RELEASE ( rootSignature );
@@ -1340,6 +1187,30 @@ PRGraphicsContext_Direct3D12::~PRGraphicsContext_Direct3D12 ()
 	SAFE_RELEASE ( commandQueue );
 	SAFE_RELEASE ( d3dDevice );
 	SAFE_RELEASE ( dxgiSwapChain );
+#if defined ( _DEBUG )
+	SAFE_RELEASE ( debugLayer );
+	IDXGIDebug1* pDebug = nullptr;
+	if ( SUCCEEDED ( DXGIGetDebugInterface1 ( 0, IID_PPV_ARGS ( &pDebug ) ) ) ) {
+		pDebug->ReportLiveObjects ( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY );
+		pDebug->Release ();
+	}
+#endif
+}
+
+void PRGraphicsContext_Direct3D12::Synchronization () {
+	const UINT64 myFence = fenceValue;
+	if ( FAILED ( commandQueue->Signal ( fence, myFence ) ) )
+		throw std::runtime_error ( "Command Queue Signal failed." );
+	fenceValue++;
+
+	if ( fence->GetCompletedValue () < myFence )
+	{
+		if ( FAILED ( fence->SetEventOnCompletion ( myFence, fenceEvent ) ) )
+			throw std::runtime_error ( "Cannot set Event on completion." );
+		WaitForSingleObject ( fenceEvent, INFINITE );
+	}
+
+	frameIndex = dxgiSwapChain->GetCurrentBackBufferIndex ();
 }
 #endif
 
@@ -1351,12 +1222,10 @@ PRGraphicsContext_Direct3D12::~PRGraphicsContext_Direct3D12 ()
 #include <cstdarg>
 #include "glxext.h"
 typedef GLXContext ( *GLXCREATECONTEXTATTRIBSARBPROC ) ( Display*, GLXFBConfig, GLXContext, Bool, const int * );
-bool isExtensionSupported ( const char * extList, const char * e )
-{
+bool isExtensionSupported ( const char * extList, const char * e ) {
 	const char *s, *t, *w = strchr ( e, ' ' );
 	if ( w || *e == '\0' ) return false;
-	for ( s = extList; ; )
-	{
+	for ( s = extList; ; ) {
 		if ( !( w = strstr ( s, e ) ) ) break;
 		t = w + strlen ( e );
 		if ( ( w == s || *( w - 1 ) == ' ' ) && ( *t == ' ' || *t == '\0' ) )
@@ -1367,8 +1236,7 @@ bool isExtensionSupported ( const char * extList, const char * e )
 }
 #endif
 
-PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRendererType rendererType )
-{
+PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRendererType rendererType ) {
 #if PRPlatformMicrosoftWindowsNT
 	hDC = GetDC ( app->m_hWnd );
 
@@ -1392,22 +1260,17 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	if ( !wglMakeCurrent ( hDC, glContext ) )
 		throw std::runtime_error ( "Failed wglMakeCurrent." );
 
-	if ( rendererType > PRRendererType_OpenGL1 )
-	{
+	if ( rendererType > PRRendererType_OpenGL1 ) {
 		PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = ( PFNWGLCREATECONTEXTATTRIBSARBPROC ) wglGetProcAddress ( "wglCreateContextAttribsARB" );
-		if ( wglCreateContextAttribsARB )
-		{
-			int attribs [] =
-			{
+		if ( wglCreateContextAttribsARB ) {
+			int attribs [] = {
 				WGL_CONTEXT_MAJOR_VERSION_ARB, ( rendererType - PRRendererType_OpenGL1 ) + 1,
 				WGL_CONTEXT_MINOR_VERSION_ARB, 5,
 				0
 			};
 			HGLRC temp = nullptr;
-			while ( attribs [ 3 ] > 0 )
-			{
-				if ( temp != nullptr )
-				{
+			while ( attribs [ 3 ] > 0 ) {
+				if ( temp != nullptr ) {
 					if ( attribs [ 1 ] <= 2 ) break;
 					PRVersion version ( std::string ( ( const char * ) glGetString ( GL_VERSION ) ) );
 					if ( version.major == attribs [ 1 ] && version.minor == attribs [ 3 ] )
@@ -1432,8 +1295,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	else if ( rendererType == PRRendererType_OpenGL4 )
 		profile = NSOpenGLProfileVersion4_1Core;
 
-	NSOpenGLPixelFormatAttribute attr [] =
-	{
+	NSOpenGLPixelFormatAttribute attr [] = {
 		NSOpenGLPFAOpenGLProfile, profile, NSOpenGLPFAAccelerated, NSOpenGLPFADoubleBuffer,
 		NSOpenGLPFADepthSize, rendererInfo.depthBufferSize, NSOpenGLPFAStencilSize, rendererInfo.stencilBufferSize, 0
 	};
@@ -1450,8 +1312,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	[glContext makeCurrentContext];
 #elif PRPlatformAppleiOS
 	EAGLRenderingAPI api;
-	switch ( rendererType )
-	{
+	switch ( rendererType ) {
 	case PRRendererType_OpenGLES1: api = kEAGLRenderingAPIOpenGLES1; break;
 	case PRRendererType_OpenGLES2: api = kEAGLRenderingAPIOpenGLES2; break;
 	case PRRendererType_OpenGLES3: api = kEAGLRenderingAPIOpenGLES3; break;
@@ -1468,19 +1329,14 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	const char * glxExts = glXQueryExtensionsString ( app->display, DefaultScreen ( app->display ) );
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = ( GLXCREATECONTEXTATTRIBSARBPROC ) glXGetProcAddressARB ( ( const GLubyte * ) "glXCreateContextAttribsARB" );
 
-	if ( !isExtensionSupported ( glxExts, "GLX_ARB_create_context" ) || glXCreateContextAttribsARB == nullptr )
-	{
+	if ( !isExtensionSupported ( glxExts, "GLX_ARB_create_context" ) || glXCreateContextAttribsARB == nullptr ) {
 		glContext = glXCreateContext ( app->display, app->visualInfo, nullptr, true );
-	}
-	else
-	{
-		GLint visualAttr [] =
-		{
+	} else {
+		GLint visualAttr [] = {
 			GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, true, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 			GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR, None
 		};
-		GLint contextAttribs [] =
-		{
+		GLint contextAttribs [] = {
 			GLX_CONTEXT_MAJOR_VERSION_ARB, ( rendererType - PRRendererType_OpenGL1 ) + 1,
 			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
 			GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -1527,7 +1383,8 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	ANativeWindow_setBuffersGeometry ( PRApplication::sharedApplication ()->engine.app->window, 0, 0, format );
 
 	surface = eglCreateWindowSurface ( display, config, PRApplication::sharedApplication ()->engine.app->window, NULL );
-	context = eglCreateContext ( display, config, NULL, NULL );
+	EGLint createAttribs [] = { EGL_CONTEXT_CLIENT_VERSION, ( rendererType - PRRendererType_OpenGLES1 ) + 1 };
+	context = eglCreateContext ( display, config, NULL, createAttribs );
 
 	if ( eglMakeCurrent ( display, surface, surface, context ) == EGL_FALSE )
 		throw std::runtime_error ( "Unable to eglMakeCurrent" );
@@ -1566,8 +1423,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	PRPrintLog ( "OGL ERR: %d", glGetError () );
 }
 
-PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL ()
-{
+PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL () {
 #if PRPlatformMicrosoftWindowsNT
 	wglDeleteContext ( glContext );
 #elif PRPlatformAppleOSX
@@ -1596,8 +1452,7 @@ PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL ()
 #endif
 }
 
-void PRGraphicsContext_OpenGL::makeCurrent ()
-{
+void PRGraphicsContext_OpenGL::makeCurrent () {
 #if PRPlatformMicrosoftWindowsNT
 	wglMakeCurrent ( hDC, glContext );
 #elif PRPlatformAppleOSX
@@ -1612,8 +1467,7 @@ void PRGraphicsContext_OpenGL::makeCurrent ()
 #endif
 }
 
-void PRGraphicsContext_OpenGL::swapBuffers ()
-{
+void PRGraphicsContext_OpenGL::swapBuffers () {
 	glFlush ();
 #if PRPlatformMicrosoftWindowsNT
 	SwapBuffers ( hDC );
@@ -1631,16 +1485,14 @@ void PRGraphicsContext_OpenGL::swapBuffers ()
 #endif
 
 #if POLYRAM_METAL
-PRGraphicsContext_Metal::PRGraphicsContext_Metal ( PRApplication * app )
-{
+PRGraphicsContext_Metal::PRGraphicsContext_Metal ( PRApplication * app ) {
 	device = MTLCreateSystemDefaultDevice ();
 	commandQueue = [ device newCommandQueue ];
 	library = [ device newDefaultLibrary ];
 	commandBuffer = [ commandQueue commandBuffer ];
 }
 
-PRGraphicsContext_Metal::~PRGraphicsContext_Metal ()
-{
+PRGraphicsContext_Metal::~PRGraphicsContext_Metal () {
 	commandBuffer = nil;
 	library = nil;
 	commandQueue = nil;
@@ -1649,8 +1501,7 @@ PRGraphicsContext_Metal::~PRGraphicsContext_Metal ()
 #endif
 
 #if defined ( POLYRAM_VULKAN )
-/*PRGraphicsContext_Vulkan::PRGraphicsContext_Vulkan ( PRApplication * app )
-{
+/*PRGraphicsContext_Vulkan::PRGraphicsContext_Vulkan ( PRApplication * app ) {
 	VkApplicationInfo applicationInfo;
 	VkInstanceCreateInfo instanceInfo;
 
@@ -1748,164 +1599,114 @@ float PRVector2::lengthSquared ( const PRVector2 & v ) { float temp; lengthSquar
 float PRVector2::length ( const PRVector2 & v ) { float temp; length ( &v, &temp ); return temp; }
 PRVector2 PRVector2::normalize ( const PRVector2 & v ) { PRVector2 temp; normalize ( &v, &temp ); return temp; }
 
-void PRVector2::add ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result )
-{
+void PRVector2::add ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result ) {
 	result->x = v1->x + v2->x;
 	result->y = v1->y + v2->y;
 }
-
-void PRVector2::subtract ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result )
-{
+void PRVector2::subtract ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result ) {
 	result->x = v1->x - v2->x;
 	result->y = v1->y - v2->y;
 }
-
-void PRVector2::negate ( const PRVector2 * v1, PRVector2 * result )
-{
+void PRVector2::negate ( const PRVector2 * v1, PRVector2 * result ) {
 	result->x = -v1->x;
 	result->y = -v1->y;
 }
-
-void PRVector2::multiply ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result )
-{
+void PRVector2::multiply ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result ) {
 	result->x = v1->x * v2->x;
 	result->y = v1->y * v2->y;
 }
-
-void PRVector2::multiply ( const PRVector2 * v1, float v2, PRVector2 * result )
-{
+void PRVector2::multiply ( const PRVector2 * v1, float v2, PRVector2 * result ) {
 	result->x = v1->x * v2;
 	result->y = v1->y * v2;
 }
-
 void PRVector2::multiply ( float v1, const PRVector2 * v2, PRVector2 * result ) { multiply ( v2, v1, result ); }
-
-void PRVector2::divide ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result )
-{
+void PRVector2::divide ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result ) {
 	result->x = v1->x / v2->x;
 	result->y = v1->y / v2->y;
 }
-
-void PRVector2::divide ( const PRVector2 * v1, float v2, PRVector2 * result )
-{
+void PRVector2::divide ( const PRVector2 * v1, float v2, PRVector2 * result ) {
 	result->x = v1->x / v2;
 	result->y = v1->y / v2;
 }
-
-void PRVector2::dot ( const PRVector2 * v1, const PRVector2 * v2, float * result )
-{
+void PRVector2::dot ( const PRVector2 * v1, const PRVector2 * v2, float * result ) {
 	*result = ( v1->x * v2->x ) + ( v1->y * v2->y );
 }
-
-void PRVector2::dot ( const PRVector2 * v1, float v2, float * result )
-{
+void PRVector2::dot ( const PRVector2 * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 );
 }
-
-void PRVector2::cross ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result )
-{
+void PRVector2::cross ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result ) {
 	result->x = v1->x * v2->y;
 	result->y = v1->y * v2->x;
 }
-
-PRVector2 PRVector2::add ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::add ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	add ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::subtract ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::subtract ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	subtract ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::negate ( const PRVector2 & v1 )
-{
+PRVector2 PRVector2::negate ( const PRVector2 & v1 ) {
 	PRVector2 temp;
 	negate ( &v1, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::multiply ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::multiply ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	multiply ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::multiply ( const PRVector2 & v1, float v2 )
-{
+PRVector2 PRVector2::multiply ( const PRVector2 & v1, float v2 ) {
 	PRVector2 temp;
 	multiply ( &v1, v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::multiply ( float v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::multiply ( float v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	multiply ( v1, &v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::divide ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::divide ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	divide ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::divide ( const PRVector2 & v1, float v2 )
-{
+PRVector2 PRVector2::divide ( const PRVector2 & v1, float v2 ) {
 	PRVector2 temp;
 	divide ( &v1, v2, &temp );
 	return temp;
 }
-
-float PRVector2::dot ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+float PRVector2::dot ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	float temp;
 	dot ( &v1, &v2, &temp );
 	return temp;
 }
-
-float PRVector2::dot ( const PRVector2 & v1, float v2 )
-{
+float PRVector2::dot ( const PRVector2 & v1, float v2 ) {
 	float temp;
 	dot ( &v1, v2, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::cross ( const PRVector2 & v1, const PRVector2 & v2 )
-{
+PRVector2 PRVector2::cross ( const PRVector2 & v1, const PRVector2 & v2 ) {
 	PRVector2 temp;
 	cross ( &v1, &v2, &temp );
 	return temp;
 }
-
-void PRVector2::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector2 * result )
-{
+void PRVector2::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector2 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 }
-
-void PRVector2::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector2 * result )
-{
+void PRVector2::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector2 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 );
 }
-
-PRVector2 PRVector2::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat )
-{
+PRVector2 PRVector2::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
 	PRVector2 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
 }
-
-PRVector2 PRVector2::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat )
-{
+PRVector2 PRVector2::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat ) {
 	PRVector2 temp;
 	transformNormal ( &nor, &mat, &temp );
 	return temp;
@@ -1951,225 +1752,160 @@ float PRVector3::lengthSquared ( const PRVector3 & v ) { float temp; lengthSquar
 float PRVector3::length ( const PRVector3 & v ) { float temp; length ( &v, &temp ); return temp; }
 PRVector3 PRVector3::normalize ( const PRVector3 & v ) { PRVector3 temp; normalize ( &v, &temp ); return temp; }
 
-void PRVector3::add ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::add ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1->x + v2->x;
 	result->y = v1->y + v2->y;
 	result->z = v1->z + v2->z;
 }
-
-void PRVector3::subtract ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::subtract ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1->x - v2->x;
 	result->y = v1->y - v2->y;
 	result->z = v1->z - v2->z;
 }
-
-void PRVector3::negate ( const PRVector3 * v1, PRVector3 * result )
-{
+void PRVector3::negate ( const PRVector3 * v1, PRVector3 * result ) {
 	result->x = -v1->x;
 	result->y = -v1->y;
 	result->z = -v1->z;
 }
-
-void PRVector3::multiply ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::multiply ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1->x * v2->x;
 	result->y = v1->y * v2->y;
 	result->z = v1->z * v2->z;
 }
-
-void PRVector3::multiply ( const PRVector3 * v1, float v2, PRVector3 * result )
-{
+void PRVector3::multiply ( const PRVector3 * v1, float v2, PRVector3 * result ) {
 	result->x = v1->x * v2;
 	result->y = v1->y * v2;
 	result->z = v1->z * v2;
 }
-
-void PRVector3::multiply ( float v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::multiply ( float v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1 * v2->x;
 	result->y = v1 * v2->y;
 	result->z = v1 * v2->z;
 }
-
-void PRVector3::divide ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::divide ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1->x / v2->x;
 	result->y = v1->y / v2->y;
 	result->z = v1->z / v2->z;
 }
-
-void PRVector3::divide ( const PRVector3 * v1, float v2, PRVector3 * result )
-{
+void PRVector3::divide ( const PRVector3 * v1, float v2, PRVector3 * result ) {
 	result->x = v1->x / v2;
 	result->y = v1->y / v2;
 	result->z = v1->z / v2;
 }
-
-void PRVector3::dot ( const PRVector3 * v1, const PRVector3 * v2, float * result )
-{
+void PRVector3::dot ( const PRVector3 * v1, const PRVector3 * v2, float * result ) {
 	*result = ( v1->x * v2->x ) + ( v1->y * v2->y ) + ( v1->z * v2->z );
 }
-
-void PRVector3::dot ( const PRVector3 * v1, float v2, float * result )
-{
+void PRVector3::dot ( const PRVector3 * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 ) + ( v1->z * v2 );
 }
-
-void PRVector3::cross ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result )
-{
+void PRVector3::cross ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result ) {
 	result->x = v1->y * v2->z - v1->z * v2->y;
 	result->y = v1->z * v2->x - v1->x * v2->z;
 	result->z = v1->x * v2->y - v1->y * v2->x;
 }
-
-PRVector3 PRVector3::add ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::add ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	add ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::subtract ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::subtract ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	subtract ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::negate ( const PRVector3 & v1 )
-{
+PRVector3 PRVector3::negate ( const PRVector3 & v1 ) {
 	PRVector3 temp;
 	negate ( &v1, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::multiply ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::multiply ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	multiply ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::multiply ( const PRVector3 & v1, float v2 )
-{
+PRVector3 PRVector3::multiply ( const PRVector3 & v1, float v2 ) {
 	PRVector3 temp;
 	multiply ( &v1, v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::multiply ( float v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::multiply ( float v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	multiply ( v1, &v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::divide ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::divide ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	divide ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::divide ( const PRVector3 & v1, float v2 )
-{
+PRVector3 PRVector3::divide ( const PRVector3 & v1, float v2 ) {
 	PRVector3 temp;
 	divide ( &v1, v2, &temp );
 	return temp;
 }
-
-float PRVector3::dot ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+float PRVector3::dot ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	float temp;
 	dot ( &v1, &v2, &temp );
 	return temp;
 }
-
-float PRVector3::dot ( const PRVector3 & v1, float v2 )
-{
+float PRVector3::dot ( const PRVector3 & v1, float v2 ) {
 	float temp;
 	dot ( &v1, v2, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::cross ( const PRVector3 & v1, const PRVector3 & v2 )
-{
+PRVector3 PRVector3::cross ( const PRVector3 & v1, const PRVector3 & v2 ) {
 	PRVector3 temp;
 	cross ( &v1, &v2, &temp );
 	return temp;
 }
-
-void PRVector3::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector3 * result )
-{
+void PRVector3::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector3 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + mat->_43;
 }
-
-void PRVector3::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector3 * result )
-{
+void PRVector3::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector3 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + mat->_43;
 }
-
-void PRVector3::transform ( const PRVector3 * pos, const PRQuaternion * q, PRVector3 * result )
-{
-	float x = 2 * ( q->y * pos->z - q->z * pos->y ),
-		y = 2 * ( q->z * pos->x - q->x * pos->z ),
+void PRVector3::transform ( const PRVector3 * pos, const PRQuaternion * q, PRVector3 * result ) {
+	float x = 2 * ( q->y * pos->z - q->z * pos->y ), y = 2 * ( q->z * pos->x - q->x * pos->z ),
 		z = 2 * ( q->x * pos->y - q->y * pos->x );
-
 	result->x = pos->x + x * q->w + ( q->y * z - q->z * y );
 	result->y = pos->y + y * q->w + ( q->z * x - q->x * z );
 	result->z = pos->z + z * q->w + ( q->x * y - q->y * x );
 }
-
-void PRVector3::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector3 * result )
-{
+void PRVector3::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector3 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 );
 	result->z = ( nor->x * mat->_13 ) + ( nor->y * mat->_23 );
 }
-
-void PRVector3::transformNormal ( const PRVector3 * nor, const PRMatrix4x4 * mat, PRVector3 * result )
-{
+void PRVector3::transformNormal ( const PRVector3 * nor, const PRMatrix4x4 * mat, PRVector3 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 ) + ( nor->z * mat->_31 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 ) + ( nor->z * mat->_32 );
 	result->z = ( nor->x * mat->_13 ) + ( nor->y * mat->_23 ) + ( nor->z * mat->_33 );
 }
-
-PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat )
-{
+PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat ) {
 	PRVector3 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat )
-{
+PRVector3 PRVector3::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
 	PRVector3 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRQuaternion & q )
-{
+PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRQuaternion & q ) {
 	PRVector3 temp;
 	transform ( &pos, &q, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat )
-{
+PRVector3 PRVector3::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat ) {
 	PRVector3 temp;
 	transformNormal ( &nor, &mat, &temp );
 	return temp;
 }
-
-PRVector3 PRVector3::transformNormal ( const PRVector3 & nor, const PRMatrix4x4 & mat )
-{
+PRVector3 PRVector3::transformNormal ( const PRVector3 & nor, const PRMatrix4x4 & mat ) {
 	PRVector3 temp;
 	transformNormal ( &nor, &mat, &temp );
 	return temp;
@@ -2205,8 +1941,7 @@ PRVector4 PRVector4::normalize () { PRVector4 temp; normalize ( this, &temp ); r
 
 void PRVector4::lengthSquared ( const PRVector4 * v, float * result ) { *result = v->x * v->x + v->y * v->y + v->z * v->z + v->w * v->w; }
 void PRVector4::length ( const PRVector4 * v, float * result ) { float ls; lengthSquared ( v, &ls ); *result = sqrtf ( ls ); }
-void PRVector4::normalize ( const PRVector4 * v, PRVector4 * result )
-{
+void PRVector4::normalize ( const PRVector4 * v, PRVector4 * result ) {
 	float len; length ( v, &len );
 	result->x = v->x / len;
 	result->y = v->y / len;
@@ -2218,190 +1953,139 @@ float PRVector4::lengthSquared ( const PRVector4 & v ) { float temp; lengthSquar
 float PRVector4::length ( const PRVector4 & v ) { float temp; length ( &v, &temp ); return temp; }
 PRVector4 PRVector4::normalize ( const PRVector4 & v ) { PRVector4 temp; normalize ( &v, &temp ); return temp; }
 
-void PRVector4::add ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result )
-{
+void PRVector4::add ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result ) {
 	result->x = v1->x + v2->x;
 	result->y = v1->y + v2->y;
 	result->z = v1->z + v2->z;
 	result->w = v1->w + v2->w;
 }
-
-void PRVector4::subtract ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result )
-{
+void PRVector4::subtract ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result ) {
 	result->x = v1->x - v2->x;
 	result->y = v1->y - v2->y;
 	result->z = v1->z - v2->z;
 	result->z = v1->w - v2->w;
 }
-
-void PRVector4::negate ( const PRVector4 * v1, PRVector4 * result )
-{
+void PRVector4::negate ( const PRVector4 * v1, PRVector4 * result ) {
 	result->x = -v1->x;
 	result->y = -v1->y;
 	result->z = -v1->z;
 	result->w = -v1->w;
 }
-
-void PRVector4::multiply ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result )
-{
+void PRVector4::multiply ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result ) {
 	result->x = v1->x * v2->x;
 	result->y = v1->y * v2->y;
 	result->z = v1->z * v2->z;
 	result->z = v1->w * v2->w;
 }
-
-void PRVector4::multiply ( const PRVector4 * v1, float v2, PRVector4 * result )
-{
+void PRVector4::multiply ( const PRVector4 * v1, float v2, PRVector4 * result ) {
 	result->x = v1->x * v2;
 	result->y = v1->y * v2;
 	result->z = v1->z * v2;
 	result->z = v1->w * v2;
 }
-
-void PRVector4::multiply ( float v1, const PRVector4 * v2, PRVector4 * result )
-{
+void PRVector4::multiply ( float v1, const PRVector4 * v2, PRVector4 * result ) {
 	result->x = v1 * v2->x;
 	result->y = v1 * v2->y;
 	result->z = v1 * v2->z;
 	result->z = v1 * v2->w;
 }
-
-void PRVector4::divide ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result )
-{
+void PRVector4::divide ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result ) {
 	result->x = v1->x / v2->x;
 	result->y = v1->y / v2->y;
 	result->z = v1->z / v2->z;
 	result->z = v1->w / v2->w;
 }
-
-void PRVector4::divide ( const PRVector4 * v1, float v2, PRVector4 * result )
-{
+void PRVector4::divide ( const PRVector4 * v1, float v2, PRVector4 * result ) {
 	result->x = v1->x / v2;
 	result->y = v1->y / v2;
 	result->z = v1->z / v2;
 	result->z = v1->w / v2;
 }
-
-void PRVector4::dot ( const PRVector4 * v1, const PRVector4 * v2, float * result )
-{
+void PRVector4::dot ( const PRVector4 * v1, const PRVector4 * v2, float * result ) {
 	*result = ( v1->x * v2->x ) + ( v1->y * v2->y ) + ( v1->z * v2->z ) + ( v1->w * v2->w );
 }
-
-void PRVector4::dot ( const PRVector4 * v1, float v2, float * result )
-{
+void PRVector4::dot ( const PRVector4 * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 ) + ( v1->z * v2 ) + ( v1->w * v2 );
 }
-
-PRVector4 PRVector4::add ( const PRVector4 & v1, const PRVector4 & v2 )
-{
+PRVector4 PRVector4::add ( const PRVector4 & v1, const PRVector4 & v2 ) {
 	PRVector4 temp;
 	add ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::subtract ( const PRVector4 & v1, const PRVector4 & v2 )
-{
+PRVector4 PRVector4::subtract ( const PRVector4 & v1, const PRVector4 & v2 ) {
 	PRVector4 temp;
 	subtract ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::negate ( const PRVector4 & v1 )
-{
+PRVector4 PRVector4::negate ( const PRVector4 & v1 ) {
 	PRVector4 temp;
 	negate ( &v1, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::multiply ( const PRVector4 & v1, const PRVector4 & v2 )
-{
+PRVector4 PRVector4::multiply ( const PRVector4 & v1, const PRVector4 & v2 ) {
 	PRVector4 temp;
 	multiply ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::multiply ( const PRVector4 & v1, float v2 )
-{
+PRVector4 PRVector4::multiply ( const PRVector4 & v1, float v2 ) {
 	PRVector4 temp;
 	multiply ( &v1, v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::multiply ( float v1, const PRVector4 & v2 )
-{
+PRVector4 PRVector4::multiply ( float v1, const PRVector4 & v2 ) {
 	PRVector4 temp;
 	multiply ( v1, &v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::divide ( const PRVector4 & v1, const PRVector4 & v2 )
-{
+PRVector4 PRVector4::divide ( const PRVector4 & v1, const PRVector4 & v2 ) {
 	PRVector4 temp;
 	divide ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::divide ( const PRVector4 & v1, float v2 )
-{
+PRVector4 PRVector4::divide ( const PRVector4 & v1, float v2 ) {
 	PRVector4 temp;
 	divide ( &v1, v2, &temp );
 	return temp;
 }
-
-float PRVector4::dot ( const PRVector4 & v1, const PRVector4 & v2 )
-{
+float PRVector4::dot ( const PRVector4 & v1, const PRVector4 & v2 ) {
 	float temp;
 	dot ( &v1, &v2, &temp );
 	return temp;
 }
-
-float PRVector4::dot ( const PRVector4 & v1, float v2 )
-{
+float PRVector4::dot ( const PRVector4 & v1, float v2 ) {
 	float temp;
 	dot ( &v1, v2, &temp );
 	return temp;
 }
-
-void PRVector4::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector4 * result )
-{
+void PRVector4::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + mat->_43;
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + mat->_44;
 }
-
-void PRVector4::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector4 * result )
-{
+void PRVector4::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + mat->_43;
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + ( pos->z * mat->_34 ) + mat->_44;
 }
-
-void PRVector4::transform ( const PRVector4 * pos, const PRMatrix4x4 * mat, PRVector4 * result )
-{
+void PRVector4::transform ( const PRVector4 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + ( pos->w * mat->_41 );
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + ( pos->w * mat->_42 );
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + ( pos->w * mat->_43 );
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + ( pos->z * mat->_34 ) + ( pos->w * mat->_44 );
 }
-
-PRVector4 PRVector4::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat )
-{
+PRVector4 PRVector4::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
 	PRVector4 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat )
-{
+PRVector4 PRVector4::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat ) {
 	PRVector4 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
 }
-
-PRVector4 PRVector4::transform ( const PRVector4 & pos, const PRMatrix4x4 & mat )
-{
+PRVector4 PRVector4::transform ( const PRVector4 & pos, const PRMatrix4x4 & mat ) {
 	PRVector4 temp;
 	transform ( &pos, &mat, &temp );
 	return temp;
@@ -2426,8 +2110,7 @@ PRQuaternion::PRQuaternion ( float x, float y, float z, float w ) : x ( x ), y (
 PRQuaternion::PRQuaternion ( const PRVector2 & v, float z, float w ) : x ( v.x ), y ( v.y ), z ( z ), w ( w ) { }
 PRQuaternion::PRQuaternion ( const PRVector3 & v, float w ) : x ( v.x ), y ( v.y ), z ( v.z ), w ( w ) { }
 PRQuaternion::PRQuaternion ( const PRVector4 & v ) : x ( v.x ), y ( v.y ), z ( v.z ), w ( v.w ) { }
-PRQuaternion::PRQuaternion ( float yaw, float pitch, float roll )
-{
+PRQuaternion::PRQuaternion ( float yaw, float pitch, float roll ) {
 	float num9 = roll * 0.5f, num6 = sinf ( num9 ), num5 = cosf ( num9 );
 	float num8 = pitch * 0.5f, num4 = sinf ( num8 ), num3 = cosf ( num8 );
 	float num7 = yaw * 0.5f, num2 = sinf ( num7 ), num = cosf ( num7 );
@@ -2436,32 +2119,24 @@ PRQuaternion::PRQuaternion ( float yaw, float pitch, float roll )
 	z = ( ( num * num3 ) * num6 ) - ( ( num2 * num4 ) * num5 );
 	w = ( ( num * num3 ) * num5 ) + ( ( num2 * num4 ) * num6 );
 }
-PRQuaternion::PRQuaternion ( const PRMatrix4x4 & m )
-{
+PRQuaternion::PRQuaternion ( const PRMatrix4x4 & m ) {
 	float num8 = ( m._11 + m._22 ) + m._33;
-	if ( num8 > 0.0f )
-	{
+	if ( num8 > 0.0f ) {
 		float num = sqrtf ( num8 + 1.0f );
 		num = 0.5f / num;
 		x = ( m._23 - m._32 ) * num; y = ( m._31 - m._13 ) * num;
 		z = ( m._12 - m._21 ) * num; w = num * 0.5f;
-	}
-	else if ( ( m._11 >= m._22 ) && ( m._11 >= m._33 ) )
-	{
+	} else if ( ( m._11 >= m._22 ) && ( m._11 >= m._33 ) ) {
 		float num7 = sqrtf ( ( ( 1.0f + m._11 ) - m._22 ) - m._33 );
 		float num4 = 0.5f / num7;
 		x = 0.5f * num7; y = ( m._12 + m._21 ) * num4;
 		z = ( m._13 + m._31 ) * num4; w = ( m._23 - m._32 ) * num4;
-	}
-	else if ( m._22 > m._33 )
-	{
+	} else if ( m._22 > m._33 ) {
 		float num6 = sqrtf ( ( ( 1.0f + m._22 ) - m._11 ) - m._33 );
 		float num3 = 0.5f / num6;
 		x = ( m._21 + m._12 ) * num3; y = 0.5f * num6;
 		z = ( m._32 + m._23 ) * num3; w = ( m._31 - m._13 ) * num3;
-	}
-	else
-	{
+	} else {
 		float num5 = sqrtf ( ( ( 1.0f + m._33 ) - m._11 ) - m._22 );
 		float num2 = 0.5f / num5;
 		x = ( m._31 + m._13 ) * num2; y = ( m._32 + m._23 ) * num2;
@@ -2481,16 +2156,14 @@ PRQuaternion PRQuaternion::invert () { PRQuaternion temp; invert ( this, &temp )
 
 void PRQuaternion::lengthSquared ( const PRQuaternion * v, float * result ) { *result = v->x * v->x + v->y * v->y + v->z * v->z + v->w * v->w; }
 void PRQuaternion::length ( const PRQuaternion * v, float * result ) { float ls; lengthSquared ( v, &ls ); *result = sqrtf ( ls ); }
-void PRQuaternion::normalize ( const PRQuaternion * v, PRQuaternion * result )
-{
+void PRQuaternion::normalize ( const PRQuaternion * v, PRQuaternion * result ) {
 	float len; length ( v, &len );
 	result->x = v->x / len;
 	result->y = v->y / len;
 	result->z = v->z / len;
 	result->w = v->w / len;
 }
-void PRQuaternion::invert ( const PRQuaternion * v, PRQuaternion * result )
-{
+void PRQuaternion::invert ( const PRQuaternion * v, PRQuaternion * result ) {
 	float len; length ( v, &len );
 	result->x = -v->x / len;
 	result->y = -v->y / len;
@@ -2503,145 +2176,106 @@ float PRQuaternion::length ( const PRQuaternion & v ) { float temp; length ( &v,
 PRQuaternion PRQuaternion::normalize ( const PRQuaternion & v ) { PRQuaternion temp; normalize ( &v, &temp ); return temp; }
 PRQuaternion PRQuaternion::invert ( const PRQuaternion & v ) { PRQuaternion temp; invert ( &v, &temp ); return temp; }
 
-void PRQuaternion::add ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result )
-{
+void PRQuaternion::add ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1->x + v2->x;
 	result->y = v1->y + v2->y;
 	result->z = v1->z + v2->z;
 	result->w = v1->w + v2->w;
 }
-
-void PRQuaternion::subtract ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result )
-{
+void PRQuaternion::subtract ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1->x - v2->x;
 	result->y = v1->y - v2->y;
 	result->z = v1->z - v2->z;
 	result->z = v1->w - v2->w;
 }
-
-void PRQuaternion::negate ( const PRQuaternion * v1, PRQuaternion * result )
-{
+void PRQuaternion::negate ( const PRQuaternion * v1, PRQuaternion * result ) {
 	result->x = -v1->x;
 	result->y = -v1->y;
 	result->z = -v1->z;
 	result->w = -v1->w;
 }
-
-void PRQuaternion::multiply ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result )
-{
+void PRQuaternion::multiply ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1->x * v2->x;
 	result->y = v1->y * v2->y;
 	result->z = v1->z * v2->z;
 	result->z = v1->w * v2->w;
 }
-
-void PRQuaternion::multiply ( const PRQuaternion * v1, float v2, PRQuaternion * result )
-{
+void PRQuaternion::multiply ( const PRQuaternion * v1, float v2, PRQuaternion * result ) {
 	result->x = v1->x * v2;
 	result->y = v1->y * v2;
 	result->z = v1->z * v2;
 	result->z = v1->w * v2;
 }
-
-void PRQuaternion::multiply ( float v1, const PRQuaternion * v2, PRQuaternion * result )
-{
+void PRQuaternion::multiply ( float v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1 * v2->x;
 	result->y = v1 * v2->y;
 	result->z = v1 * v2->z;
 	result->z = v1 * v2->w;
 }
-
-void PRQuaternion::divide ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result )
-{
+void PRQuaternion::divide ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1->x / v2->x;
 	result->y = v1->y / v2->y;
 	result->z = v1->z / v2->z;
 	result->z = v1->w / v2->w;
 }
-
-void PRQuaternion::divide ( const PRQuaternion * v1, float v2, PRQuaternion * result )
-{
+void PRQuaternion::divide ( const PRQuaternion * v1, float v2, PRQuaternion * result ) {
 	result->x = v1->x / v2;
 	result->y = v1->y / v2;
 	result->z = v1->z / v2;
 	result->z = v1->w / v2;
 }
-
-void PRQuaternion::dot ( const PRQuaternion * v1, const PRQuaternion * v2, float * result )
-{
+void PRQuaternion::dot ( const PRQuaternion * v1, const PRQuaternion * v2, float * result ) {
 	*result = ( v1->x * v2->x ) + ( v1->y * v2->y ) + ( v1->z * v2->z ) + ( v1->w * v2->w );
 }
-
-void PRQuaternion::dot ( const PRQuaternion * v1, float v2, float * result )
-{
+void PRQuaternion::dot ( const PRQuaternion * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 ) + ( v1->z * v2 ) + ( v1->w * v2 );
 }
-
-PRQuaternion PRQuaternion::add ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+PRQuaternion PRQuaternion::add ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	PRQuaternion temp;
 	add ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::subtract ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+PRQuaternion PRQuaternion::subtract ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	PRQuaternion temp;
 	subtract ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::negate ( const PRQuaternion & v1 )
-{
+PRQuaternion PRQuaternion::negate ( const PRQuaternion & v1 ) {
 	PRQuaternion temp;
 	negate ( &v1, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	PRQuaternion temp;
 	multiply ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, float v2 )
-{
+PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, float v2 ) {
 	PRQuaternion temp;
 	multiply ( &v1, v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::multiply ( float v1, const PRQuaternion & v2 )
-{
+PRQuaternion PRQuaternion::multiply ( float v1, const PRQuaternion & v2 ) {
 	PRQuaternion temp;
 	multiply ( v1, &v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	PRQuaternion temp;
 	divide ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, float v2 )
-{
+PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, float v2 ) {
 	PRQuaternion temp;
 	divide ( &v1, v2, &temp );
 	return temp;
 }
-
-float PRQuaternion::dot ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+float PRQuaternion::dot ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	float temp;
 	dot ( &v1, &v2, &temp );
 	return temp;
 }
-
-float PRQuaternion::dot ( const PRQuaternion & v1, float v2 )
-{
+float PRQuaternion::dot ( const PRQuaternion & v1, float v2 ) {
 	float temp;
 	dot ( &v1, v2, &temp );
 	return temp;
@@ -2655,8 +2289,7 @@ PRQuaternion operator* ( const PRQuaternion & v1, float v2 ) { return PRQuaterni
 PRQuaternion operator* ( float v1, const PRQuaternion & v2 ) { return PRQuaternion::multiply ( v1, v2 ); }
 PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 ) { return PRQuaternion::divide ( v1, v2 ); }
 PRQuaternion operator/ ( const PRQuaternion & v1, float v2 ) { return PRQuaternion::divide ( v1, v2 ); }
-bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 )
-{
+bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	return PRIsEquals ( v1.x, v2.x ) && PRIsEquals ( v1.y, v2.y ) && PRIsEquals ( v1.z, v2.z ) && PRIsEquals ( v1.w, v2.w );
 }
 
@@ -2671,8 +2304,7 @@ PRMatrix4x4::PRMatrix4x4 ( float _11, float _12, float _13, float _14, float _21
 PRMatrix4x4::PRMatrix4x4 ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 )
 	: _11 ( c1.x ), _12 ( c1.y ), _13 ( c1.z ), _14 ( c1.w ), _21 ( c2.x ), _22 ( c2.y ), _23 ( c2.z ), _24 ( c2.w ),
 	_31 ( c3.x ), _32 ( c3.y ), _33 ( c3.z ), _34 ( c3.w ), _41 ( c4.x ), _42 ( c4.y ), _43 ( c4.z ), _44 ( c4.w ) { }
-PRMatrix4x4::PRMatrix4x4 ( PRQuaternion & q )
-{
+PRMatrix4x4::PRMatrix4x4 ( PRQuaternion & q ) {
 	float num9 = q.x * q.x, num8 = q.y * q.y, num7 = q.z * q.z, num6 = q.x * q.y;
 	float num5 = q.z * q.w, num4 = q.z * q.x, num3 = q.y * q.w, num2 = q.y * q.z;
 	float num1 = q.x * q.w;
@@ -2690,8 +2322,7 @@ PRMatrix4x4 PRMatrix4x4::invert () { PRMatrix4x4 temp; invert ( &temp ); return 
 PRMatrix4x4 PRMatrix4x4::transpose () { PRMatrix4x4 temp; transpose ( &temp ); return temp; }
 float PRMatrix4x4::determinant () { float temp; determinant ( &temp ); return temp; }
 
-void PRMatrix4x4::invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result ) {
 	float num1 = m->_11, num2 = m->_12, num3 = m->_13, num4 = m->_14, num5 = m->_21, num6 = m->_22, num7 = m->_23, num8 = m->_24;
 	float num9 = m->_31, num10 = m->_32, num11 = m->_33, num12 = m->_34, num13 = m->_41, num14 = m->_42, num15 = m->_43, num16 = m->_44;
 	float num17 = num11 * num16 - num12 * num15, num18 = num10 * num16 - num12 * num14, num19 = num10 * num15 - num11 * num14;
@@ -2717,31 +2348,23 @@ void PRMatrix4x4::invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result )
 	result->_34 = -( num1 * num35 - num2 * num37 + num4 * num39 ) * num27;
 	result->_44 = ( num1 * num36 - num2 * num38 + num3 * num39 ) * num27;
 }
-
-PRMatrix4x4 PRMatrix4x4::invert ( const PRMatrix4x4 & m )
-{
+PRMatrix4x4 PRMatrix4x4::invert ( const PRMatrix4x4 & m ) {
 	PRMatrix4x4 temp;
 	invert ( &m, &temp );
 	return temp;
 }
-
-void PRMatrix4x4::transpose ( const PRMatrix4x4 * m, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::transpose ( const PRMatrix4x4 * m, PRMatrix4x4 * result ) {
 	result->_11 = m->_11; result->_12 = m->_21; result->_13 = m->_31; result->_14 = m->_41;
 	result->_21 = m->_12; result->_22 = m->_22; result->_23 = m->_32; result->_24 = m->_42;
 	result->_31 = m->_13; result->_32 = m->_23; result->_33 = m->_33; result->_34 = m->_43;
 	result->_41 = m->_14; result->_42 = m->_24; result->_43 = m->_34; result->_44 = m->_44;
 }
-
-PRMatrix4x4 PRMatrix4x4::transpose ( const PRMatrix4x4 & m )
-{
+PRMatrix4x4 PRMatrix4x4::transpose ( const PRMatrix4x4 & m ) {
 	PRMatrix4x4 temp;
 	transpose ( &m, &temp );
 	return temp;
 }
-
-void PRMatrix4x4::determinant ( const PRMatrix4x4 * m, float * result )
-{
+void PRMatrix4x4::determinant ( const PRMatrix4x4 * m, float * result ) {
 	float num22 = m->_11, num21 = m->_12, num20 = m->_13, num19 = m->_14, num12 = m->_21, num11 = m->_22, num10 = m->_23, num9 = m->_24;
 	float num8 = m->_31, num7 = m->_32, num6 = m->_33, num5 = m->_34, num4 = m->_41, num3 = m->_42, num2 = m->_43, num = m->_44;
 	float num18 = ( num6 * num ) - ( num5 * num2 ), num17 = ( num7 * num ) - ( num5 * num3 );
@@ -2752,40 +2375,31 @@ void PRMatrix4x4::determinant ( const PRMatrix4x4 * m, float * result )
 		( num20 * ( ( ( num12 * num17 ) - ( num11 * num15 ) ) + ( num9 * num13 ) ) ) ) -
 		( num19 * ( ( ( num12 * num16 ) - ( num11 * num14 ) ) + ( num10 * num13 ) ) ) );
 }
-
-float PRMatrix4x4::determinant ( const PRMatrix4x4 & m )
-{
+float PRMatrix4x4::determinant ( const PRMatrix4x4 & m ) {
 	float temp;
 	determinant ( &m, &temp );
 	return temp;
 }
 
-void PRMatrix4x4::add ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::add ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
 	result->_11 = v1->_11 + v2->_11; result->_12 = v1->_12 + v2->_12; result->_13 = v1->_13 + v2->_13; result->_14 = v1->_14 + v2->_14;
 	result->_21 = v1->_21 + v2->_21; result->_22 = v1->_22 + v2->_22; result->_23 = v1->_23 + v2->_23; result->_24 = v1->_24 + v2->_24;
 	result->_31 = v1->_31 + v2->_31; result->_32 = v1->_32 + v2->_32; result->_33 = v1->_33 + v2->_33; result->_34 = v1->_34 + v2->_34;
 	result->_41 = v1->_41 + v2->_41; result->_42 = v1->_42 + v2->_42; result->_43 = v1->_43 + v2->_43; result->_44 = v1->_44 + v2->_44;
 }
-
-void PRMatrix4x4::subtract ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::subtract ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
 	result->_11 = v1->_11 - v2->_11; result->_12 = v1->_12 - v2->_12; result->_13 = v1->_13 - v2->_13; result->_14 = v1->_14 - v2->_14;
 	result->_21 = v1->_21 - v2->_21; result->_22 = v1->_22 - v2->_22; result->_23 = v1->_23 - v2->_23; result->_24 = v1->_24 - v2->_24;
 	result->_31 = v1->_31 - v2->_31; result->_32 = v1->_32 - v2->_32; result->_33 = v1->_33 - v2->_33; result->_34 = v1->_34 - v2->_34;
 	result->_41 = v1->_41 - v2->_41; result->_42 = v1->_42 - v2->_42; result->_43 = v1->_43 - v2->_43; result->_44 = v1->_44 - v2->_44;
 }
-
-void PRMatrix4x4::negate ( const PRMatrix4x4 * v1, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::negate ( const PRMatrix4x4 * v1, PRMatrix4x4 * result ) {
 	result->_11 = -v1->_11; result->_12 = -v1->_12; result->_13 = -v1->_13; result->_14 = -v1->_14;
 	result->_21 = -v1->_21; result->_22 = -v1->_22; result->_23 = -v1->_23; result->_24 = -v1->_24;
 	result->_31 = -v1->_31; result->_32 = -v1->_32; result->_33 = -v1->_33; result->_34 = -v1->_34;
 	result->_41 = -v1->_41; result->_42 = -v1->_42; result->_43 = -v1->_43; result->_44 = -v1->_44;
 }
-
-void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
 	result->_11 = ( ( ( v1->_11 * v2->_11 ) + ( v1->_12 * v2->_21 ) ) + ( v1->_13 * v2->_31 ) ) + ( v1->_14 * v2->_41 );
 	result->_12 = ( ( ( v1->_11 * v2->_12 ) + ( v1->_12 * v2->_22 ) ) + ( v1->_13 * v2->_32 ) ) + ( v1->_14 * v2->_42 );
 	result->_13 = ( ( ( v1->_11 * v2->_13 ) + ( v1->_12 * v2->_23 ) ) + ( v1->_13 * v2->_33 ) ) + ( v1->_14 * v2->_43 );
@@ -2803,97 +2417,73 @@ void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRM
 	result->_43 = ( ( ( v1->_41 * v2->_13 ) + ( v1->_42 * v2->_23 ) ) + ( v1->_43 * v2->_33 ) ) + ( v1->_44 * v2->_43 );
 	result->_44 = ( ( ( v1->_41 * v2->_14 ) + ( v1->_42 * v2->_24 ) ) + ( v1->_43 * v2->_34 ) ) + ( v1->_44 * v2->_44 );
 }
-
-void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result ) {
 	result->_11 = v1->_11 * v2; result->_12 = v1->_12 * v2; result->_13 = v1->_13 * v2; result->_14 = v1->_14 * v2;
 	result->_21 = v1->_21 * v2; result->_22 = v1->_22 * v2; result->_23 = v1->_23 * v2; result->_24 = v1->_24 * v2;
 	result->_31 = v1->_31 * v2; result->_32 = v1->_32 * v2; result->_33 = v1->_33 * v2; result->_34 = v1->_34 * v2;
 	result->_41 = v1->_41 * v2; result->_42 = v1->_42 * v2; result->_43 = v1->_43 * v2; result->_44 = v1->_44 * v2;
 }
-
-void PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
 	result->_11 = v2->_11 * v1; result->_12 = v2->_12 * v1; result->_13 = v2->_13 * v1; result->_14 = v2->_14 * v1;
 	result->_21 = v2->_21 * v1; result->_22 = v2->_22 * v1; result->_23 = v2->_23 * v1; result->_24 = v2->_24 * v1;
 	result->_31 = v2->_31 * v1; result->_32 = v2->_32 * v1; result->_33 = v2->_33 * v1; result->_34 = v2->_34 * v1;
 	result->_41 = v2->_41 * v1; result->_42 = v2->_42 * v1; result->_43 = v2->_43 * v1; result->_44 = v2->_44 * v1;
 }
-
-void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
 	result->_11 = v1->_11 / v2->_11; result->_12 = v1->_12 / v2->_12; result->_13 = v1->_13 / v2->_13; result->_14 = v1->_14 / v2->_14;
 	result->_21 = v1->_21 / v2->_21; result->_22 = v1->_22 / v2->_22; result->_23 = v1->_23 / v2->_23; result->_24 = v1->_24 / v2->_24;
 	result->_31 = v1->_31 / v2->_31; result->_32 = v1->_32 / v2->_32; result->_33 = v1->_33 / v2->_33; result->_34 = v1->_34 / v2->_34;
 	result->_41 = v1->_41 / v2->_41; result->_42 = v1->_42 / v2->_42; result->_43 = v1->_43 / v2->_43; result->_44 = v1->_44 / v2->_44;
 }
-
-void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result ) {
 	result->_11 = v1->_11 / v2; result->_12 = v1->_12 / v2; result->_13 = v1->_13 / v2; result->_14 = v1->_14 / v2;
 	result->_21 = v1->_21 / v2; result->_22 = v1->_22 / v2; result->_23 = v1->_23 / v2; result->_24 = v1->_24 / v2;
 	result->_31 = v1->_31 / v2; result->_32 = v1->_32 / v2; result->_33 = v1->_33 / v2; result->_34 = v1->_34 / v2;
 	result->_41 = v1->_41 / v2; result->_42 = v1->_42 / v2; result->_43 = v1->_43 / v2; result->_44 = v1->_44 / v2;
 }
 
-PRMatrix4x4 PRMatrix4x4::add ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
-{
+PRMatrix4x4 PRMatrix4x4::add ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
 	PRMatrix4x4 temp;
 	add ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::subtract ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
-{
+PRMatrix4x4 PRMatrix4x4::subtract ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
 	PRMatrix4x4 temp;
 	subtract ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::negate ( const PRMatrix4x4 & v1 )
-{
+PRMatrix4x4 PRMatrix4x4::negate ( const PRMatrix4x4 & v1 ) {
 	PRMatrix4x4 temp;
 	negate ( &v1, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
-{
+PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
 	PRMatrix4x4 temp;
 	multiply ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, float v2 )
-{
+PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, float v2 ) {
 	PRMatrix4x4 temp;
 	multiply ( &v1, v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 & v2 )
-{
+PRMatrix4x4 PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 & v2 ) {
 	PRMatrix4x4 temp;
 	multiply ( v1, &v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
-{
+PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
 	PRMatrix4x4 temp;
 	divide ( &v1, &v2, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, float v2 )
-{
+PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, float v2 ) {
 	PRMatrix4x4 temp;
 	divide ( &v1, v2, &temp );
 	return temp;
 }
 
-void PRMatrix4x4::createTranslate ( const PRVector3 * v, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createTranslate ( const PRVector3 * v, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		1, 0, 0, 0,
 		0, 1, 0, 0,
@@ -2901,9 +2491,7 @@ void PRMatrix4x4::createTranslate ( const PRVector3 * v, PRMatrix4x4 * result )
 		v->x, v->y, v->z, 1
 	);
 }
-
-void PRMatrix4x4::createScale ( const PRVector3 * v, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createScale ( const PRVector3 * v, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		v->x, 0, 0, 0,
 		0, v->y, 0, 0,
@@ -2911,9 +2499,7 @@ void PRMatrix4x4::createScale ( const PRVector3 * v, PRMatrix4x4 * result )
 		0, 0, 0, 1
 	);
 }
-
-void PRMatrix4x4::createRotationX ( float r, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createRotationX ( float r, PRMatrix4x4 * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
 	*result = PRMatrix4x4 (
 		1, 0, 0, 0,
@@ -2922,9 +2508,7 @@ void PRMatrix4x4::createRotationX ( float r, PRMatrix4x4 * result )
 		0, 0, 0, 1
 	);
 }
-
-void PRMatrix4x4::createRotationY ( float r, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createRotationY ( float r, PRMatrix4x4 * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
 	*result = PRMatrix4x4 (
 		v1, 0, -v2, 0,
@@ -2933,9 +2517,7 @@ void PRMatrix4x4::createRotationY ( float r, PRMatrix4x4 * result )
 		0, 0, 0, 1
 	);
 }
-
-void PRMatrix4x4::createRotationZ ( float r, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createRotationZ ( float r, PRMatrix4x4 * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
 	*result = PRMatrix4x4 (
 		v1, v2, 0, 0,
@@ -2944,44 +2526,32 @@ void PRMatrix4x4::createRotationZ ( float r, PRMatrix4x4 * result )
 		0, 0, 0, 1
 	);
 }
-
-PRMatrix4x4 PRMatrix4x4::createTranslate ( const PRVector3 & v )
-{
+PRMatrix4x4 PRMatrix4x4::createTranslate ( const PRVector3 & v ) {
 	PRMatrix4x4 temp;
 	createTranslate ( &v, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createScale ( const PRVector3 & v )
-{
+PRMatrix4x4 PRMatrix4x4::createScale ( const PRVector3 & v ) {
 	PRMatrix4x4 temp;
 	createScale ( &v, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createRotationX ( float r )
-{
+PRMatrix4x4 PRMatrix4x4::createRotationX ( float r ) {
 	PRMatrix4x4 temp;
 	createRotationX ( r, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createRotationY ( float r )
-{
+PRMatrix4x4 PRMatrix4x4::createRotationY ( float r ) {
 	PRMatrix4x4 temp;
 	createRotationY ( r, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createRotationZ ( float r )
-{
+PRMatrix4x4 PRMatrix4x4::createRotationZ ( float r ) {
 	PRMatrix4x4 temp;
 	createRotationZ ( r, &temp );
 	return temp;
 }
-
-void PRMatrix4x4::createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result ) {
 	PRVector3 zaxis;
 	PRVector3::subtract ( target, position, &zaxis );
 	zaxis.normalize ( &zaxis );
@@ -2996,9 +2566,7 @@ void PRMatrix4x4::createLookAtLH ( const PRVector3 * position, const PRVector3 *
 		xaxis.z, yaxis.z, zaxis.z, 0,
 		-PRVector3::dot ( xaxis, *position ), -PRVector3::dot ( yaxis, *position ), -PRVector3::dot ( zaxis, *position ), 1 );
 }
-
-void PRMatrix4x4::createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result ) {
 	PRVector3 zaxis;
 	PRVector3::subtract ( position, target, &zaxis );
 	zaxis.normalize ( &zaxis );
@@ -3013,23 +2581,17 @@ void PRMatrix4x4::createLookAtRH ( const PRVector3 * position, const PRVector3 *
 		xaxis.z, yaxis.z, zaxis.z, 0,
 		PRVector3::dot ( xaxis, *position ), PRVector3::dot ( yaxis, *position ), PRVector3::dot ( zaxis, *position ), 1 );
 }
-
-PRMatrix4x4 PRMatrix4x4::createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector )
-{
+PRMatrix4x4 PRMatrix4x4::createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
 	PRMatrix4x4 temp;
 	createLookAtLH ( &position, &target, &upVector, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector )
-{
+PRMatrix4x4 PRMatrix4x4::createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
 	PRMatrix4x4 temp;
 	createLookAtRH ( &position, &target, &upVector, &temp );
 	return temp;
 }
-
-void PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
@@ -3037,9 +2599,7 @@ void PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf, P
 		0, 0, -zn / ( zf - zn ), 0
 	);
 }
-
-void PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
@@ -3047,9 +2607,7 @@ void PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf, P
 		0, 0, -zn / ( zn - zf ), 0
 	);
 }
-
-void PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
@@ -3057,9 +2615,7 @@ void PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, flo
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zf - zn ), 1
 	);
 }
-
-void PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
@@ -3067,9 +2623,7 @@ void PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, flo
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zn - zf ), 1
 	);
 }
-
-void PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 * zn / w, 0, 0, 0,
 		0, 2 * zn / h, 0, 0,
@@ -3077,9 +2631,7 @@ void PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf, PR
 		0, 0, zn * zf / ( zf - zn ), 0
 	);
 }
-
-void PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 * zn / w, 0, 0, 0,
 		0, 2 * zn / h, 0, 0,
@@ -3087,27 +2639,21 @@ void PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf, PR
 		0, 0, zn * zf / ( zn - zf ), 0
 	);
 }
-
-void PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 * zn / ( r - l ), 0, 0, 0,
 		0, 2 * zn / ( t - b ), 0, 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zf / ( zf - zn ), 1,
 		0, 0, zn * zf / ( zf - zn ), 1 );
 }
-
-void PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
 	*result = PRMatrix4x4 (
 		2 * zn / ( r - l ), 0, 0, 0,
 		0, 2 * zn / ( t - b ), 0, 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( t - b ), zf / ( zn - zf ), 1,
 		0, 0, zn * zf / ( zn - zf ), 1 );
 }
-
-void PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result ) {
 	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
 	*result = PRMatrix4x4 (
 		xs, 0, 0, 0,
@@ -3116,9 +2662,7 @@ void PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, floa
 		0, 0, -zn * zf / ( zf - zn ), 0
 	);
 }
-
-void PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result )
-{
+void PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result ) {
 	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
 	*result = PRMatrix4x4 (
 		xs, 0, 0, 0,
@@ -3127,85 +2671,62 @@ void PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, floa
 		0, 0, zn * zf / ( zn - zf ), 0
 	);
 }
-
-PRMatrix4x4 PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createOrthographicLH ( w, h, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createOrthographicRH ( w, h, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createOrthographicOffCenterLH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createOrthographicOffCenterRH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveLH ( w, h, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveRH ( w, h, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveOffCenterLH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveOffCenterRH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveFieldOfViewLH ( fov, aspect, zn, zf, &temp );
 	return temp;
 }
-
-PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf )
-{
+PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf ) {
 	PRMatrix4x4 temp;
 	createPerspectiveFieldOfViewRH ( fov, aspect, zn, zf, &temp );
 	return temp;
 }
-
 void PRMatrix4x4::createBillboard ( const PRVector3 * objPos, const PRVector3 * camPos, const PRVector3 * camUpVec,
-	const PRVector3 * camForwardVec, PRMatrix4x4 * result )
-{
+	const PRVector3 * camForwardVec, PRMatrix4x4 * result ) {
 	PRVector3 vector, vector2, vector3;
 	vector = *objPos - *camPos;
 	float num = vector.lengthSquared ();
-	if ( num < 0.0001f )
-		vector = -*camForwardVec;
+	if ( num < 0.0001f ) vector = -*camForwardVec;
 	else vector = vector * ( 1.0f / sqrtf ( num ) );
 
 	PRVector3::cross ( camUpVec, &vector, &vector3 );
@@ -3227,8 +2748,7 @@ PRMatrix4x4 operator* ( const PRMatrix4x4 & v1, float v2 ) { return PRMatrix4x4:
 PRMatrix4x4 operator* ( float v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::multiply ( v1, v2 ); }
 PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::divide ( v1, v2 ); }
 PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, float v2 ) { return PRMatrix4x4::divide ( v1, v2 ); }
-bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
-{
+bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
 	return PRIsEquals ( v1._11, v2._11 ) && PRIsEquals ( v1._12, v2._12 ) && PRIsEquals ( v1._13, v2._13 ) && PRIsEquals ( v1._14, v2._14 ) &&
 		PRIsEquals ( v1._21, v2._21 ) && PRIsEquals ( v1._22, v2._22 ) && PRIsEquals ( v1._23, v2._23 ) && PRIsEquals ( v1._24, v2._24 ) &&
 		PRIsEquals ( v1._31, v2._31 ) && PRIsEquals ( v1._32, v2._32 ) && PRIsEquals ( v1._33, v2._33 ) && PRIsEquals ( v1._34, v2._34 ) &&
@@ -3236,13 +2756,12 @@ bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 )
 }
 
 #if PRPlatformUNIX
-#include <SOIL/SOIL.h>
+#	include <SOIL/SOIL.h>
 #elif PRPlatformGoogleAndroid
-#include "stb_image/stb_image_aug.h"
+#	include "stb_image/stb_image_aug.h"
 #endif
 
-PRImageLoader::PRImageLoader ( std::string & filename )
-{
+PRImageLoader::PRImageLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
@@ -3306,8 +2825,7 @@ unsigned PRImageLoader::getWidth () { return m_width; }
 unsigned PRImageLoader::getHeight () { return m_height; }
 const void * PRImageLoader::getData () { return m_data; }
 
-PRDataLoader::PRDataLoader ( std::string & filename )
-{
+PRDataLoader::PRDataLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
@@ -3357,38 +2875,21 @@ PRDataLoader::~PRDataLoader () { SAFE_DELETE_ARRAY ( m_data ); }
 const void * PRDataLoader::getData () { return m_data; }
 unsigned PRDataLoader::getDataSize () { return m_dataSize; }
 
-struct vertex {
-	PRVector3 position;
-	PRVector2 texCoord;
-	PRVector4 diffuse;
-};
-struct polygonTriangle {
-	vertex v1, v2, v3;
-};
-struct polygonLine {
-	vertex v1, v2;
-};
+struct vertex { PRVector3 position; PRVector2 texCoord; PRVector4 diffuse; };
+struct polygonTriangle { vertex v1, v2, v3; };
+struct polygonLine { vertex v1, v2; };
 
-void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
-//void generateTeapot ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-//	void** result, unsigned * length );
+void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+//void generateTeapot ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
 
 PRDefaultModelGenerator::PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
-	PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale )
-{
-	switch ( modelType )
-	{
+	PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale ) {
+	switch ( modelType ) {
 	case PRDefaultModelType_Box:
 		generateCube ( properties, tcs, scale, &m_data, &m_dataSize );
 		break;
@@ -3416,38 +2917,30 @@ PRDefaultModelGenerator::PRDefaultModelGenerator ( PRDefaultModelType modelType,
 const void* PRDefaultModelGenerator::getData () { return m_data; }
 unsigned PRDefaultModelGenerator::getDataSize () { return m_dataSize; }
 
-PRDefaultModelGenerator::~PRDefaultModelGenerator ()
-{
-	SAFE_DELETE_ARRAY ( m_data );
-}
+PRDefaultModelGenerator::~PRDefaultModelGenerator () { SAFE_DELETE_ARRAY ( m_data ); }
 
 void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	polygonTriangle *vertices = ( polygonTriangle* ) data;
 
 	std::vector<float> vv;
-	for ( unsigned i = 0; i < dataSize / sizeof ( polygonTriangle ); ++i )
-	{
+	for ( unsigned i = 0; i < dataSize / sizeof ( polygonTriangle ); ++i ) {
 		PRVector3 norm = PRCalculateNormal ( vertices->v1.position, vertices->v2.position, vertices->v3.position );
 
 		PRVector3 p1 = vertices->v1.position;
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
-		if ( properties & PRDefaultModelProperty_Normal )
-		{
+		if ( properties & PRDefaultModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord )
-		{
+		if ( properties & PRDefaultModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v1.texCoord.x );
 			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse )
-		{
+		if ( properties & PRDefaultModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v1.diffuse.x );
 			vv.push_back ( vertices->v1.diffuse.y );
 			vv.push_back ( vertices->v1.diffuse.z );
@@ -3458,19 +2951,16 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
-		if ( properties & PRDefaultModelProperty_Normal )
-		{
+		if ( properties & PRDefaultModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord )
-		{
+		if ( properties & PRDefaultModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v2.texCoord.x );
 			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse )
-		{
+		if ( properties & PRDefaultModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v2.diffuse.x );
 			vv.push_back ( vertices->v2.diffuse.y );
 			vv.push_back ( vertices->v2.diffuse.z );
@@ -3481,19 +2971,16 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 		if ( scale != nullptr ) p3 = p3 * *scale;
 		vv.push_back ( p3.x ); vv.push_back ( p3.y ); vv.push_back ( p3.z );
 
-		if ( properties & PRDefaultModelProperty_Normal )
-		{
+		if ( properties & PRDefaultModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord )
-		{
+		if ( properties & PRDefaultModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v3.texCoord.x );
 			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v3.texCoord.y : vertices->v3.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse )
-		{
+		if ( properties & PRDefaultModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v3.diffuse.x );
 			vv.push_back ( vertices->v3.diffuse.y );
 			vv.push_back ( vertices->v3.diffuse.z );
@@ -3513,32 +3000,27 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 }
 
 void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs,
-	const PRVector3 * scale, void** result, unsigned * length )
-{
+	const PRVector3 * scale, void** result, unsigned * length ) {
 	polygonLine *vertices = ( polygonLine* ) data;
 
 	std::vector<float> vv;
-	for ( unsigned i = 0; i < dataSize / sizeof ( polygonLine ); ++i )
-	{
+	for ( unsigned i = 0; i < dataSize / sizeof ( polygonLine ); ++i ) {
 		PRVector3 norm = vertices->v2.position - vertices->v1.position;
 
 		PRVector3 p1 = vertices->v1.position;
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
-		if ( properties & PRDefaultModelProperty_Normal )
-		{
+		if ( properties & PRDefaultModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord )
-		{
+		if ( properties & PRDefaultModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v1.texCoord.x );
 			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse )
-		{
+		if ( properties & PRDefaultModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v1.diffuse.x );
 			vv.push_back ( vertices->v1.diffuse.y );
 			vv.push_back ( vertices->v1.diffuse.z );
@@ -3549,19 +3031,16 @@ void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty 
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
-		if ( properties & PRDefaultModelProperty_Normal )
-		{
+		if ( properties & PRDefaultModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord )
-		{
+		if ( properties & PRDefaultModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v2.texCoord.x );
 			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse )
-		{
+		if ( properties & PRDefaultModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v2.diffuse.x );
 			vv.push_back ( vertices->v2.diffuse.y );
 			vv.push_back ( vertices->v2.diffuse.z );
@@ -3581,8 +3060,7 @@ void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty 
 }
 
 void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	vertex cube [] = {
 		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
 		{ { +0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
@@ -3644,8 +3122,7 @@ void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSys
 }
 
 void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	// Source from "http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c"
 
 	const unsigned rings = scale == nullptr ? 20 : ( unsigned ) scale->x * 10;
@@ -3659,23 +3136,18 @@ void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 	std::vector<PRVector2> texcoords;
 	std::vector<unsigned> indices;
 
-	for ( r = 0; r < rings; r++ )
-	{
-		for ( s = 0; s < sectors; s++ )
-		{
-			float const y = sin ( -PRPIover2 + PRPI * r * R );
-			float const x = cos ( 2 * PRPI * s * S ) * sin ( PRPI * r * R );
-			float const z = sin ( 2 * PRPI * s * S ) * sin ( PRPI * r * R );
-
+	for ( r = 0; r < rings; r++ ) {
+		for ( s = 0; s < sectors; s++ ) {
+			float const y = sin ( -PR_PIover2 + PR_PI * r * R );
+			float const x = cos ( 2 * PR_PI * s * S ) * sin ( PR_PI * r * R );
+			float const z = sin ( 2 * PR_PI * s * S ) * sin ( PR_PI * r * R );
 			vertices.push_back ( PRVector3 ( x, y, z ) * 0.5f );
 			texcoords.push_back ( PRVector2 ( s * S, r * R ) );
 		}
 	}
 
-	for ( r = 0; r < rings - 1; r++ )
-	{
-		for ( s = 0; s < sectors - 1; s++ )
-		{
+	for ( r = 0; r < rings - 1; r++ ) {
+		for ( s = 0; s < sectors - 1; s++ ) {
 			int curRow = r * sectors;
 			int nextRow = ( r + 1 ) * sectors;
 
@@ -3692,10 +3164,8 @@ void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 	std::vector<vertex> sphere;
 	sphere.resize ( indices.size () );
 	int j = 0;
-	for ( auto i = indices.begin (); i != indices.end (); ++i )
-	{
+	for ( auto i = indices.begin (); i != indices.end (); ++i ) {
 		//if ( *i >= vertices.size () ) continue;
-
 		vertex vtx;
 		vtx.position = vertices [ *i ];
 		vtx.texCoord = texcoords [ *i ];
@@ -3717,13 +3187,11 @@ void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 }
 
 void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	unsigned sectors = scale == nullptr ? 20 : ( unsigned ) PRMax ( scale->x, scale->y ) * 10;
 
 	std::vector<vertex> vertices;
-	for ( float r = 0; r <= PR2PI; r += ( PR2PI / sectors ) )
-	{
+	for ( float r = 0; r <= PR_2PI; r += ( PR_2PI / sectors ) ) {
 		vertex vtx;
 
 		vtx.position = PRVector3 ( 0, 0, 0 );
@@ -3736,7 +3204,7 @@ void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
 		vertices.push_back ( vtx );
 
-		vtx.position = PRVector3 ( cos ( r + ( PR2PI / sectors ) ), sin ( r + ( PR2PI / sectors ) ), 0 ) * 0.5f;
+		vtx.position = PRVector3 ( cos ( r + ( PR_2PI / sectors ) ), sin ( r + ( PR_2PI / sectors ) ), 0 ) * 0.5f;
 		vtx.texCoord = PRVector2 ( vtx.position.x + 0.5f, vtx.position.y + 0.5f );
 		vtx.diffuse = PRVector4 ( 1, 1, 1, 1 );
 		vertices.push_back ( vtx );
@@ -3756,12 +3224,10 @@ void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 }
 
 void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	polygonLine vertices [ 202 ];
 	unsigned index = 0;
-	for ( unsigned z = 0; z <= 100; ++z )
-	{
+	for ( unsigned z = 0; z <= 100; ++z ) {
 		vertices [ index ].v1.position = PRVector3 ( -50, 0, ( float ) z - 50 );
 		vertices [ index ].v1.texCoord = PRVector2 ( 0, 0 );
 		vertices [ index ].v1.diffuse = PRVector4 ( 1, 1, 1, 1 );
@@ -3770,8 +3236,7 @@ void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSys
 		vertices [ index ].v2.diffuse = PRVector4 ( 1, 1, 1, 1 );
 		++index;
 	}
-	for ( unsigned x = 0; x <= 100; ++x )
-	{
+	for ( unsigned x = 0; x <= 100; ++x ) {
 		vertices [ index ].v1.position = PRVector3 ( ( float ) x - 50, 0, -50 );
 		vertices [ index ].v1.texCoord = PRVector2 ( 0, 0 );
 		vertices [ index ].v1.diffuse = PRVector4 ( 1, 1, 1, 1 );
@@ -3784,8 +3249,7 @@ void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSys
 }
 
 void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
-	void** result, unsigned * length )
-{
+	void** result, unsigned * length ) {
 	polygonLine vertices [ 3 ];
 	vertices [ 0 ].v1.position = PRVector3 ();
 	vertices [ 0 ].v1.texCoord = PRVector2 ( 0, 0 );
