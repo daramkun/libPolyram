@@ -78,67 +78,67 @@
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <AntPackage>
-      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <AndroidAppLibName>Polyram_Android_Test</AndroidAppLibName>
     </AntPackage>
   </ItemDefinitionGroup>
   <ItemGroup>

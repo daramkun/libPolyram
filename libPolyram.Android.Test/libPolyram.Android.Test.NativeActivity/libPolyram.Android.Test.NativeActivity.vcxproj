@@ -128,36 +128,44 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <OutDir>..\Build\$(PlatformTarget)\</OutDir>
-    <IntDir>..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <OutDir>..\..\Build\$(PlatformTarget)\</OutDir>
+    <IntDir>..\..\Build\ObjectFiles\$(ProjectName)\$(PlatformTarget)\</IntDir>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>

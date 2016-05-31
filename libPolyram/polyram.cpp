@@ -863,6 +863,8 @@ void PRApplication::run () {
 
 			if ( m_game != nullptr ) {
 				m_game->onUpdate ( elapsedTime );
+				if ( ( ( PRGraphicsContext_OpenGL* ) this->m_graphicsContext )->display != nullptr )
+					continue;
 				m_game->onDraw ( elapsedTime );
 			}
 		}

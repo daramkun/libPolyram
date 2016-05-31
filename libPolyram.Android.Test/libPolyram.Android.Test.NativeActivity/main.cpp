@@ -1,7 +1,7 @@
 #define POLYRAM_OPENGL
 #include "polyram.h"
 
-class MyScene : public PRObject
+class MyScene : public PRGame
 {
 public:
 	void onInitialize ()
@@ -36,8 +36,8 @@ public:
 	}
 };
 
-MAIN_FUNCTION_ATTR
-MAIN_FUNCTION_RTTP MAIN_FUNCTION_NAME ( MAIN_FUNCTION_ARGS )
+MAIN_FUNC_ATTR
+MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 {
 	MyScene scene;
 	std::string title ( "Test" );
