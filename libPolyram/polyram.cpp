@@ -863,7 +863,7 @@ void PRApplication::run () {
 
 			if ( m_game != nullptr ) {
 				m_game->onUpdate ( elapsedTime );
-				if ( ( ( PRGraphicsContext_OpenGL* ) this->m_graphicsContext )->display != nullptr )
+				if ( this->m_graphicsContext == nullptr || ( ( PRGraphicsContext_OpenGL* ) this->m_graphicsContext )->display != nullptr )
 					continue;
 				m_game->onDraw ( elapsedTime );
 			}
@@ -1583,6 +1583,9 @@ PRGraphicsContext_Vulkan::~PRGraphicsContext_Vulkan ()
 }*/
 #endif
 
+#define COPIEDMETHOD1(x,y,z) x temp; y ( z, &temp ); return temp;
+#define COPIEDMETHOD2(x,y,z,w) x temp; y ( z, w, &temp ); return temp;
+
 PRVector2::PRVector2 () : x ( 0 ), y ( 0 ) { }
 PRVector2::PRVector2 ( float v ) : x ( v ), y ( v ) { }
 PRVector2::PRVector2 ( float x, float y ) : x ( x ), y ( y ) { }
@@ -1642,79 +1645,30 @@ void PRVector2::cross ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * 
 	result->x = v1->x * v2->y;
 	result->y = v1->y * v2->x;
 }
-PRVector2 PRVector2::add ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	add ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::subtract ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	subtract ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::negate ( const PRVector2 & v1 ) {
-	PRVector2 temp;
-	negate ( &v1, &temp );
-	return temp;
-}
-PRVector2 PRVector2::multiply ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	multiply ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::multiply ( const PRVector2 & v1, float v2 ) {
-	PRVector2 temp;
-	multiply ( &v1, v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::multiply ( float v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	multiply ( v1, &v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::divide ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	divide ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::divide ( const PRVector2 & v1, float v2 ) {
-	PRVector2 temp;
-	divide ( &v1, v2, &temp );
-	return temp;
-}
-float PRVector2::dot ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	float temp;
-	dot ( &v1, &v2, &temp );
-	return temp;
-}
-float PRVector2::dot ( const PRVector2 & v1, float v2 ) {
-	float temp;
-	dot ( &v1, v2, &temp );
-	return temp;
-}
-PRVector2 PRVector2::cross ( const PRVector2 & v1, const PRVector2 & v2 ) {
-	PRVector2 temp;
-	cross ( &v1, &v2, &temp );
-	return temp;
-}
-void PRVector2::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector2 * result ) {
+
+PRVector2 PRVector2::add ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, add, &v1, &v2 ); }
+PRVector2 PRVector2::subtract ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, subtract, &v1, &v2 ); }
+PRVector2 PRVector2::negate ( const PRVector2 & v1 ) { COPIEDMETHOD1 ( PRVector2, negate, &v1 ); }
+PRVector2 PRVector2::multiply ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, multiply, &v1, &v2 ); }
+PRVector2 PRVector2::multiply ( const PRVector2 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector2, multiply, &v1, v2 ); }
+PRVector2 PRVector2::multiply ( float v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, multiply, v1, &v2 ); }
+PRVector2 PRVector2::divide ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, divide, &v1, &v2 ); }
+PRVector2 PRVector2::divide ( const PRVector2 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector2, divide, &v1, v2 ); }
+float PRVector2::dot ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( float, dot, &v1, &v2 ); }
+float PRVector2::dot ( const PRVector2 & v1, float v2 ) { COPIEDMETHOD2 ( float, dot, &v1, v2 ); }
+PRVector2 PRVector2::cross ( const PRVector2 & v1, const PRVector2 & v2 ) { COPIEDMETHOD2 ( PRVector2, cross, &v1, &v2 ); }
+
+void PRVector2::transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector2 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 }
-void PRVector2::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector2 * result ) {
+void PRVector2::transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector2 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 );
 }
-PRVector2 PRVector2::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
-	PRVector2 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
-PRVector2 PRVector2::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat ) {
-	PRVector2 temp;
-	transformNormal ( &nor, &mat, &temp );
-	return temp;
-}
+
+PRVector2 PRVector2::transform ( const PRVector2 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector2, transform, &pos, &mat ); }
+PRVector2 PRVector2::transformNormal ( const PRVector2 & nor, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector2, transformNormal, &nor, &mat ); }
 
 PRVector2 operator+ ( const PRVector2 & v1, const PRVector2 & v2 ) { return PRVector2::add ( v1, v2 ); }
 PRVector2 operator- ( const PRVector2 & v1, const PRVector2 & v2 ) { return PRVector2::subtract ( v1, v2 ); }
@@ -1807,67 +1761,25 @@ void PRVector3::cross ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * 
 	result->y = v1->z * v2->x - v1->x * v2->z;
 	result->z = v1->x * v2->y - v1->y * v2->x;
 }
-PRVector3 PRVector3::add ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	add ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::subtract ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	subtract ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::negate ( const PRVector3 & v1 ) {
-	PRVector3 temp;
-	negate ( &v1, &temp );
-	return temp;
-}
-PRVector3 PRVector3::multiply ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	multiply ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::multiply ( const PRVector3 & v1, float v2 ) {
-	PRVector3 temp;
-	multiply ( &v1, v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::multiply ( float v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	multiply ( v1, &v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::divide ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	divide ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::divide ( const PRVector3 & v1, float v2 ) {
-	PRVector3 temp;
-	divide ( &v1, v2, &temp );
-	return temp;
-}
-float PRVector3::dot ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	float temp;
-	dot ( &v1, &v2, &temp );
-	return temp;
-}
-float PRVector3::dot ( const PRVector3 & v1, float v2 ) {
-	float temp;
-	dot ( &v1, v2, &temp );
-	return temp;
-}
-PRVector3 PRVector3::cross ( const PRVector3 & v1, const PRVector3 & v2 ) {
-	PRVector3 temp;
-	cross ( &v1, &v2, &temp );
-	return temp;
-}
-void PRVector3::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector3 * result ) {
+
+PRVector3 PRVector3::add ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, add, &v1, &v2 ); }
+PRVector3 PRVector3::subtract ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, subtract, &v1, &v2 ); }
+PRVector3 PRVector3::negate ( const PRVector3 & v1 ) { COPIEDMETHOD1 ( PRVector3, negate, &v1 ); }
+PRVector3 PRVector3::multiply ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, multiply, &v1, &v2 ); }
+PRVector3 PRVector3::multiply ( const PRVector3 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector3, multiply, &v1, v2 ); }
+PRVector3 PRVector3::multiply ( float v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, multiply, v1, &v2 ); }
+PRVector3 PRVector3::divide ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, divide, &v1, &v2 ); }
+PRVector3 PRVector3::divide ( const PRVector3 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector3, divide, &v1, v2 ); }
+float PRVector3::dot ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( float, dot, &v1, &v2 ); }
+float PRVector3::dot ( const PRVector3 & v1, float v2 ) { COPIEDMETHOD2 ( float, dot, &v1, v2 ); }
+PRVector3 PRVector3::cross ( const PRVector3 & v1, const PRVector3 & v2 ) { COPIEDMETHOD2 ( PRVector3, cross, &v1, &v2 ); }
+
+void PRVector3::transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector3 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + mat->_43;
 }
-void PRVector3::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector3 * result ) {
+void PRVector3::transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector3 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + mat->_43;
@@ -1879,41 +1791,22 @@ void PRVector3::transform ( const PRVector3 * pos, const PRQuaternion * q, PRVec
 	result->y = pos->y + y * q->w + ( q->z * x - q->x * z );
 	result->z = pos->z + z * q->w + ( q->x * y - q->y * x );
 }
-void PRVector3::transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector3 * result ) {
+void PRVector3::transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector3 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 );
 	result->z = ( nor->x * mat->_13 ) + ( nor->y * mat->_23 );
 }
-void PRVector3::transformNormal ( const PRVector3 * nor, const PRMatrix4x4 * mat, PRVector3 * result ) {
+void PRVector3::transformNormal ( const PRVector3 * nor, const PRMatrix * mat, PRVector3 * result ) {
 	result->x = ( nor->x * mat->_11 ) + ( nor->y * mat->_21 ) + ( nor->z * mat->_31 );
 	result->y = ( nor->x * mat->_12 ) + ( nor->y * mat->_22 ) + ( nor->z * mat->_32 );
 	result->z = ( nor->x * mat->_13 ) + ( nor->y * mat->_23 ) + ( nor->z * mat->_33 );
 }
-PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat ) {
-	PRVector3 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
-PRVector3 PRVector3::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
-	PRVector3 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
-PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRQuaternion & q ) {
-	PRVector3 temp;
-	transform ( &pos, &q, &temp );
-	return temp;
-}
-PRVector3 PRVector3::transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat ) {
-	PRVector3 temp;
-	transformNormal ( &nor, &mat, &temp );
-	return temp;
-}
-PRVector3 PRVector3::transformNormal ( const PRVector3 & nor, const PRMatrix4x4 & mat ) {
-	PRVector3 temp;
-	transformNormal ( &nor, &mat, &temp );
-	return temp;
-}
+
+PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector3, transform, &pos, &mat ); }
+PRVector3 PRVector3::transform ( const PRVector2 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector3, transform, &pos, &mat ); }
+PRVector3 PRVector3::transform ( const PRVector3 & pos, const PRQuaternion & q ) { COPIEDMETHOD2 ( PRVector3, transform, &pos, &q ); }
+PRVector3 PRVector3::transformNormal ( const PRVector2 & nor, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector3, transformNormal, &nor, &mat ); }
+PRVector3 PRVector3::transformNormal ( const PRVector3 & nor, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector3, transformNormal, &nor, &mat ); }
 
 PRVector3 operator+ ( const PRVector3 & v1, const PRVector3 & v2 ) { return PRVector3::add ( v1, v2 ); }
 PRVector3 operator- ( const PRVector3 & v1, const PRVector3 & v2 ) { return PRVector3::subtract ( v1, v2 ); }
@@ -2011,89 +1904,39 @@ void PRVector4::dot ( const PRVector4 * v1, const PRVector4 * v2, float * result
 void PRVector4::dot ( const PRVector4 * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 ) + ( v1->z * v2 ) + ( v1->w * v2 );
 }
-PRVector4 PRVector4::add ( const PRVector4 & v1, const PRVector4 & v2 ) {
-	PRVector4 temp;
-	add ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::subtract ( const PRVector4 & v1, const PRVector4 & v2 ) {
-	PRVector4 temp;
-	subtract ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::negate ( const PRVector4 & v1 ) {
-	PRVector4 temp;
-	negate ( &v1, &temp );
-	return temp;
-}
-PRVector4 PRVector4::multiply ( const PRVector4 & v1, const PRVector4 & v2 ) {
-	PRVector4 temp;
-	multiply ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::multiply ( const PRVector4 & v1, float v2 ) {
-	PRVector4 temp;
-	multiply ( &v1, v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::multiply ( float v1, const PRVector4 & v2 ) {
-	PRVector4 temp;
-	multiply ( v1, &v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::divide ( const PRVector4 & v1, const PRVector4 & v2 ) {
-	PRVector4 temp;
-	divide ( &v1, &v2, &temp );
-	return temp;
-}
-PRVector4 PRVector4::divide ( const PRVector4 & v1, float v2 ) {
-	PRVector4 temp;
-	divide ( &v1, v2, &temp );
-	return temp;
-}
-float PRVector4::dot ( const PRVector4 & v1, const PRVector4 & v2 ) {
-	float temp;
-	dot ( &v1, &v2, &temp );
-	return temp;
-}
-float PRVector4::dot ( const PRVector4 & v1, float v2 ) {
-	float temp;
-	dot ( &v1, v2, &temp );
-	return temp;
-}
-void PRVector4::transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
+
+PRVector4 PRVector4::add ( const PRVector4 & v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( PRVector4, add, &v1, &v2 ); }
+PRVector4 PRVector4::subtract ( const PRVector4 & v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( PRVector4, subtract, &v1, &v2 ); }
+PRVector4 PRVector4::negate ( const PRVector4 & v1 ) { COPIEDMETHOD1 ( PRVector4, negate, &v1 ); }
+PRVector4 PRVector4::multiply ( const PRVector4 & v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( PRVector4, multiply, &v1, &v2 ); }
+PRVector4 PRVector4::multiply ( const PRVector4 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector4, multiply, &v1, v2 ); }
+PRVector4 PRVector4::multiply ( float v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( PRVector4, multiply, v1, &v2 ); }
+PRVector4 PRVector4::divide ( const PRVector4 & v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( PRVector4, divide, &v1, &v2 ); }
+PRVector4 PRVector4::divide ( const PRVector4 & v1, float v2 ) { COPIEDMETHOD2 ( PRVector4, divide, &v1, v2 ); }
+float PRVector4::dot ( const PRVector4 & v1, const PRVector4 & v2 ) { COPIEDMETHOD2 ( float, dot, &v1, &v2 ); }
+float PRVector4::dot ( const PRVector4 & v1, float v2 ) { COPIEDMETHOD2 ( float, dot, &v1, v2 ); }
+
+void PRVector4::transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + mat->_43;
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + mat->_44;
 }
-void PRVector4::transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
+void PRVector4::transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + mat->_41;
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + mat->_42;
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + mat->_43;
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + ( pos->z * mat->_34 ) + mat->_44;
 }
-void PRVector4::transform ( const PRVector4 * pos, const PRMatrix4x4 * mat, PRVector4 * result ) {
+void PRVector4::transform ( const PRVector4 * pos, const PRMatrix * mat, PRVector4 * result ) {
 	result->x = ( pos->x * mat->_11 ) + ( pos->y * mat->_21 ) + ( pos->z * mat->_31 ) + ( pos->w * mat->_41 );
 	result->y = ( pos->x * mat->_12 ) + ( pos->y * mat->_22 ) + ( pos->z * mat->_32 ) + ( pos->w * mat->_42 );
 	result->z = ( pos->x * mat->_13 ) + ( pos->y * mat->_23 ) + ( pos->z * mat->_33 ) + ( pos->w * mat->_43 );
 	result->w = ( pos->x * mat->_14 ) + ( pos->y * mat->_24 ) + ( pos->z * mat->_34 ) + ( pos->w * mat->_44 );
 }
-PRVector4 PRVector4::transform ( const PRVector2 & pos, const PRMatrix4x4 & mat ) {
-	PRVector4 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
-PRVector4 PRVector4::transform ( const PRVector3 & pos, const PRMatrix4x4 & mat ) {
-	PRVector4 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
-PRVector4 PRVector4::transform ( const PRVector4 & pos, const PRMatrix4x4 & mat ) {
-	PRVector4 temp;
-	transform ( &pos, &mat, &temp );
-	return temp;
-}
+PRVector4 PRVector4::transform ( const PRVector2 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector4, transform, &pos, &mat ); }
+PRVector4 PRVector4::transform ( const PRVector3 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector4, transform, &pos, &mat ); }
+PRVector4 PRVector4::transform ( const PRVector4 & pos, const PRMatrix & mat ) { COPIEDMETHOD2 ( PRVector4, transform, &pos, &mat ); }
 
 PRVector4 operator+ ( const PRVector4 & v1, const PRVector4 & v2 ) { return PRVector4::add ( v1, v2 ); }
 PRVector4 operator- ( const PRVector4 & v1, const PRVector4 & v2 ) { return PRVector4::subtract ( v1, v2 ); }
@@ -2123,7 +1966,7 @@ PRQuaternion::PRQuaternion ( float yaw, float pitch, float roll ) {
 	z = ( ( num * num3 ) * num6 ) - ( ( num2 * num4 ) * num5 );
 	w = ( ( num * num3 ) * num5 ) + ( ( num2 * num4 ) * num6 );
 }
-PRQuaternion::PRQuaternion ( const PRMatrix4x4 & m ) {
+PRQuaternion::PRQuaternion ( const PRMatrix & m ) {
 	float num8 = ( m._11 + m._22 ) + m._33;
 	if ( num8 > 0.0f ) {
 		float num = sqrtf ( num8 + 1.0f );
@@ -2234,56 +2077,16 @@ void PRQuaternion::dot ( const PRQuaternion * v1, const PRQuaternion * v2, float
 void PRQuaternion::dot ( const PRQuaternion * v1, float v2, float * result ) {
 	*result = ( v1->x * v2 ) + ( v1->y * v2 ) + ( v1->z * v2 ) + ( v1->w * v2 );
 }
-PRQuaternion PRQuaternion::add ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
-	PRQuaternion temp;
-	add ( &v1, &v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::subtract ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
-	PRQuaternion temp;
-	subtract ( &v1, &v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::negate ( const PRQuaternion & v1 ) {
-	PRQuaternion temp;
-	negate ( &v1, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
-	PRQuaternion temp;
-	multiply ( &v1, &v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, float v2 ) {
-	PRQuaternion temp;
-	multiply ( &v1, v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::multiply ( float v1, const PRQuaternion & v2 ) {
-	PRQuaternion temp;
-	multiply ( v1, &v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
-	PRQuaternion temp;
-	divide ( &v1, &v2, &temp );
-	return temp;
-}
-PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, float v2 ) {
-	PRQuaternion temp;
-	divide ( &v1, v2, &temp );
-	return temp;
-}
-float PRQuaternion::dot ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
-	float temp;
-	dot ( &v1, &v2, &temp );
-	return temp;
-}
-float PRQuaternion::dot ( const PRQuaternion & v1, float v2 ) {
-	float temp;
-	dot ( &v1, v2, &temp );
-	return temp;
-}
+PRQuaternion PRQuaternion::add ( const PRQuaternion & v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( PRQuaternion, add, &v1, &v2 ); }
+PRQuaternion PRQuaternion::subtract ( const PRQuaternion & v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( PRQuaternion, subtract, &v1, &v2 ); }
+PRQuaternion PRQuaternion::negate ( const PRQuaternion & v1 ) { COPIEDMETHOD1 ( PRQuaternion, negate, &v1 ); }
+PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( PRQuaternion, multiply, &v1, &v2 ); }
+PRQuaternion PRQuaternion::multiply ( const PRQuaternion & v1, float v2 ) { COPIEDMETHOD2 ( PRQuaternion, multiply, &v1, v2 ); }
+PRQuaternion PRQuaternion::multiply ( float v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( PRQuaternion, multiply, v1, &v2 ); }
+PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( PRQuaternion, divide, &v1, &v2 ); }
+PRQuaternion PRQuaternion::divide ( const PRQuaternion & v1, float v2 ) { COPIEDMETHOD2 ( PRQuaternion, divide, &v1, v2 ); }
+float PRQuaternion::dot ( const PRQuaternion & v1, const PRQuaternion & v2 ) { COPIEDMETHOD2 ( float, dot, &v1, &v2 ); }
+float PRQuaternion::dot ( const PRQuaternion & v1, float v2 ) { COPIEDMETHOD2 ( float, dot, &v1, v2 ); }
 
 PRQuaternion operator+ ( const PRQuaternion & v1, const PRQuaternion & v2 ) { return PRQuaternion::add ( v1, v2 ); }
 PRQuaternion operator- ( const PRQuaternion & v1, const PRQuaternion & v2 ) { return PRQuaternion::subtract ( v1, v2 ); }
@@ -2297,18 +2100,18 @@ bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 ) {
 	return PRIsEquals ( v1.x, v2.x ) && PRIsEquals ( v1.y, v2.y ) && PRIsEquals ( v1.z, v2.z ) && PRIsEquals ( v1.w, v2.w );
 }
 
-PRMatrix4x4::PRMatrix4x4 () : _11 ( 1 ), _12 ( 0 ), _13 ( 0 ), _14 ( 0 ), _21 ( 0 ), _22 ( 1 ), _23 ( 0 ), _24 ( 0 ),
+PRMatrix::PRMatrix () : _11 ( 1 ), _12 ( 0 ), _13 ( 0 ), _14 ( 0 ), _21 ( 0 ), _22 ( 1 ), _23 ( 0 ), _24 ( 0 ),
 _31 ( 0 ), _32 ( 0 ), _33 ( 1 ), _34 ( 0 ), _41 ( 0 ), _42 ( 0 ), _43 ( 0 ), _44 ( 1 ) { }
-PRMatrix4x4::PRMatrix4x4 ( float v ) : _11 ( v ), _12 ( v ), _13 ( v ), _14 ( v ), _21 ( v ), _22 ( v ), _23 ( v ), _24 ( v ),
+PRMatrix::PRMatrix ( float v ) : _11 ( v ), _12 ( v ), _13 ( v ), _14 ( v ), _21 ( v ), _22 ( v ), _23 ( v ), _24 ( v ),
 _31 ( v ), _32 ( v ), _33 ( v ), _34 ( v ), _41 ( v ), _42 ( v ), _43 ( v ), _44 ( v ) { }
-PRMatrix4x4::PRMatrix4x4 ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
+PRMatrix::PRMatrix ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
 	float _31, float _32, float _33, float _34, float _41, float _42, float _43, float _44 )
 	: _11 ( _11 ), _12 ( _12 ), _13 ( _13 ), _14 ( _14 ), _21 ( _21 ), _22 ( _22 ), _23 ( _23 ), _24 ( _24 ),
 	_31 ( _31 ), _32 ( _32 ), _33 ( _33 ), _34 ( _34 ), _41 ( _41 ), _42 ( _42 ), _43 ( _43 ), _44 ( _44 ) { }
-PRMatrix4x4::PRMatrix4x4 ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 )
+PRMatrix::PRMatrix ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 )
 	: _11 ( c1.x ), _12 ( c1.y ), _13 ( c1.z ), _14 ( c1.w ), _21 ( c2.x ), _22 ( c2.y ), _23 ( c2.z ), _24 ( c2.w ),
 	_31 ( c3.x ), _32 ( c3.y ), _33 ( c3.z ), _34 ( c3.w ), _41 ( c4.x ), _42 ( c4.y ), _43 ( c4.z ), _44 ( c4.w ) { }
-PRMatrix4x4::PRMatrix4x4 ( PRQuaternion & q ) {
+PRMatrix::PRMatrix ( PRQuaternion & q ) {
 	float num9 = q.x * q.x, num8 = q.y * q.y, num7 = q.z * q.z, num6 = q.x * q.y;
 	float num5 = q.z * q.w, num4 = q.z * q.x, num3 = q.y * q.w, num2 = q.y * q.z;
 	float num1 = q.x * q.w;
@@ -2318,15 +2121,15 @@ PRMatrix4x4::PRMatrix4x4 ( PRQuaternion & q ) {
 	_41 = 0; _42 = 0; _43 = 0; _44 = 1;
 }
 
-void PRMatrix4x4::invert ( PRMatrix4x4 * result ) { PRMatrix4x4::invert ( this, result ); }
-void PRMatrix4x4::transpose ( PRMatrix4x4 * result ) { PRMatrix4x4::transpose ( this, result ); }
-void PRMatrix4x4::determinant ( float * result ) { PRMatrix4x4::determinant ( this, result ); }
+void PRMatrix::invert ( PRMatrix * result ) { PRMatrix::invert ( this, result ); }
+void PRMatrix::transpose ( PRMatrix * result ) { PRMatrix::transpose ( this, result ); }
+void PRMatrix::determinant ( float * result ) { PRMatrix::determinant ( this, result ); }
 
-PRMatrix4x4 PRMatrix4x4::invert () { PRMatrix4x4 temp; invert ( &temp ); return temp; }
-PRMatrix4x4 PRMatrix4x4::transpose () { PRMatrix4x4 temp; transpose ( &temp ); return temp; }
-float PRMatrix4x4::determinant () { float temp; determinant ( &temp ); return temp; }
+PRMatrix PRMatrix::invert () { PRMatrix temp; invert ( &temp ); return temp; }
+PRMatrix PRMatrix::transpose () { PRMatrix temp; transpose ( &temp ); return temp; }
+float PRMatrix::determinant () { float temp; determinant ( &temp ); return temp; }
 
-void PRMatrix4x4::invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result ) {
+void PRMatrix::invert ( const PRMatrix * m, PRMatrix * result ) {
 	float num1 = m->_11, num2 = m->_12, num3 = m->_13, num4 = m->_14, num5 = m->_21, num6 = m->_22, num7 = m->_23, num8 = m->_24;
 	float num9 = m->_31, num10 = m->_32, num11 = m->_33, num12 = m->_34, num13 = m->_41, num14 = m->_42, num15 = m->_43, num16 = m->_44;
 	float num17 = num11 * num16 - num12 * num15, num18 = num10 * num16 - num12 * num14, num19 = num10 * num15 - num11 * num14;
@@ -2352,23 +2155,23 @@ void PRMatrix4x4::invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result ) {
 	result->_34 = -( num1 * num35 - num2 * num37 + num4 * num39 ) * num27;
 	result->_44 = ( num1 * num36 - num2 * num38 + num3 * num39 ) * num27;
 }
-PRMatrix4x4 PRMatrix4x4::invert ( const PRMatrix4x4 & m ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::invert ( const PRMatrix & m ) {
+	PRMatrix temp;
 	invert ( &m, &temp );
 	return temp;
 }
-void PRMatrix4x4::transpose ( const PRMatrix4x4 * m, PRMatrix4x4 * result ) {
+void PRMatrix::transpose ( const PRMatrix * m, PRMatrix * result ) {
 	result->_11 = m->_11; result->_12 = m->_21; result->_13 = m->_31; result->_14 = m->_41;
 	result->_21 = m->_12; result->_22 = m->_22; result->_23 = m->_32; result->_24 = m->_42;
 	result->_31 = m->_13; result->_32 = m->_23; result->_33 = m->_33; result->_34 = m->_43;
 	result->_41 = m->_14; result->_42 = m->_24; result->_43 = m->_34; result->_44 = m->_44;
 }
-PRMatrix4x4 PRMatrix4x4::transpose ( const PRMatrix4x4 & m ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::transpose ( const PRMatrix & m ) {
+	PRMatrix temp;
 	transpose ( &m, &temp );
 	return temp;
 }
-void PRMatrix4x4::determinant ( const PRMatrix4x4 * m, float * result ) {
+void PRMatrix::determinant ( const PRMatrix * m, float * result ) {
 	float num22 = m->_11, num21 = m->_12, num20 = m->_13, num19 = m->_14, num12 = m->_21, num11 = m->_22, num10 = m->_23, num9 = m->_24;
 	float num8 = m->_31, num7 = m->_32, num6 = m->_33, num5 = m->_34, num4 = m->_41, num3 = m->_42, num2 = m->_43, num = m->_44;
 	float num18 = ( num6 * num ) - ( num5 * num2 ), num17 = ( num7 * num ) - ( num5 * num3 );
@@ -2379,31 +2182,31 @@ void PRMatrix4x4::determinant ( const PRMatrix4x4 * m, float * result ) {
 		( num20 * ( ( ( num12 * num17 ) - ( num11 * num15 ) ) + ( num9 * num13 ) ) ) ) -
 		( num19 * ( ( ( num12 * num16 ) - ( num11 * num14 ) ) + ( num10 * num13 ) ) ) );
 }
-float PRMatrix4x4::determinant ( const PRMatrix4x4 & m ) {
+float PRMatrix::determinant ( const PRMatrix & m ) {
 	float temp;
 	determinant ( &m, &temp );
 	return temp;
 }
 
-void PRMatrix4x4::add ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
+void PRMatrix::add ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = v1->_11 + v2->_11; result->_12 = v1->_12 + v2->_12; result->_13 = v1->_13 + v2->_13; result->_14 = v1->_14 + v2->_14;
 	result->_21 = v1->_21 + v2->_21; result->_22 = v1->_22 + v2->_22; result->_23 = v1->_23 + v2->_23; result->_24 = v1->_24 + v2->_24;
 	result->_31 = v1->_31 + v2->_31; result->_32 = v1->_32 + v2->_32; result->_33 = v1->_33 + v2->_33; result->_34 = v1->_34 + v2->_34;
 	result->_41 = v1->_41 + v2->_41; result->_42 = v1->_42 + v2->_42; result->_43 = v1->_43 + v2->_43; result->_44 = v1->_44 + v2->_44;
 }
-void PRMatrix4x4::subtract ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
+void PRMatrix::subtract ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = v1->_11 - v2->_11; result->_12 = v1->_12 - v2->_12; result->_13 = v1->_13 - v2->_13; result->_14 = v1->_14 - v2->_14;
 	result->_21 = v1->_21 - v2->_21; result->_22 = v1->_22 - v2->_22; result->_23 = v1->_23 - v2->_23; result->_24 = v1->_24 - v2->_24;
 	result->_31 = v1->_31 - v2->_31; result->_32 = v1->_32 - v2->_32; result->_33 = v1->_33 - v2->_33; result->_34 = v1->_34 - v2->_34;
 	result->_41 = v1->_41 - v2->_41; result->_42 = v1->_42 - v2->_42; result->_43 = v1->_43 - v2->_43; result->_44 = v1->_44 - v2->_44;
 }
-void PRMatrix4x4::negate ( const PRMatrix4x4 * v1, PRMatrix4x4 * result ) {
+void PRMatrix::negate ( const PRMatrix * v1, PRMatrix * result ) {
 	result->_11 = -v1->_11; result->_12 = -v1->_12; result->_13 = -v1->_13; result->_14 = -v1->_14;
 	result->_21 = -v1->_21; result->_22 = -v1->_22; result->_23 = -v1->_23; result->_24 = -v1->_24;
 	result->_31 = -v1->_31; result->_32 = -v1->_32; result->_33 = -v1->_33; result->_34 = -v1->_34;
 	result->_41 = -v1->_41; result->_42 = -v1->_42; result->_43 = -v1->_43; result->_44 = -v1->_44;
 }
-void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
+void PRMatrix::multiply ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = ( ( ( v1->_11 * v2->_11 ) + ( v1->_12 * v2->_21 ) ) + ( v1->_13 * v2->_31 ) ) + ( v1->_14 * v2->_41 );
 	result->_12 = ( ( ( v1->_11 * v2->_12 ) + ( v1->_12 * v2->_22 ) ) + ( v1->_13 * v2->_32 ) ) + ( v1->_14 * v2->_42 );
 	result->_13 = ( ( ( v1->_11 * v2->_13 ) + ( v1->_12 * v2->_23 ) ) + ( v1->_13 * v2->_33 ) ) + ( v1->_14 * v2->_43 );
@@ -2421,141 +2224,109 @@ void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRM
 	result->_43 = ( ( ( v1->_41 * v2->_13 ) + ( v1->_42 * v2->_23 ) ) + ( v1->_43 * v2->_33 ) ) + ( v1->_44 * v2->_43 );
 	result->_44 = ( ( ( v1->_41 * v2->_14 ) + ( v1->_42 * v2->_24 ) ) + ( v1->_43 * v2->_34 ) ) + ( v1->_44 * v2->_44 );
 }
-void PRMatrix4x4::multiply ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result ) {
+void PRMatrix::multiply ( const PRMatrix * v1, float v2, PRMatrix * result ) {
 	result->_11 = v1->_11 * v2; result->_12 = v1->_12 * v2; result->_13 = v1->_13 * v2; result->_14 = v1->_14 * v2;
 	result->_21 = v1->_21 * v2; result->_22 = v1->_22 * v2; result->_23 = v1->_23 * v2; result->_24 = v1->_24 * v2;
 	result->_31 = v1->_31 * v2; result->_32 = v1->_32 * v2; result->_33 = v1->_33 * v2; result->_34 = v1->_34 * v2;
 	result->_41 = v1->_41 * v2; result->_42 = v1->_42 * v2; result->_43 = v1->_43 * v2; result->_44 = v1->_44 * v2;
 }
-void PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
+void PRMatrix::multiply ( float v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = v2->_11 * v1; result->_12 = v2->_12 * v1; result->_13 = v2->_13 * v1; result->_14 = v2->_14 * v1;
 	result->_21 = v2->_21 * v1; result->_22 = v2->_22 * v1; result->_23 = v2->_23 * v1; result->_24 = v2->_24 * v1;
 	result->_31 = v2->_31 * v1; result->_32 = v2->_32 * v1; result->_33 = v2->_33 * v1; result->_34 = v2->_34 * v1;
 	result->_41 = v2->_41 * v1; result->_42 = v2->_42 * v1; result->_43 = v2->_43 * v1; result->_44 = v2->_44 * v1;
 }
-void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result ) {
+void PRMatrix::divide ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = v1->_11 / v2->_11; result->_12 = v1->_12 / v2->_12; result->_13 = v1->_13 / v2->_13; result->_14 = v1->_14 / v2->_14;
 	result->_21 = v1->_21 / v2->_21; result->_22 = v1->_22 / v2->_22; result->_23 = v1->_23 / v2->_23; result->_24 = v1->_24 / v2->_24;
 	result->_31 = v1->_31 / v2->_31; result->_32 = v1->_32 / v2->_32; result->_33 = v1->_33 / v2->_33; result->_34 = v1->_34 / v2->_34;
 	result->_41 = v1->_41 / v2->_41; result->_42 = v1->_42 / v2->_42; result->_43 = v1->_43 / v2->_43; result->_44 = v1->_44 / v2->_44;
 }
-void PRMatrix4x4::divide ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result ) {
+void PRMatrix::divide ( const PRMatrix * v1, float v2, PRMatrix * result ) {
 	result->_11 = v1->_11 / v2; result->_12 = v1->_12 / v2; result->_13 = v1->_13 / v2; result->_14 = v1->_14 / v2;
 	result->_21 = v1->_21 / v2; result->_22 = v1->_22 / v2; result->_23 = v1->_23 / v2; result->_24 = v1->_24 / v2;
 	result->_31 = v1->_31 / v2; result->_32 = v1->_32 / v2; result->_33 = v1->_33 / v2; result->_34 = v1->_34 / v2;
 	result->_41 = v1->_41 / v2; result->_42 = v1->_42 / v2; result->_43 = v1->_43 / v2; result->_44 = v1->_44 / v2;
 }
 
-PRMatrix4x4 PRMatrix4x4::add ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
-	PRMatrix4x4 temp;
-	add ( &v1, &v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::subtract ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
-	PRMatrix4x4 temp;
-	subtract ( &v1, &v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::negate ( const PRMatrix4x4 & v1 ) {
-	PRMatrix4x4 temp;
-	negate ( &v1, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
-	PRMatrix4x4 temp;
-	multiply ( &v1, &v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::multiply ( const PRMatrix4x4 & v1, float v2 ) {
-	PRMatrix4x4 temp;
-	multiply ( &v1, v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::multiply ( float v1, const PRMatrix4x4 & v2 ) {
-	PRMatrix4x4 temp;
-	multiply ( v1, &v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
-	PRMatrix4x4 temp;
-	divide ( &v1, &v2, &temp );
-	return temp;
-}
-PRMatrix4x4 PRMatrix4x4::divide ( const PRMatrix4x4 & v1, float v2 ) {
-	PRMatrix4x4 temp;
-	divide ( &v1, v2, &temp );
-	return temp;
-}
+PRMatrix PRMatrix::add ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, add, &v1, &v2 ); }
+PRMatrix PRMatrix::subtract ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, subtract, &v1, &v2 ); }
+PRMatrix PRMatrix::negate ( const PRMatrix & v1 ) { COPIEDMETHOD1 ( PRMatrix, negate, &v1, &v2 ); }
+PRMatrix PRMatrix::multiply ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, &v1, &v2 ); }
+PRMatrix PRMatrix::multiply ( const PRMatrix & v1, float v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, &v1, v2 ); }
+PRMatrix PRMatrix::multiply ( float v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, v1, &v2 ); }
+PRMatrix PRMatrix::divide ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, divide, &v1, &v2 ); }
+PRMatrix PRMatrix::divide ( const PRMatrix & v1, float v2 ) { COPIEDMETHOD2 ( PRMatrix, divide, &v1, v2 ); }
 
-void PRMatrix4x4::createTranslate ( const PRVector3 * v, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createTranslate ( const PRVector3 * v, PRMatrix * result ) {
+	*result = PRMatrix (
 		1, 0, 0, 0,
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		v->x, v->y, v->z, 1
 	);
 }
-void PRMatrix4x4::createScale ( const PRVector3 * v, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createScale ( const PRVector3 * v, PRMatrix * result ) {
+	*result = PRMatrix (
 		v->x, 0, 0, 0,
 		0, v->y, 0, 0,
 		0, 0, v->z, 0,
 		0, 0, 0, 1
 	);
 }
-void PRMatrix4x4::createRotationX ( float r, PRMatrix4x4 * result ) {
+void PRMatrix::createRotationX ( float r, PRMatrix * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		1, 0, 0, 0,
 		0, v1, v2, 0,
 		0, -v2, v1, 0,
 		0, 0, 0, 1
 	);
 }
-void PRMatrix4x4::createRotationY ( float r, PRMatrix4x4 * result ) {
+void PRMatrix::createRotationY ( float r, PRMatrix * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		v1, 0, -v2, 0,
 		0, 1, 0, 0,
 		v2, 0, v1, 0,
 		0, 0, 0, 1
 	);
 }
-void PRMatrix4x4::createRotationZ ( float r, PRMatrix4x4 * result ) {
+void PRMatrix::createRotationZ ( float r, PRMatrix * result ) {
 	float v1 = cosf ( r ), v2 = sinf ( r );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		v1, v2, 0, 0,
 		-v2, v1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1
 	);
 }
-PRMatrix4x4 PRMatrix4x4::createTranslate ( const PRVector3 & v ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createTranslate ( const PRVector3 & v ) {
+	PRMatrix temp;
 	createTranslate ( &v, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createScale ( const PRVector3 & v ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createScale ( const PRVector3 & v ) {
+	PRMatrix temp;
 	createScale ( &v, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createRotationX ( float r ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createRotationX ( float r ) {
+	PRMatrix temp;
 	createRotationX ( r, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createRotationY ( float r ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createRotationY ( float r ) {
+	PRMatrix temp;
 	createRotationY ( r, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createRotationZ ( float r ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createRotationZ ( float r ) {
+	PRMatrix temp;
 	createRotationZ ( r, &temp );
 	return temp;
 }
-void PRMatrix4x4::createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result ) {
+void PRMatrix::createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result ) {
 	PRVector3 zaxis;
 	PRVector3::subtract ( target, position, &zaxis );
 	zaxis.normalize ( &zaxis );
@@ -2564,13 +2335,13 @@ void PRMatrix4x4::createLookAtLH ( const PRVector3 * position, const PRVector3 *
 	xaxis.normalize ( &xaxis );
 	PRVector3 yaxis;
 	PRVector3::cross ( &zaxis, &xaxis, &yaxis );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		xaxis.x, yaxis.x, zaxis.x, 0,
 		xaxis.y, yaxis.y, zaxis.y, 0,
 		xaxis.z, yaxis.z, zaxis.z, 0,
 		-PRVector3::dot ( xaxis, *position ), -PRVector3::dot ( yaxis, *position ), -PRVector3::dot ( zaxis, *position ), 1 );
 }
-void PRMatrix4x4::createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result ) {
+void PRMatrix::createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result ) {
 	PRVector3 zaxis;
 	PRVector3::subtract ( position, target, &zaxis );
 	zaxis.normalize ( &zaxis );
@@ -2579,154 +2350,154 @@ void PRMatrix4x4::createLookAtRH ( const PRVector3 * position, const PRVector3 *
 	xaxis.normalize ( &xaxis );
 	PRVector3 yaxis;
 	PRVector3::cross ( &zaxis, &xaxis, &yaxis );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		xaxis.x, yaxis.x, zaxis.x, 0,
 		xaxis.y, yaxis.y, zaxis.y, 0,
 		xaxis.z, yaxis.z, zaxis.z, 0,
 		PRVector3::dot ( xaxis, *position ), PRVector3::dot ( yaxis, *position ), PRVector3::dot ( zaxis, *position ), 1 );
 }
-PRMatrix4x4 PRMatrix4x4::createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
+	PRMatrix temp;
 	createLookAtLH ( &position, &target, &upVector, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
+	PRMatrix temp;
 	createLookAtRH ( &position, &target, &upVector, &temp );
 	return temp;
 }
-void PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
 		0, 0, 1 / ( zf - zn ), 0,
 		0, 0, -zn / ( zf - zn ), 0
 	);
 }
-void PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
 		0, 0, 1 / ( zn - zf ), 0,
 		0, 0, -zn / ( zn - zf ), 0
 	);
 }
-void PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
 		0, 0, 1 / ( zf - zn ), 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zf - zn ), 1
 	);
 }
-void PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
 		0, 0, 1 / ( zn - zf ), 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zn - zf ), 1
 	);
 }
-void PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 * zn / w, 0, 0, 0,
 		0, 2 * zn / h, 0, 0,
 		0, 0, zf / ( zf - zn ), 1,
 		0, 0, zn * zf / ( zf - zn ), 0
 	);
 }
-void PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 * zn / w, 0, 0, 0,
 		0, 2 * zn / h, 0, 0,
 		0, 0, zf / ( zn - zf ), 1,
 		0, 0, zn * zf / ( zn - zf ), 0
 	);
 }
-void PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 * zn / ( r - l ), 0, 0, 0,
 		0, 2 * zn / ( t - b ), 0, 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zf / ( zf - zn ), 1,
 		0, 0, zn * zf / ( zf - zn ), 1 );
 }
-void PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result ) {
-	*result = PRMatrix4x4 (
+void PRMatrix::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result ) {
+	*result = PRMatrix (
 		2 * zn / ( r - l ), 0, 0, 0,
 		0, 2 * zn / ( t - b ), 0, 0,
 		( l + r ) / ( l - r ), ( t + b ) / ( t - b ), zf / ( zn - zf ), 1,
 		0, 0, zn * zf / ( zn - zf ), 1 );
 }
-void PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result ) {
+void PRMatrix::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix * result ) {
 	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
 		0, 0, zf / ( zf - zn ), 1,
 		0, 0, -zn * zf / ( zf - zn ), 0
 	);
 }
-void PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result ) {
+void PRMatrix::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix * result ) {
 	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
 		0, 0, zf / ( zn - zf ), 1,
 		0, 0, zn * zf / ( zn - zf ), 0
 	);
 }
-PRMatrix4x4 PRMatrix4x4::createOrthographicLH ( float w, float h, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createOrthographicLH ( float w, float h, float zn, float zf ) {
+	PRMatrix temp;
 	createOrthographicLH ( w, h, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createOrthographicRH ( float w, float h, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createOrthographicRH ( float w, float h, float zn, float zf ) {
+	PRMatrix temp;
 	createOrthographicRH ( w, h, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
+	PRMatrix temp;
 	createOrthographicOffCenterLH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
+	PRMatrix temp;
 	createOrthographicOffCenterRH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveLH ( float w, float h, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveLH ( float w, float h, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveLH ( w, h, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveRH ( float w, float h, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveRH ( float w, float h, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveRH ( w, h, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveOffCenterLH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveOffCenterRH ( l, r, b, t, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveFieldOfViewLH ( fov, aspect, zn, zf, &temp );
 	return temp;
 }
-PRMatrix4x4 PRMatrix4x4::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf ) {
-	PRMatrix4x4 temp;
+PRMatrix PRMatrix::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf ) {
+	PRMatrix temp;
 	createPerspectiveFieldOfViewRH ( fov, aspect, zn, zf, &temp );
 	return temp;
 }
-void PRMatrix4x4::createBillboard ( const PRVector3 * objPos, const PRVector3 * camPos, const PRVector3 * camUpVec,
-	const PRVector3 * camForwardVec, PRMatrix4x4 * result ) {
+void PRMatrix::createBillboard ( const PRVector3 * objPos, const PRVector3 * camPos, const PRVector3 * camUpVec,
+	const PRVector3 * camForwardVec, PRMatrix * result ) {
 	PRVector3 vector, vector2, vector3;
 	vector = *objPos - *camPos;
 	float num = vector.lengthSquared ();
@@ -2736,7 +2507,7 @@ void PRMatrix4x4::createBillboard ( const PRVector3 * objPos, const PRVector3 * 
 	PRVector3::cross ( camUpVec, &vector, &vector3 );
 	vector3 = vector3.normalize ();
 	PRVector3::cross ( &vector, &vector3, &vector2 );
-	*result = PRMatrix4x4 (
+	*result = PRMatrix (
 		vector3.x, vector3.y, vector3.z, 0,
 		vector2.x, vector2.y, vector2.z, 0,
 		vector.x, vector.y, vector.z, 0,
@@ -2744,15 +2515,15 @@ void PRMatrix4x4::createBillboard ( const PRVector3 * objPos, const PRVector3 * 
 	);
 }
 
-PRMatrix4x4 operator+ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::add ( v1, v2 ); }
-PRMatrix4x4 operator- ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::subtract ( v1, v2 ); }
-PRMatrix4x4 operator- ( const PRMatrix4x4 & v1 ) { return PRMatrix4x4::negate ( v1 ); }
-PRMatrix4x4 operator* ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::multiply ( v1, v2 ); }
-PRMatrix4x4 operator* ( const PRMatrix4x4 & v1, float v2 ) { return PRMatrix4x4::multiply ( v1, v2 ); }
-PRMatrix4x4 operator* ( float v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::multiply ( v1, v2 ); }
-PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) { return PRMatrix4x4::divide ( v1, v2 ); }
-PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, float v2 ) { return PRMatrix4x4::divide ( v1, v2 ); }
-bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 ) {
+PRMatrix operator+ ( const PRMatrix & v1, const PRMatrix & v2 ) { return PRMatrix::add ( v1, v2 ); }
+PRMatrix operator- ( const PRMatrix & v1, const PRMatrix & v2 ) { return PRMatrix::subtract ( v1, v2 ); }
+PRMatrix operator- ( const PRMatrix & v1 ) { return PRMatrix::negate ( v1 ); }
+PRMatrix operator* ( const PRMatrix & v1, const PRMatrix & v2 ) { return PRMatrix::multiply ( v1, v2 ); }
+PRMatrix operator* ( const PRMatrix & v1, float v2 ) { return PRMatrix::multiply ( v1, v2 ); }
+PRMatrix operator* ( float v1, const PRMatrix & v2 ) { return PRMatrix::multiply ( v1, v2 ); }
+PRMatrix operator/ ( const PRMatrix & v1, const PRMatrix & v2 ) { return PRMatrix::divide ( v1, v2 ); }
+PRMatrix operator/ ( const PRMatrix & v1, float v2 ) { return PRMatrix::divide ( v1, v2 ); }
+bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 	return PRIsEquals ( v1._11, v2._11 ) && PRIsEquals ( v1._12, v2._12 ) && PRIsEquals ( v1._13, v2._13 ) && PRIsEquals ( v1._14, v2._14 ) &&
 		PRIsEquals ( v1._21, v2._21 ) && PRIsEquals ( v1._22, v2._22 ) && PRIsEquals ( v1._23, v2._23 ) && PRIsEquals ( v1._24, v2._24 ) &&
 		PRIsEquals ( v1._31, v2._31 ) && PRIsEquals ( v1._32, v2._32 ) && PRIsEquals ( v1._33, v2._33 ) && PRIsEquals ( v1._34, v2._34 ) &&

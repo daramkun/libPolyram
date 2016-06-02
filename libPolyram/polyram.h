@@ -249,7 +249,7 @@ struct PRVector2;
 struct PRVector3;
 struct PRVector4;
 struct PRQuaternion;
-struct PRMatrix4x4;
+struct PRMatrix;
 
 #define PRMin( x, y )			( x > y ) ? y : x
 #define PRMax( x, y )			( x > y ) ? x : y
@@ -558,11 +558,11 @@ public:
 	static PRVector2 cross ( const PRVector2 & v1, const PRVector2 & v2 );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector2 * result );
-	static void transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector2 * result );
+	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector2 * result );
+	static void transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector2 * result );
 
-	static PRVector2 transform ( const PRVector2 & pos, const PRMatrix4x4 & mat );
-	static PRVector2 transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat );
+	static PRVector2 transform ( const PRVector2 & pos, const PRMatrix & mat );
+	static PRVector2 transformNormal ( const PRVector2 & nor, const PRMatrix & mat );
 };
 
 PRVector2 operator+ ( const PRVector2 & v1, const PRVector2 & v2 );
@@ -631,17 +631,17 @@ public:
 	static PRVector3 cross ( const PRVector3 & v1, const PRVector3 & v2 );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector3 * result );
-	static void transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector3 * result );
+	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector3 * result );
+	static void transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector3 * result );
 	static void transform ( const PRVector3 * pos, const PRQuaternion * q, PRVector3 * result );
-	static void transformNormal ( const PRVector2 * nor, const PRMatrix4x4 * mat, PRVector3 * result );
-	static void transformNormal ( const PRVector3 * nor, const PRMatrix4x4 * mat, PRVector3 * result );
+	static void transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector3 * result );
+	static void transformNormal ( const PRVector3 * nor, const PRMatrix * mat, PRVector3 * result );
 
-	static PRVector3 transform ( const PRVector2 & pos, const PRMatrix4x4 & mat );
-	static PRVector3 transform ( const PRVector3 & pos, const PRMatrix4x4 & mat );
+	static PRVector3 transform ( const PRVector2 & pos, const PRMatrix & mat );
+	static PRVector3 transform ( const PRVector3 & pos, const PRMatrix & mat );
 	static PRVector3 transform ( const PRVector3 & pos, const PRQuaternion & q );
-	static PRVector3 transformNormal ( const PRVector2 & nor, const PRMatrix4x4 & mat );
-	static PRVector3 transformNormal ( const PRVector3 & nor, const PRMatrix4x4 & mat );
+	static PRVector3 transformNormal ( const PRVector2 & nor, const PRMatrix & mat );
+	static PRVector3 transformNormal ( const PRVector3 & nor, const PRMatrix & mat );
 };
 
 PRVector3 operator+ ( const PRVector3 & v1, const PRVector3 & v2 );
@@ -710,13 +710,13 @@ public:
 	static float dot ( const PRVector4 & v1, float v2 );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix4x4 * mat, PRVector4 * result );
-	static void transform ( const PRVector3 * pos, const PRMatrix4x4 * mat, PRVector4 * result );
-	static void transform ( const PRVector4 * pos, const PRMatrix4x4 * mat, PRVector4 * result );
+	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector4 * result );
+	static void transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector4 * result );
+	static void transform ( const PRVector4 * pos, const PRMatrix * mat, PRVector4 * result );
 
-	static PRVector4 transform ( const PRVector2 & pos, const PRMatrix4x4 & mat );
-	static PRVector4 transform ( const PRVector3 & pos, const PRMatrix4x4 & mat );
-	static PRVector4 transform ( const PRVector4 & pos, const PRMatrix4x4 & mat );
+	static PRVector4 transform ( const PRVector2 & pos, const PRMatrix & mat );
+	static PRVector4 transform ( const PRVector3 & pos, const PRMatrix & mat );
+	static PRVector4 transform ( const PRVector4 & pos, const PRMatrix & mat );
 };
 
 PRVector4 operator+ ( const PRVector4 & v1, const PRVector4 & v2 );
@@ -741,7 +741,7 @@ public:
 	PRQuaternion ( const PRVector3 & v, float w );
 	PRQuaternion ( const PRVector4 & v );
 	PRQuaternion ( float yaw, float pitch, float roll );
-	PRQuaternion ( const PRMatrix4x4 & m );
+	PRQuaternion ( const PRMatrix & m );
 
 public:
 	void lengthSquared ( float * result );
@@ -801,7 +801,7 @@ PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 );
 PRQuaternion operator/ ( const PRQuaternion & v1, float v2 );
 bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 );
 
-struct PRMatrix4x4 {
+struct PRMatrix {
 public:
 	float _11, _12, _13, _14,
 		_21, _22, _23, _24,
@@ -809,106 +809,106 @@ public:
 		_41, _42, _43, _44;
 
 public:
-	PRMatrix4x4 ();
-	PRMatrix4x4 ( float v );
-	PRMatrix4x4 ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
+	PRMatrix ();
+	PRMatrix ( float v );
+	PRMatrix ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
 		float _31, float _32, float _33, float _34, float _41, float _42, float _43, float _44 );
-	PRMatrix4x4 ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 );
-	PRMatrix4x4 ( PRQuaternion & q );
+	PRMatrix ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 );
+	PRMatrix ( PRQuaternion & q );
 
 public:
-	void invert ( PRMatrix4x4 * result );
-	void transpose ( PRMatrix4x4 * result );
+	void invert ( PRMatrix * result );
+	void transpose ( PRMatrix * result );
 	void determinant ( float * result );
 
-	PRMatrix4x4 invert ();
-	PRMatrix4x4 transpose ();
+	PRMatrix invert ();
+	PRMatrix transpose ();
 	float determinant ();
 
 public:
-	static void invert ( const PRMatrix4x4 * m, PRMatrix4x4 * result );
-	static PRMatrix4x4 invert ( const PRMatrix4x4 & m );
-	static void transpose ( const PRMatrix4x4 * m, PRMatrix4x4 * result );
-	static PRMatrix4x4 transpose ( const PRMatrix4x4 & m );
-	static void determinant ( const PRMatrix4x4 * m, float * result );
-	static float determinant ( const PRMatrix4x4 & m );
+	static void invert ( const PRMatrix * m, PRMatrix * result );
+	static PRMatrix invert ( const PRMatrix & m );
+	static void transpose ( const PRMatrix * m, PRMatrix * result );
+	static PRMatrix transpose ( const PRMatrix & m );
+	static void determinant ( const PRMatrix * m, float * result );
+	static float determinant ( const PRMatrix & m );
 
 public:
-	static void add ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result );
-	static void subtract ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result );
-	static void negate ( const PRMatrix4x4 * v1, PRMatrix4x4 * result );
-	static void multiply ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result );
-	static void multiply ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result );
-	static void multiply ( float v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result );
-	static void divide ( const PRMatrix4x4 * v1, const PRMatrix4x4 * v2, PRMatrix4x4 * result );
-	static void divide ( const PRMatrix4x4 * v1, float v2, PRMatrix4x4 * result );
+	static void add ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
+	static void subtract ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
+	static void negate ( const PRMatrix * v1, PRMatrix * result );
+	static void multiply ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
+	static void multiply ( const PRMatrix * v1, float v2, PRMatrix * result );
+	static void multiply ( float v1, const PRMatrix * v2, PRMatrix * result );
+	static void divide ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
+	static void divide ( const PRMatrix * v1, float v2, PRMatrix * result );
 
-	static PRMatrix4x4 add ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-	static PRMatrix4x4 subtract ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-	static PRMatrix4x4 negate ( const PRMatrix4x4 & v1 );
-	static PRMatrix4x4 multiply ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-	static PRMatrix4x4 multiply ( const PRMatrix4x4 & v1, float v2 );
-	static PRMatrix4x4 multiply ( float v1, const PRMatrix4x4 & v2 );
-	static PRMatrix4x4 divide ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-	static PRMatrix4x4 divide ( const PRMatrix4x4 & v1, float v2 );
-
-public:
-	static void createTranslate ( const PRVector3 * v, PRMatrix4x4 * result );
-	static void createScale ( const PRVector3 * v, PRMatrix4x4 * result );
-	static void createRotationX ( float r, PRMatrix4x4 * result );
-	static void createRotationY ( float r, PRMatrix4x4 * result );
-	static void createRotationZ ( float r, PRMatrix4x4 * result );
-
-	static PRMatrix4x4 createTranslate ( const PRVector3 & v );
-	static PRMatrix4x4 createScale ( const PRVector3 & v );
-	static PRMatrix4x4 createRotationX ( float r );
-	static PRMatrix4x4 createRotationY ( float r );
-	static PRMatrix4x4 createRotationZ ( float r );
+	static PRMatrix add ( const PRMatrix & v1, const PRMatrix & v2 );
+	static PRMatrix subtract ( const PRMatrix & v1, const PRMatrix & v2 );
+	static PRMatrix negate ( const PRMatrix & v1 );
+	static PRMatrix multiply ( const PRMatrix & v1, const PRMatrix & v2 );
+	static PRMatrix multiply ( const PRMatrix & v1, float v2 );
+	static PRMatrix multiply ( float v1, const PRMatrix & v2 );
+	static PRMatrix divide ( const PRMatrix & v1, const PRMatrix & v2 );
+	static PRMatrix divide ( const PRMatrix & v1, float v2 );
 
 public:
-	static void createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result );
-	static void createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix4x4 * result );
+	static void createTranslate ( const PRVector3 * v, PRMatrix * result );
+	static void createScale ( const PRVector3 * v, PRMatrix * result );
+	static void createRotationX ( float r, PRMatrix * result );
+	static void createRotationY ( float r, PRMatrix * result );
+	static void createRotationZ ( float r, PRMatrix * result );
 
-	static PRMatrix4x4 createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
-	static PRMatrix4x4 createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
+	static PRMatrix createTranslate ( const PRVector3 & v );
+	static PRMatrix createScale ( const PRVector3 & v );
+	static PRMatrix createRotationX ( float r );
+	static PRMatrix createRotationY ( float r );
+	static PRMatrix createRotationZ ( float r );
 
 public:
-	static void createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result );
-	static void createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result );
-	static void createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result );
-	static void createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result );
-	static void createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix4x4 * result );
+	static void createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result );
+	static void createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result );
 
-	static PRMatrix4x4 createOrthographicLH ( float w, float h, float zn, float zf );
-	static PRMatrix4x4 createOrthographicRH ( float w, float h, float zn, float zf );
-	static PRMatrix4x4 createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix4x4 createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveLH ( float w, float h, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveRH ( float w, float h, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf );
-	static PRMatrix4x4 createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf );
+	static PRMatrix createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
+	static PRMatrix createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
+
+public:
+	static void createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix * result );
+	static void createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix * result );
+	static void createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
+	static void createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix * result );
+	static void createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix * result );
+
+	static PRMatrix createOrthographicLH ( float w, float h, float zn, float zf );
+	static PRMatrix createOrthographicRH ( float w, float h, float zn, float zf );
+	static PRMatrix createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMatrix createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMatrix createPerspectiveLH ( float w, float h, float zn, float zf );
+	static PRMatrix createPerspectiveRH ( float w, float h, float zn, float zf );
+	static PRMatrix createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMatrix createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMatrix createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf );
+	static PRMatrix createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf );
 
 public:
 	static void createBillboard ( const PRVector3 * objPos, const PRVector3 * camPos, const PRVector3 * camUpVec,
-		const PRVector3 * camForwardVec, PRMatrix4x4 * result );
+		const PRVector3 * camForwardVec, PRMatrix * result );
 };
 
-PRMatrix4x4 operator+ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-PRMatrix4x4 operator- ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-PRMatrix4x4 operator- ( const PRMatrix4x4 & v1 );
-PRMatrix4x4 operator* ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-PRMatrix4x4 operator* ( const PRMatrix4x4 & v1, float v2 );
-PRMatrix4x4 operator* ( float v1, const PRMatrix4x4 & v2 );
-PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
-PRMatrix4x4 operator/ ( const PRMatrix4x4 & v1, float v2 );
-bool operator== ( const PRMatrix4x4 & v1, const PRMatrix4x4 & v2 );
+PRMatrix operator+ ( const PRMatrix & v1, const PRMatrix & v2 );
+PRMatrix operator- ( const PRMatrix & v1, const PRMatrix & v2 );
+PRMatrix operator- ( const PRMatrix & v1 );
+PRMatrix operator* ( const PRMatrix & v1, const PRMatrix & v2 );
+PRMatrix operator* ( const PRMatrix & v1, float v2 );
+PRMatrix operator* ( float v1, const PRMatrix & v2 );
+PRMatrix operator/ ( const PRMatrix & v1, const PRMatrix & v2 );
+PRMatrix operator/ ( const PRMatrix & v1, float v2 );
+bool operator== ( const PRMatrix & v1, const PRMatrix & v2 );
 
 class PRImageLoader {
 public:
