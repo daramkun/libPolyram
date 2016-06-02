@@ -1,30 +1,25 @@
 #include "polyram.h"
 
-PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 ) {
+PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 ) {
 	PRVector3 temp1 = v2 - v1, temp2 = v3 - v1;
 	return PRVector3::cross ( temp1, temp2 ).normalize ();
 }
 
 PRGame::PRGame () { }
 PRGame::~PRGame () { }
-
 void PRGame::onInitialize () { }
 void PRGame::onDestroy () { }
 void PRGame::onUpdate ( double dt ) { }
 void PRGame::onDraw ( double dt ) { }
-
 void PRGame::onKeyDown ( PRKeys key ) { }
 void PRGame::onKeyUp ( PRKeys key ) { }
-
 void PRGame::onMouseDown ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseUp ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseMove ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
-
 void PRGame::onActivated () { }
 void PRGame::onDeactivated () { }
 void PRGame::onResized () { }
-
 void PRGame::onAccelerometer ( float x, float y, float z ) { }
 
 PRVersion::PRVersion ( std::string & versionString ) {
@@ -2251,7 +2246,7 @@ void PRMatrix::divide ( const PRMatrix * v1, float v2, PRMatrix * result ) {
 
 PRMatrix PRMatrix::add ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, add, &v1, &v2 ); }
 PRMatrix PRMatrix::subtract ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, subtract, &v1, &v2 ); }
-PRMatrix PRMatrix::negate ( const PRMatrix & v1 ) { COPIEDMETHOD1 ( PRMatrix, negate, &v1, &v2 ); }
+PRMatrix PRMatrix::negate ( const PRMatrix & v1 ) { COPIEDMETHOD1 ( PRMatrix, negate, &v1 ); }
 PRMatrix PRMatrix::multiply ( const PRMatrix & v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, &v1, &v2 ); }
 PRMatrix PRMatrix::multiply ( const PRMatrix & v1, float v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, &v1, v2 ); }
 PRMatrix PRMatrix::multiply ( float v1, const PRMatrix & v2 ) { COPIEDMETHOD2 ( PRMatrix, multiply, v1, &v2 ); }
@@ -2665,27 +2660,13 @@ void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSy
 PRDefaultModelGenerator::PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
 	PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale ) {
 	switch ( modelType ) {
-	case PRDefaultModelType_Box:
-		generateCube ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	case PRDefaultModelType_Rectangle:
-		generateRect ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	case PRDefaultModelType_Sphere:
-		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	case PRDefaultModelType_Circle:
-		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	case PRDefaultModelType_Grid:
-		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	case PRDefaultModelType_Guide:
-		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize );
-		break;
-	//case LqDefaultModelType_Teapot:
-	//	generateTeapot ( properties, tcs, scale, &m_data, &m_dataSize );
-	//	break;
+	case PRDefaultModelType_Box:		generateCube ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRDefaultModelType_Rectangle:	generateRect ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRDefaultModelType_Sphere:		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRDefaultModelType_Circle:		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRDefaultModelType_Grid:		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRDefaultModelType_Guide:		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	//case LqDefaultModelType_Teapot:	generateTeapot ( properties, tcs, scale, &m_data, &m_dataSize ); break;
 	}
 }
 
@@ -3025,26 +3006,10 @@ void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSys
 
 void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
-	polygonLine vertices [ 3 ];
-	vertices [ 0 ].v1.position = PRVector3 ();
-	vertices [ 0 ].v1.texCoord = PRVector2 ( 0, 0 );
-	vertices [ 0 ].v1.diffuse = PRVector4 ( 1, 0, 0, 1 );
-	vertices [ 0 ].v2.position = PRVector3 ( 1, 0, 0 );
-	vertices [ 0 ].v2.texCoord = PRVector2 ( 1, 0 );
-	vertices [ 0 ].v2.diffuse = PRVector4 ( 1, 0, 0, 1 );
-
-	vertices [ 1 ].v1.position = PRVector3 ();
-	vertices [ 1 ].v1.texCoord = PRVector2 ( 0, 0 );
-	vertices [ 1 ].v1.diffuse = PRVector4 ( 0, 1, 0, 1 );
-	vertices [ 1 ].v2.position = PRVector3 ( 0, 1, 0 );
-	vertices [ 1 ].v2.texCoord = PRVector2 ( 1, 0 );
-	vertices [ 1 ].v2.diffuse = PRVector4 ( 0, 1, 0, 1 );
-
-	vertices [ 2 ].v1.position = PRVector3 ();
-	vertices [ 2 ].v1.texCoord = PRVector2 ( 0, 0 );
-	vertices [ 2 ].v1.diffuse = PRVector4 ( 0, 0, 1, 1 );
-	vertices [ 2 ].v2.position = PRVector3 ( 0, 0, 1 );
-	vertices [ 2 ].v2.texCoord = PRVector2 ( 0, 1 );
-	vertices [ 2 ].v2.diffuse = PRVector4 ( 0, 0, 1, 1 );
+	polygonLine vertices [ 3 ] = {
+		{ { { 0, 0, 0 }, { 0, 0 }, { 1, 0, 0, 1 } }, { { 1, 0, 0 }, { 1, 0 }, { 1, 0, 0, 1 } } },
+		{ { { 0, 0, 0 }, { 0, 0 }, { 0, 1, 0, 1 } }, { { 0, 1, 0 }, { 1, 0 }, { 0, 1, 0, 1 } } },
+		{ { { 0, 0, 0 }, { 0, 0 }, { 0, 0, 1, 1 } }, { { 0, 0, 1 }, { 0, 1 }, { 0, 0, 1, 1 } } },
+	};
 	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
 }

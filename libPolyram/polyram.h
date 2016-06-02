@@ -259,7 +259,7 @@ struct PRMatrix;
 #define PRToRadian( x )			x * PR_PI / 180
 
 #define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
-PRVector3 PRCalculateNormal ( PRVector3 & v1, PRVector3 & v2, PRVector3 & v3 );
+PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
 
 double PRGetCurrentSecond ();
 void PRPrintLog ( const char * format, ... );
@@ -286,28 +286,23 @@ public:
 	PRGame ();
 	virtual ~PRGame ();
 
-public:
 	virtual void onInitialize ();
 	virtual void onDestroy ();
 	virtual void onUpdate ( double dt );
 	virtual void onDraw ( double dt );
 
-public:
 	virtual void onKeyDown ( PRKeys key );
 	virtual void onKeyUp ( PRKeys key );
 
-public:
 	virtual void onMouseDown ( PRMouseButton button, int x, int y );
 	virtual void onMouseUp ( PRMouseButton button, int x, int y );
 	virtual void onMouseMove ( PRMouseButton button, int x, int y );
 	virtual void onMouseWheel ( int wheelX, int wheelY );
 
-public:
 	virtual void onActivated ();
 	virtual void onDeactivated ();
 	virtual void onResized ();
 
-public:
 	virtual void onAccelerometer ( float x, float y, float z );
 };
 
@@ -330,12 +325,9 @@ enum PRRendererType {
 
 struct PRVersion {
 	int major, minor;
-
 	PRVersion ( std::string & versionString );
 	PRVersion ( int major, int minor = 0 );
 };
-
-class PRApplication;
 
 class PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
 
@@ -354,10 +346,8 @@ public:
 	void setGraphicsContext ( PRGraphicsContext * graphicsContext );
 	void getClientSize ( int * width, int * height );
 
-public:
 	void setCursorPosition ( int x, int y );
 
-public:
 	void run ();
 
 public:
