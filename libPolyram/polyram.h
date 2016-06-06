@@ -1,33 +1,29 @@
 #ifndef __POLYRAM_H__
 #define __POLYRAM_H__
 
-/* =================================================================================
+/* ==============================================================================================
 *
 *   libPolyram
-*
-*         Copyright (C) 2015 Daramkun(Jin Jae-yeon)
+*                          Copyright (C) 2015 Daramkun(Jin Jae-yeon)
 *
 *  -- The MIT License --
 *
-*  Permission is hereby granted, free of charge, to any person obtaining a copy
-*  of this software and associated documentation files (the "Software"), to deal
-*  in the Software without restriction, including without limitation the rights
-*  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-*  copies of the Software, and to permit persons to whom the Software is
-*  furnished to do so, subject to the following conditions:
+*  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+*  and associated documentation files (the "Software"), to deal in the Software without
+*  restriction, including without limitation the rights to use, copy, modify, merge, publish, 
+*  distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+*  Software is furnished to do so, subject to the following conditions:
 *
-*  The above copyright notice and this permission notice shall be included in all
-*  copies or substantial portions of the Software.
+*  The above copyright notice and this permission notice shall be included in all copies or 
+*  substantial portions of the Software.
 *
-*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-*  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-*  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-*  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-*  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-*  SOFTWARE.
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+*  BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+*  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+*  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+*  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 *
-================================================================================= */
+============================================================================================== */
 
 #include <iostream>
 #include <exception>
@@ -66,8 +62,8 @@
 #endif
 #if defined ( __APPLE__ )
 #	include <TargetConditionals.h>
-#	define PRPlatformAppleOSX						TARGET_OS_MAC && !( TARGET_OS_IOS || TARGET_OS_SIMULATOR )
-#	define PRPlatformAppleiOS						TARGET_OS_IOS || TARGET_OS_SIMULATOR
+#	define PRPlatformAppleOSX					TARGET_OS_MAC && !( TARGET_OS_IOS || TARGET_OS_SIMULATOR )
+#	define PRPlatformAppleiOS					TARGET_OS_IOS || TARGET_OS_SIMULATOR
 #	import <Foundation/Foundation.h>
 #	include <sys/time.h>
 #	if ( PRPlatformAppleOSX )
@@ -176,6 +172,9 @@ struct engine {
 #if defined ( POLYRAM_OPENGL )
 #	if PRPlatformDesktops && !defined ( GLEW_STATIC )
 #		define GLEW_STATIC
+#		if PRPlatformMicrosoftWindowsNT && defined ( POLYRAM_DLL_MODE )
+#			undef GLEW_STATIC
+#		endif
 #	endif
 #	if PRPlatformMicrosoftWindowsNT
 #		include <GL/glew.h>
@@ -229,11 +228,21 @@ struct engine {
 */
 #endif
 
-#define SAFE_RELEASE(x)							if ( x ) x->Release (); x = nullptr;
-#define SAFE_DELETE(x)							if ( x ) delete x; x = nullptr;
-#define SAFE_DELETE_ARRAY(x)					if ( x ) delete [] x; x = nullptr;
+#if defined ( POLYRAM_DLL_MODE )
+#	if LIBPOLYRAM_EXPORTS
+#		define POLYRAMDECLSPEC	__declspec ( dllexport )
+#	else
+#		define POLYRAMDECLSPEC	__declspec ( dllimport )
+#	endif
+#else
+#	define POLYRAMDECLSPEC
+#endif
 
-#define PR_Epsilon				1.0E-8f
+#define SAFE_RELEASE(x)			if ( x ) x->Release (); x = nullptr;
+#define SAFE_DELETE(x)			if ( x ) delete x; x = nullptr;
+#define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] x; x = nullptr;
+
+#define PR_Epsilon				1.19209290E-07F
 #define PR_NaN					NAN;
 #define PR_PositiveInfinite		HUGE_VALF
 #define PR_NegativeInfinite		-HUGE_VALF
@@ -251,18 +260,18 @@ struct PRVector4;
 struct PRQuaternion;
 struct PRMatrix;
 
-#define PRMin( x, y )			( x > y ) ? y : x
-#define PRMax( x, y )			( x > y ) ? x : y
-#define PRPow2( x )				x * x
-#define PRPow3( x )				x * x * x
-#define PRToDegree( x )			x * 180 / PR_PI
-#define PRToRadian( x )			x * PR_PI / 180
+#define PRMin( x, y )			( ( x > y ) ? y : x )
+#define PRMax( x, y )			( ( x > y ) ? x : y )
+#define PRPow2( x )				( x * x )
+#define PRPow3( x )				( x * x * x )
+#define PRToDegree( x )			( x * 180 / PR_PI )
+#define PRToRadian( x )			( x * PR_PI / 180 )
 
 #define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
-PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
+POLYRAMDECLSPEC PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
 
-double PRGetCurrentSecond ();
-void PRPrintLog ( const char * format, ... );
+POLYRAMDECLSPEC double PRGetCurrentSecond ();
+POLYRAMDECLSPEC void PRPrintLog ( const char * format, ... );
 
 enum PRKeys {
 	PRKeys_Unknown,
@@ -281,7 +290,7 @@ enum PRKeys {
 
 enum PRMouseButton { PRMouseButton_None = 0, PRMouseButton_Left = 1, PRMouseButton_Right = 2, PRMouseButton_Middle = 4, };
 
-class PRGame {
+class POLYRAMDECLSPEC PRGame {
 public:
 	PRGame ();
 	virtual ~PRGame ();
@@ -327,15 +336,15 @@ enum PRRendererType {
 	PRRendererType_Metal1,
 };
 
-struct PRVersion {
+struct POLYRAMDECLSPEC PRVersion {
 	int major, minor;
 	PRVersion ( std::string & versionString );
 	PRVersion ( int major, int minor = 0 );
 };
 
-class PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
+class POLYRAMDECLSPEC PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
 
-class PRApplication {
+class POLYRAMDECLSPEC PRApplication {
 public:
 	PRApplication ( PRGame * game, PRRendererType rendererType, int width, int height, std::string & title
 #if PRPlatformGoogleAndroid
@@ -384,7 +393,7 @@ public:
 };
 
 #if defined ( POLYRAM_D3D9 )
-class PRGraphicsContext_Direct3D9 : public PRGraphicsContext {
+class POLYRAMDECLSPEC PRGraphicsContext_Direct3D9 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D9 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D9 ();
@@ -394,7 +403,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_D3D11 )
-class PRGraphicsContext_Direct3D11 : public PRGraphicsContext {
+class POLYRAMDECLSPEC PRGraphicsContext_Direct3D11 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D11 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D11 ();
@@ -413,7 +422,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_D3D12 )
-class PRGraphicsContext_Direct3D12 : public PRGraphicsContext {
+class POLYRAMDECLSPEC PRGraphicsContext_Direct3D12 : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Direct3D12 ( PRApplication * app );
 	~PRGraphicsContext_Direct3D12 ();
@@ -442,7 +451,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_OPENGL )
-class PRGraphicsContext_OpenGL : public PRGraphicsContext {
+class POLYRAMDECLSPEC PRGraphicsContext_OpenGL : public PRGraphicsContext {
 public:
 	PRGraphicsContext_OpenGL ( PRApplication * app, PRRendererType rendererType );
 	~PRGraphicsContext_OpenGL ();
@@ -469,7 +478,7 @@ public:
 };
 #endif
 #if defined ( POLYRAM_METAL )
-class PRGraphicsContext_Metal : public PRGraphicsContext {
+class POLYRAMDECLSPEC PRGraphicsContext_Metal : public PRGraphicsContext {
 public:
 	PRGraphicsContext_Metal ( PRApplication * app );
 	~PRGraphicsContext_Metal ();
@@ -498,7 +507,7 @@ public:
 
 #define GETGRAPHICSCONTEXT(x) auto graphicsContext = static_cast<x*> ( PRApplication::sharedApplication ()->getGraphicsContext () )
 
-struct PRVector2 {
+struct POLYRAMDECLSPEC PRVector2 {
 public:
 	float x, y;
 
@@ -560,17 +569,17 @@ public:
 	static PRVector2 transformNormal ( const PRVector2 & nor, const PRMatrix & mat );
 };
 
-PRVector2 operator+ ( const PRVector2 & v1, const PRVector2 & v2 );
-PRVector2 operator- ( const PRVector2 & v1, const PRVector2 & v2 );
-PRVector2 operator- ( const PRVector2 & v1 );
-PRVector2 operator* ( const PRVector2 & v1, const PRVector2 & v2 );
-PRVector2 operator* ( const PRVector2 & v1, float v2 );
-PRVector2 operator* ( float v1, const PRVector2 & v2 );
-PRVector2 operator/ ( const PRVector2 & v1, const PRVector2 & v2 );
-PRVector2 operator/ ( const PRVector2 & v1, float v2 );
-bool operator== ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator+ ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator- ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator- ( const PRVector2 & v1 );
+POLYRAMDECLSPEC PRVector2 operator* ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator* ( const PRVector2 & v1, float v2 );
+POLYRAMDECLSPEC PRVector2 operator* ( float v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator/ ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVector2 operator/ ( const PRVector2 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVector2 & v1, const PRVector2 & v2 );
 
-struct PRVector3 {
+struct POLYRAMDECLSPEC PRVector3 {
 public:
 	float x, y, z;
 
@@ -639,17 +648,17 @@ public:
 	static PRVector3 transformNormal ( const PRVector3 & nor, const PRMatrix & mat );
 };
 
-PRVector3 operator+ ( const PRVector3 & v1, const PRVector3 & v2 );
-PRVector3 operator- ( const PRVector3 & v1, const PRVector3 & v2 );
-PRVector3 operator- ( const PRVector3 & v1 );
-PRVector3 operator* ( const PRVector3 & v1, const PRVector3 & v2 );
-PRVector3 operator* ( const PRVector3 & v1, float v2 );
-PRVector3 operator* ( float v1, const PRVector3 & v2 );
-PRVector3 operator/ ( const PRVector3 & v1, const PRVector3 & v2 );
-PRVector3 operator/ ( const PRVector3 & v1, float v2 );
-bool operator== ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator+ ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator- ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator- ( const PRVector3 & v1 );
+POLYRAMDECLSPEC PRVector3 operator* ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator* ( const PRVector3 & v1, float v2 );
+POLYRAMDECLSPEC PRVector3 operator* ( float v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator/ ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVector3 operator/ ( const PRVector3 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVector3 & v1, const PRVector3 & v2 );
 
-struct PRVector4 {
+struct POLYRAMDECLSPEC PRVector4 {
 public:
 	float x, y, z, w;
 
@@ -714,17 +723,17 @@ public:
 	static PRVector4 transform ( const PRVector4 & pos, const PRMatrix & mat );
 };
 
-PRVector4 operator+ ( const PRVector4 & v1, const PRVector4 & v2 );
-PRVector4 operator- ( const PRVector4 & v1, const PRVector4 & v2 );
-PRVector4 operator- ( const PRVector4 & v1 );
-PRVector4 operator* ( const PRVector4 & v1, const PRVector4 & v2 );
-PRVector4 operator* ( const PRVector4 & v1, float v2 );
-PRVector4 operator* ( float v1, const PRVector4 & v2 );
-PRVector4 operator/ ( const PRVector4 & v1, const PRVector4 & v2 );
-PRVector4 operator/ ( const PRVector4 & v1, float v2 );
-bool operator== ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator+ ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator- ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator- ( const PRVector4 & v1 );
+POLYRAMDECLSPEC PRVector4 operator* ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator* ( const PRVector4 & v1, float v2 );
+POLYRAMDECLSPEC PRVector4 operator* ( float v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator/ ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVector4 operator/ ( const PRVector4 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVector4 & v1, const PRVector4 & v2 );
 
-struct PRQuaternion {
+struct POLYRAMDECLSPEC PRQuaternion {
 public:
 	float x, y, z, w;
 
@@ -786,17 +795,17 @@ public:
 	static float dot ( const PRQuaternion & v1, float v2 );
 };
 
-PRQuaternion operator+ ( const PRQuaternion & v1, const PRQuaternion & v2 );
-PRQuaternion operator- ( const PRQuaternion & v1, const PRQuaternion & v2 );
-PRQuaternion operator- ( const PRQuaternion & v1 );
-PRQuaternion operator* ( const PRQuaternion & v1, const PRQuaternion & v2 );
-PRQuaternion operator* ( const PRQuaternion & v1, float v2 );
-PRQuaternion operator* ( float v1, const PRQuaternion & v2 );
-PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 );
-PRQuaternion operator/ ( const PRQuaternion & v1, float v2 );
-bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator+ ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator- ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator- ( const PRQuaternion & v1 );
+POLYRAMDECLSPEC PRQuaternion operator* ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator* ( const PRQuaternion & v1, float v2 );
+POLYRAMDECLSPEC PRQuaternion operator* ( float v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuaternion operator/ ( const PRQuaternion & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 );
 
-struct PRMatrix {
+struct POLYRAMDECLSPEC PRMatrix {
 public:
 	float _11, _12, _13, _14,
 		_21, _22, _23, _24,
@@ -895,17 +904,17 @@ public:
 		const PRVector3 * camForwardVec, PRMatrix * result );
 };
 
-PRMatrix operator+ ( const PRMatrix & v1, const PRMatrix & v2 );
-PRMatrix operator- ( const PRMatrix & v1, const PRMatrix & v2 );
-PRMatrix operator- ( const PRMatrix & v1 );
-PRMatrix operator* ( const PRMatrix & v1, const PRMatrix & v2 );
-PRMatrix operator* ( const PRMatrix & v1, float v2 );
-PRMatrix operator* ( float v1, const PRMatrix & v2 );
-PRMatrix operator/ ( const PRMatrix & v1, const PRMatrix & v2 );
-PRMatrix operator/ ( const PRMatrix & v1, float v2 );
-bool operator== ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator+ ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator- ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator- ( const PRMatrix & v1 );
+POLYRAMDECLSPEC PRMatrix operator* ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator* ( const PRMatrix & v1, float v2 );
+POLYRAMDECLSPEC PRMatrix operator* ( float v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator/ ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMatrix operator/ ( const PRMatrix & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRMatrix & v1, const PRMatrix & v2 );
 
-class PRImageLoader {
+class POLYRAMDECLSPEC PRImageLoader {
 public:
 	PRImageLoader ( std::string & filename );
 	~PRImageLoader ();
@@ -921,7 +930,7 @@ private:
 	unsigned m_width, m_height;
 };
 
-class PRDataLoader {
+class POLYRAMDECLSPEC PRDataLoader {
 public:
 	PRDataLoader ( std::string & filename );
 	~PRDataLoader ();
@@ -935,14 +944,7 @@ private:
 	unsigned m_dataSize;
 };
 
-enum PRModelType {
-	PRModelType_Box,
-	PRModelType_Rectangle,
-	PRModelType_Sphere,
-	PRModelType_Circle,
-	PRModelType_Grid,
-	PRModelType_Guide,
-};
+enum PRModelType { PRModelType_Box, PRModelType_Rectangle, PRModelType_Sphere, PRModelType_Circle, PRModelType_Grid, PRModelType_Guide, };
 
 enum PRModelProperty {
 	PRModelProperty_Position = 0,
@@ -951,12 +953,9 @@ enum PRModelProperty {
 	PRModelProperty_Diffuse = 1 << 2,
 };
 
-enum PRModelTexCoord {
-	PRModelTexCoord_UV,
-	PRModelTexCoord_ST,
-};
+enum PRModelTexCoord { PRModelTexCoord_UV, PRModelTexCoord_ST };
 
-class PRModelGenerator {
+class POLYRAMDECLSPEC PRModelGenerator {
 public:
 	PRModelGenerator ( PRModelType modelType, PRModelProperty properties,
 		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );

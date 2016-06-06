@@ -1588,80 +1588,80 @@ PRGraphicsContext_Metal::~PRGraphicsContext_Metal () {
 
 #if defined ( POLYRAM_VULKAN )
 /*PRGraphicsContext_Vulkan::PRGraphicsContext_Vulkan ( PRApplication * app ) {
-VkApplicationInfo applicationInfo;
-VkInstanceCreateInfo instanceInfo;
+	VkApplicationInfo applicationInfo;
+	VkInstanceCreateInfo instanceInfo;
 
-applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-applicationInfo.pNext = nullptr;
-applicationInfo.pApplicationName = "libPolyram";
-applicationInfo.pEngineName = "libPolyram";
-applicationInfo.engineVersion = 1;
-applicationInfo.apiVersion = VK_API_VERSION;
+	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	applicationInfo.pNext = nullptr;
+	applicationInfo.pApplicationName = "libPolyram";
+	applicationInfo.pEngineName = "libPolyram";
+	applicationInfo.engineVersion = 1;
+	applicationInfo.apiVersion = VK_API_VERSION;
 
-instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-instanceInfo.pNext = nullptr;
-instanceInfo.flags = 0;
-instanceInfo.pApplicationInfo = &applicationInfo;
-instanceInfo.enabledLayerCount = 0;
-instanceInfo.ppEnabledLayerNames = nullptr;
-instanceInfo.enabledExtensionCount = 0;
-instanceInfo.ppEnabledExtensionNames = nullptr;
+	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	instanceInfo.pNext = nullptr;
+	instanceInfo.flags = 0;
+	instanceInfo.pApplicationInfo = &applicationInfo;
+	instanceInfo.enabledLayerCount = 0;
+	instanceInfo.ppEnabledLayerNames = nullptr;
+	instanceInfo.enabledExtensionCount = 0;
+	instanceInfo.ppEnabledExtensionNames = nullptr;
 
-VkResult result = vkCreateInstance ( &instanceInfo, nullptr, &instance );
-if ( result != VK_SUCCESS )
-throw std::runtime_error ( "Failed to create Vulkan instance." );
+	VkResult result = vkCreateInstance ( &instanceInfo, nullptr, &instance );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed to create Vulkan instance." );
 
-uint32_t deviceCount = 0;
-result = vkEnumeratePhysicalDevices ( instance, &deviceCount, nullptr );
-if ( result != VK_SUCCESS )
-throw std::runtime_error ( "Failed to query the number of physical devices present." );
+	uint32_t deviceCount = 0;
+	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, nullptr );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed to query the number of physical devices present." );
 
-if ( deviceCount == 0 )
-throw std::runtime_error ( "Couldn't detect any device present with Vulkan support." );
+	if ( deviceCount == 0 )
+		throw std::runtime_error ( "Couldn't detect any device present with Vulkan support." );
 
-std::vector<VkPhysicalDevice> physicalDevices ( deviceCount );
-result = vkEnumeratePhysicalDevices ( instance, &deviceCount, &physicalDevices [ 0 ] );
-if ( result != VK_SUCCESS )
-throw std::runtime_error ( "Faied to enumerate physical devices presen." );
+	std::vector<VkPhysicalDevice> physicalDevices ( deviceCount );
+	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, &physicalDevices [ 0 ] );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Faied to enumerate physical devices presen." );
 
-VkDeviceCreateInfo deviceInfo;
-deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-deviceInfo.pNext = nullptr;
-deviceInfo.flags = 0;
-deviceInfo.enabledLayerCount = 0;
-deviceInfo.ppEnabledLayerNames = nullptr;
-deviceInfo.enabledExtensionCount = 0;
-deviceInfo.ppEnabledExtensionNames = nullptr;
-deviceInfo.pEnabledFeatures = nullptr;
+	VkDeviceCreateInfo deviceInfo;
+	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceInfo.pNext = nullptr;
+	deviceInfo.flags = 0;
+	deviceInfo.enabledLayerCount = 0;
+	deviceInfo.ppEnabledLayerNames = nullptr;
+	deviceInfo.enabledExtensionCount = 0;
+	deviceInfo.ppEnabledExtensionNames = nullptr;
+	deviceInfo.pEnabledFeatures = nullptr;
 
-float queuePriorities [] = { 1.0f };
-VkDeviceQueueCreateInfo deviceQueueInfo;
-deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-deviceQueueInfo.pNext = nullptr;
-deviceQueueInfo.flags = 0;
-deviceQueueInfo.queueFamilyIndex = 0;
-deviceQueueInfo.queueCount = 1;
-deviceQueueInfo.pQueuePriorities = queuePriorities;
+	float queuePriorities [] = { 1.0f };
+	VkDeviceQueueCreateInfo deviceQueueInfo;
+	deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	deviceQueueInfo.pNext = nullptr;
+	deviceQueueInfo.flags = 0;
+	deviceQueueInfo.queueFamilyIndex = 0;
+	deviceQueueInfo.queueCount = 1;
+	deviceQueueInfo.pQueuePriorities = queuePriorities;
 
-deviceInfo.queueCreateInfoCount = 1;
-deviceInfo.pQueueCreateInfos = &deviceQueueInfo;
+	deviceInfo.queueCreateInfoCount = 1;
+	deviceInfo.pQueueCreateInfos = &deviceQueueInfo;
 
-result = vkCreateDevice ( physicalDevices [ 0 ], &deviceInfo, nullptr, &device );
-if ( result != VK_SUCCESS )
-throw std::runtime_error ( "Failed creating logical device." );
+	result = vkCreateDevice ( physicalDevices [ 0 ], &deviceInfo, nullptr, &device );
+	if ( result != VK_SUCCESS )
+		throw std::runtime_error ( "Failed creating logical device." );
 
-vkGetDeviceQueue ( device, 0, 0, &queue );
+	vkGetDeviceQueue ( device, 0, 0, &queue );
 }
 
 PRGraphicsContext_Vulkan::~PRGraphicsContext_Vulkan ()
 {
-if ( device != VK_NULL_HANDLE )
-{
-vkDeviceWaitIdle ( device );
-vkDestroyDevice ( device, nullptr );
-}
-if ( instance != VK_NULL_HANDLE )
-vkDestroyInstance ( instance, nullptr );
+	if ( device != VK_NULL_HANDLE )
+	{
+		vkDeviceWaitIdle ( device );
+		vkDestroyDevice ( device, nullptr );
+	}
+	if ( instance != VK_NULL_HANDLE )
+		vkDestroyInstance ( instance, nullptr );
 }*/
 #endif
 
@@ -2610,7 +2610,6 @@ bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 		PRIsEquals ( v1._41, v2._41 ) && PRIsEquals ( v1._42, v2._42 ) && PRIsEquals ( v1._43, v2._43 ) && PRIsEquals ( v1._44, v2._44 );
 }
 
-/*
 #if PRPlatformUNIX
 #	include <SOIL/SOIL.h>
 #elif PRPlatformGoogleAndroid
@@ -2619,59 +2618,59 @@ bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 
 PRImageLoader::PRImageLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
-CFBundleRef mainBundle = CFBundleGetMainBundle ();
-CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
-char path [ 1024 ];
-if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
-throw std::runtime_error ( "Cannot get resource directory path." );
-CFRelease ( resourceURL );
+	CFBundleRef mainBundle = CFBundleGetMainBundle ();
+	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
+	char path [ 1024 ];
+	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
+		throw std::runtime_error ( "Cannot get resource directory path." );
+	CFRelease ( resourceURL );
 
-chdir ( path );
+	chdir ( path );
 #endif
 
 #if PRPlatformUNIX
-m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
-if ( m_data == nullptr )
-throw std::runtime_error ( "Error from SOIL_load_image ()." );
+	m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
+	if ( m_data == nullptr )
+		throw std::runtime_error ( "Error from SOIL_load_image ()." );
 #elif !PRPlatformMicrosoftWindowsFamily
-m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
-if ( m_data == nullptr )
-throw std::runtime_error ( stbi_failure_reason () );
+	m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
+	if ( m_data == nullptr )
+		throw std::runtime_error ( stbi_failure_reason () );
 #else
-USES_CONVERSION;
+	USES_CONVERSION;
 
-IWICImagingFactory * factory;
-IWICBitmapDecoder * decoder;
-IWICBitmapFrameDecode * frameDecode;
-IWICFormatConverter * formatConverter;
+	IWICImagingFactory * factory;
+	IWICBitmapDecoder * decoder;
+	IWICBitmapFrameDecode * frameDecode;
+	IWICFormatConverter * formatConverter;
 
-char fullpath [ 2048 ] = { 0, };
+	char fullpath [ 2048 ] = { 0, };
 #if PRPlatformMicrosoftWindowsRT
-strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
-strcat_s ( fullpath, 2048, "\\Assets\\" );
+	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
+	strcat_s ( fullpath, 2048, "\\Assets\\" );
 #endif
-strcat_s ( fullpath, 2048, filename.c_str () );
+	strcat_s ( fullpath, 2048, filename.c_str () );
 
-if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
-throw std::runtime_error ( "Cannot create IWICImagingFactory." );
+	if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
+		throw std::runtime_error ( "Cannot create IWICImagingFactory." );
 
-if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
-throw std::runtime_error ( "Cannot load image file." );
+	if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
+		throw std::runtime_error ( "Cannot load image file." );
 
-decoder->GetFrame ( 0, &frameDecode );
-frameDecode->GetSize ( &m_width, &m_height );
+	decoder->GetFrame ( 0, &frameDecode );
+	frameDecode->GetSize ( &m_width, &m_height );
 
-factory->CreateFormatConverter ( &formatConverter );
-if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
-throw std::runtime_error ( "Cannot create format converter." );
+	factory->CreateFormatConverter ( &formatConverter );
+	if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
+		throw std::runtime_error ( "Cannot create format converter." );
 
-m_data = new int [ m_width * m_height ];
-formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
+	m_data = new int [ m_width * m_height ];
+	formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
 
-formatConverter->Release ();
-frameDecode->Release ();
-decoder->Release ();
-factory->Release ();
+	formatConverter->Release ();
+	frameDecode->Release ();
+	decoder->Release ();
+	factory->Release ();
 #endif
 }
 
@@ -2679,7 +2678,7 @@ PRImageLoader::~PRImageLoader () { if ( m_data ) free ( ( unsigned char * ) m_da
 
 unsigned PRImageLoader::getWidth () { return m_width; }
 unsigned PRImageLoader::getHeight () { return m_height; }
-const void * PRImageLoader::getData () { return m_data; }*/
+const void * PRImageLoader::getData () { return m_data; }
 
 PRDataLoader::PRDataLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
