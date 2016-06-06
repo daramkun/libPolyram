@@ -299,6 +299,10 @@ public:
 	virtual void onMouseMove ( PRMouseButton button, int x, int y );
 	virtual void onMouseWheel ( int wheelX, int wheelY );
 
+	virtual void onTouchDown ( int pid, int x, int y );
+	virtual void onTouchUp ( int pid, int x, int y );
+	virtual void onTouchMove ( int pid, int x, int y );
+
 	virtual void onActivated ();
 	virtual void onDeactivated ();
 	virtual void onResized ();

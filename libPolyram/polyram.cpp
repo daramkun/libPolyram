@@ -17,6 +17,9 @@ void PRGame::onMouseDown ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseUp ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseMove ( PRMouseButton button, int x, int y ) { }
 void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
+void PRGame::onTouchDown ( int pid, int x, int y ) { }
+void PRGame::onTouchUp ( int pid, int x, int y ) { }
+void PRGame::onTouchMove ( int pid, int x, int y ) { }
 void PRGame::onActivated () { }
 void PRGame::onDeactivated () { }
 void PRGame::onResized () { }
@@ -583,10 +586,8 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 				case PRRendererType_OpenGLES1:
 				case PRRendererType_OpenGLES2:
 				case PRRendererType_OpenGLES3:
-					PRPrintLog ( "Pre APP_CMD_INIT_WINDOW" );
 					PRApplication::sharedApplication ()->m_graphicsContext =
 						new PRGraphicsContext_OpenGL ( PRApplication::sharedApplication (), PRApplication::sharedApplication ()->m_rendererType );
-					PRPrintLog ( "Post APP_CMD_INIT_WINDOW" );
 					break;
 				}
 			}
@@ -608,8 +609,7 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 		PRGame * scene = PRApplication::sharedApplication ()->getScene ();
 		switch ( AInputEvent_getType ( event ) ) {
 		case AINPUT_EVENT_TYPE_KEY:
-			if ( scene )
-			{
+			if ( scene ) {
 				int32_t action = AKeyEvent_getAction ( event );
 				int32_t keyCode = AKeyEvent_getKeyCode ( event );
 				if ( action == AKEY_EVENT_ACTION_DOWN )
@@ -620,11 +620,32 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 			else return 0;
 			return 1;
 		case AINPUT_EVENT_TYPE_MOTION:
-			if ( scene )
-			{
+			if ( scene ) {
 				int32_t action = AMotionEvent_getAction ( event );
-				scene->onMouseMove ( PRMouseButton_Left,
-					AMotionEvent_getX ( event, 0 ), AMotionEvent_getY ( event, 0 ) );
+				int32_t maskedAction = action & AMOTION_EVENT_ACTION_MASK;
+				int32_t pind = ( action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK ) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+				int32_t pid = AMotionEvent_getPointerId ( event, pind );
+
+				switch ( maskedAction ) {
+				case AMOTION_EVENT_ACTION_DOWN:
+					scene->onTouchDown ( pid, AMotionEvent_getX ( event, pind ), AMotionEvent_getY ( event, pind ) );
+					break;
+				case AMOTION_EVENT_ACTION_POINTER_DOWN:
+					scene->onTouchDown ( pid, AMotionEvent_getX ( event, pind ), AMotionEvent_getY ( event, pind ) );
+					break;
+				case AMOTION_EVENT_ACTION_UP:
+					scene->onTouchUp ( pid, AMotionEvent_getX ( event, pind ), AMotionEvent_getY ( event, pind ) );
+					break;
+				case AMOTION_EVENT_ACTION_POINTER_UP:
+					scene->onTouchUp ( pid, AMotionEvent_getX ( event, pind ), AMotionEvent_getY ( event, pind ) );
+					break;
+				case AMOTION_EVENT_ACTION_MOVE:
+					for ( int i = 0; i < AMotionEvent_getPointerCount ( event ); ++i ) {
+						int32_t pid = AMotionEvent_getPointerId ( event, i );
+						scene->onTouchMove ( pid, AMotionEvent_getX ( event, i ), AMotionEvent_getY ( event, i ) );
+					}
+					break;
+				}
 			}
 			return 1;
 		}
