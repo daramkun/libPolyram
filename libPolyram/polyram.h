@@ -930,39 +930,40 @@ private:
 	unsigned m_dataSize;
 };
 
-enum PRDefaultModelType {
-	PRDefaultModelType_Box,
-	PRDefaultModelType_Rectangle,
-	PRDefaultModelType_Sphere,
-	PRDefaultModelType_Circle,
-	PRDefaultModelType_Grid,
-	PRDefaultModelType_Guide,
-	//PRDefaultModelType_Teapot,
+enum PRModelType {
+	PRModelType_Box,
+	PRModelType_Rectangle,
+	PRModelType_Sphere,
+	PRModelType_Circle,
+	PRModelType_Grid,
+	PRModelType_Guide,
 };
 
-enum PRDefaultModelProperty {
-	PRDefaultModelProperty_Position = 0,
-	PRDefaultModelProperty_Normal = 1 << 0,
-	PRDefaultModelProperty_TexCoord = 1 << 1,
-	PRDefaultModelProperty_Diffuse = 1 << 2,
+enum PRModelProperty {
+	PRModelProperty_Position = 0,
+	PRModelProperty_Normal = 1 << 0,
+	PRModelProperty_TexCoord = 1 << 1,
+	PRModelProperty_Diffuse = 1 << 2,
 };
 
-enum PRDefaultModelTexCoordSystem {
-	PRDefaultModelTexCoordSystem_UV,
-	PRDefaultModelTexCoordSystem_ST,
+enum PRModelTexCoord {
+	PRModelTexCoord_UV,
+	PRModelTexCoord_ST,
 };
 
-class PRDefaultModelGenerator {
+class PRModelGenerator {
 public:
-	PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
-		PRDefaultModelTexCoordSystem tcs = PRDefaultModelTexCoordSystem_UV, const PRVector3 * scale = nullptr );
-	~PRDefaultModelGenerator ();
+	PRModelGenerator ( PRModelType modelType, PRModelProperty properties,
+		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );
+	~PRModelGenerator ();
 
 public:
+	PRModelProperty getProperties ();
 	const void* getData ();
 	unsigned getDataSize ();
 
 private:
+	PRModelProperty m_properties;
 	void * m_data;
 	unsigned m_dataSize;
 };
@@ -971,7 +972,7 @@ private:
 #	define MAIN_FUNC_ATTR 
 #	define MAIN_FUNC_RTTP int
 #	define MAIN_FUNC_NAME WINAPI WinMain
-#	define MAIN_FUNC_ARGS HINSTANCE, HINSTANCE, LPSTR, int
+#	define MAIN_FUNC_ARGS HINSTANCE, HINSTANCE, LPSTR lpszCmdLine, int
 #elif PRPlatformMicrosoftWindowsRT
 #	define MAIN_FUNC_ATTR [Platform::MTAThread]
 #	define MAIN_FUNC_RTTP int

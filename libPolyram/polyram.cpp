@@ -198,7 +198,7 @@ PRKeys keyValueConvertTo ( int key ) {
 	case XK_P: return PRKeys_P; case XK_Q: return PRKeys_Q; case XK_R: return PRKeys_R; case XK_S: return PRKeys_S; case XK_T: return PRKeys_T;
 	case XK_U: return PRKeys_U; case XK_V: return PRKeys_V; case XK_W: return PRKeys_W; case XK_X: return PRKeys_X; case XK_Y: return PRKeys_Y;
 	case XK_Z: return PRKeys_Z;
-	case XK_grave: return PRKeys_Grave; case XK_minus: return PRKeys_Subtract; case XK_equal: return PRKeys_Subtract;
+	case XK_grave: return PRKeys_Grave; case XK_minus: return PRKeys_Subtract; case XK_equal: return PRKeys_Equals;
 	case XK_backslash: return PRKeys_Backslash; case XK_bracketleft: return PRKeys_LeftBracket; case XK_bracketright: return PRKeys_RightBracket;
 	case XK_semicolon: return PRKeys_Semicolon; case XK_apostrophe: return PRKeys_Quotation;
 	case XK_comma: return PRKeys_Comma; case XK_period: return PRKeys_Period; case XK_slash: return PRKeys_Slash;
@@ -209,6 +209,31 @@ PRKeys keyValueConvertTo ( int key ) {
 	case XK_Shift_L: return PRKeys_LeftShift; case XK_Shift_R: return PRKeys_RightShift;
 	case XK_Super_L: return PRKeys_LeftWin; case XK_Super_R: return PRKeys_RightWin;
 	default: PRKeys_Unknown;
+#elif PRPlatformGoogleAndroid
+	case AKEYCODE_DPAD_UP: return PRKeys_Up; case AKEYCODE_DPAD_DOWN: return PRKeys_Down; case AKEYCODE_DPAD_LEFT: return PRKeys_Left; case AKEYCODE_DPAD_RIGHT: return PRKeys_Right;
+	case AKEYCODE_ENTER: return PRKeys_Return; case AKEYCODE_SPACE: return PRKeys_Space; case AKEYCODE_BACK: return PRKeys_Backspace;
+	case AKEYCODE_TAB: return PRKeys_Tab; case AKEYCODE_ESCAPE: return PRKeys_Escape;
+	case AKEYCODE_F1: return PRKeys_F1; case AKEYCODE_F2: return PRKeys_F2; case AKEYCODE_F3: return PRKeys_F3; case AKEYCODE_F4: return PRKeys_F4;
+	case AKEYCODE_F5: return PRKeys_F5; case AKEYCODE_F6: return PRKeys_F6; case AKEYCODE_F7: return PRKeys_F7; case AKEYCODE_F8: return PRKeys_F8;
+	case AKEYCODE_F9: return PRKeys_F9; case AKEYCODE_F10: return PRKeys_F10; case AKEYCODE_F11: return PRKeys_F11; case AKEYCODE_F12: return PRKeys_F12;
+	case AKEYCODE_0: return PRKeys_0; case AKEYCODE_1: return PRKeys_1; case AKEYCODE_2: return PRKeys_2; case AKEYCODE_3: return PRKeys_3; case AKEYCODE_4: return PRKeys_4;
+	case AKEYCODE_5: return PRKeys_5; case AKEYCODE_6: return PRKeys_6; case AKEYCODE_7: return PRKeys_7; case AKEYCODE_8: return PRKeys_8; case AKEYCODE_9: return PRKeys_9;
+	case AKEYCODE_A: return PRKeys_A; case AKEYCODE_B: return PRKeys_B; case AKEYCODE_C: return PRKeys_C; case AKEYCODE_D: return PRKeys_D; case AKEYCODE_E: return PRKeys_E;
+	case AKEYCODE_F: return PRKeys_F; case AKEYCODE_G: return PRKeys_G; case AKEYCODE_H: return PRKeys_H; case AKEYCODE_I: return PRKeys_I; case AKEYCODE_J: return PRKeys_J;
+	case AKEYCODE_K: return PRKeys_K; case AKEYCODE_L: return PRKeys_L; case AKEYCODE_M: return PRKeys_M; case AKEYCODE_N: return PRKeys_N; case AKEYCODE_O: return PRKeys_O;
+	case AKEYCODE_P: return PRKeys_P; case AKEYCODE_Q: return PRKeys_Q; case AKEYCODE_R: return PRKeys_R; case AKEYCODE_S: return PRKeys_S; case AKEYCODE_T: return PRKeys_T;
+	case AKEYCODE_U: return PRKeys_U; case AKEYCODE_V: return PRKeys_V; case AKEYCODE_W: return PRKeys_W; case AKEYCODE_X: return PRKeys_X; case AKEYCODE_Y: return PRKeys_Y;
+	case AKEYCODE_Z: return PRKeys_Z;
+	case AKEYCODE_GRAVE: return PRKeys_Grave; case AKEYCODE_MINUS: return PRKeys_Subtract; case AKEYCODE_EQUALS: return PRKeys_Equals;
+	case AKEYCODE_BACKSLASH: return PRKeys_Backslash; case AKEYCODE_LEFT_BRACKET: return PRKeys_LeftBracket; case AKEYCODE_RIGHT_BRACKET: return PRKeys_RightBracket;
+	case AKEYCODE_SEMICOLON: return PRKeys_Semicolon; case AKEYCODE_APOSTROPHE: return PRKeys_Quotation;
+	case AKEYCODE_COMMA: return PRKeys_Comma; case AKEYCODE_PERIOD: return PRKeys_Period; case AKEYCODE_SLASH: return PRKeys_Slash;
+	case AKEYCODE_PAGE_UP: return PRKeys_PageUp; case AKEYCODE_PAGE_DOWN: return PRKeys_PageDown; case AKEYCODE_MOVE_HOME: return PRKeys_Home; case AKEYCODE_MOVE_END: return PRKeys_End;
+	case AKEYCODE_CTRL_LEFT: return PRKeys_LeftCtrl; case AKEYCODE_CTRL_RIGHT: return PRKeys_RightCtrl;
+	case AKEYCODE_ALT_LEFT: return PRKeys_LeftAlt; case AKEYCODE_ALT_RIGHT: return PRKeys_RightAlt;
+	case AKEYCODE_SHIFT_LEFT: return PRKeys_LeftShift; case AKEYCODE_SHIFT_RIGHT: return PRKeys_RightShift;
+	case AKEYCODE_META_LEFT: return PRKeys_LeftWin; case AKEYCODE_META_RIGHT: return PRKeys_RightWin;
+	default: return PRKeys_Unknown;
 #endif
 	}
 	return PRKeys_Unknown;
@@ -270,7 +295,7 @@ namespace polyram {
 			default:
 				throw std::runtime_error ( "Cannot use this renderer version in this platform." );
 			}
-			
+
 			PRApplication::sharedApplication ()->getScene ()->onInitialize ();
 
 			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
@@ -302,14 +327,16 @@ namespace polyram {
 		void OnVisibilityChanged ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ e ) { m_windowVisible = true; }
 		void OnWindowClosed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ e ) { m_windowClosed = true; }
 		void OnResized ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ e )
-		{ if ( PRApplication::sharedApplication ()->getScene () ) PRApplication::sharedApplication ()->getScene ()->onResized (); }
+		{
+			if ( PRApplication::sharedApplication ()->getScene () ) PRApplication::sharedApplication ()->getScene ()->onResized ();
+		}
 		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
 			if ( PRApplication::sharedApplication ()->getScene () )
-			PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
+				PRApplication::sharedApplication ()->getScene ()->onKeyDown ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
 		}
 		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
-			if ( PRApplication::sharedApplication ()->getScene () ) 
-			PRApplication::sharedApplication ()->getScene ()->onKeyUp ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
+			if ( PRApplication::sharedApplication ()->getScene () )
+				PRApplication::sharedApplication ()->getScene ()->onKeyUp ( keyValueConvertTo ( ( int ) e->VirtualKey ) );
 		}
 		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
 			if ( PRApplication::sharedApplication ()->getScene () ) {
@@ -467,7 +494,7 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
-	//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
+		//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
 	}
 #elif PRPlatformMicrosoftWindowsRT
 	m_rendererType = rendererType;
@@ -545,18 +572,27 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 	memset ( &this->engine, 0, sizeof ( this->engine ) );
 	state->userData = &engine;
 	state->onAppCmd = [] ( struct android_app* app, int32_t cmd ) {
+		struct engine* engine = ( struct engine* )app->userData;
 		switch ( cmd ) {
 		case APP_CMD_SAVE_STATE:
 			break;
 		case APP_CMD_INIT_WINDOW:
-			switch ( PRApplication::sharedApplication ()->m_rendererType ) {
-			case PRRendererType_OpenGLES1:
-			case PRRendererType_OpenGLES2:
-			case PRRendererType_OpenGLES3: PRApplication::sharedApplication ()->m_graphicsContext = 
-				new PRGraphicsContext_OpenGL ( PRApplication::sharedApplication (), PRApplication::sharedApplication ()->m_rendererType ); break;
+			if ( engine->app->window != nullptr )
+			{
+				switch ( PRApplication::sharedApplication ()->m_rendererType ) {
+				case PRRendererType_OpenGLES1:
+				case PRRendererType_OpenGLES2:
+				case PRRendererType_OpenGLES3:
+					PRPrintLog ( "Pre APP_CMD_INIT_WINDOW" );
+					PRApplication::sharedApplication ()->m_graphicsContext =
+						new PRGraphicsContext_OpenGL ( PRApplication::sharedApplication (), PRApplication::sharedApplication ()->m_rendererType );
+					PRPrintLog ( "Post APP_CMD_INIT_WINDOW" );
+					break;
+				}
 			}
 			break;
 		case APP_CMD_TERM_WINDOW:
+			SAFE_DELETE ( PRApplication::sharedApplication ()->m_graphicsContext );
 			break;
 		case APP_CMD_GAINED_FOCUS:
 			if ( PRApplication::sharedApplication ()->engine.accelerometerSensor != nullptr ) {
@@ -566,26 +602,38 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 					PRApplication::sharedApplication ()->engine.accelerometerSensor, ( 1000L / 60 ) * 1000 );
 			}
 			break;
-		case APP_CMD_LOST_FOCUS:
-			PRApplication::sharedApplication ()->engine.animating = 0;
-			break;
 		}
 	};
 	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t {
+		PRGame * scene = PRApplication::sharedApplication ()->getScene ();
 		switch ( AInputEvent_getType ( event ) ) {
 		case AINPUT_EVENT_TYPE_KEY:
-			break;
+			if ( scene )
+			{
+				int32_t action = AKeyEvent_getAction ( event );
+				int32_t keyCode = AKeyEvent_getKeyCode ( event );
+				if ( action == AKEY_EVENT_ACTION_DOWN )
+					scene->onKeyDown ( keyValueConvertTo ( keyCode ) );
+				else if ( action == AKEY_EVENT_ACTION_UP )
+					scene->onKeyUp ( keyValueConvertTo ( keyCode ) );
+			}
+			else return 0;
+			return 1;
 		case AINPUT_EVENT_TYPE_MOTION:
-			if ( PRApplication::sharedApplication ()->getScene () )
-				PRApplication::sharedApplication ()->getScene ()->onMouseMove ( PRMouseButton_Left,
+			if ( scene )
+			{
+				int32_t action = AMotionEvent_getAction ( event );
+				scene->onMouseMove ( PRMouseButton_Left,
 					AMotionEvent_getX ( event, 0 ), AMotionEvent_getY ( event, 0 ) );
-			break;
+			}
+			return 1;
 		}
+		return 0;
 	};
 	this->engine.app = state;
 
 	this->engine.sensorManager = ASensorManager_getInstance ();
-	this->engine.accelerometerSensor = ASensorManager_getDefaultSensor ( engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER);
+	this->engine.accelerometerSensor = ASensorManager_getDefaultSensor ( engine.sensorManager, ASENSOR_TYPE_ACCELEROMETER );
 	this->engine.sensorEventQueue = ASensorManager_createEventQueue ( engine.sensorManager, state->looper, LOOPER_ID_USER, NULL, NULL );
 
 	if ( state->savedState != NULL )
@@ -682,7 +730,8 @@ void PRApplication::run () {
 			if ( !GetMessage ( &msg, NULL, 0, 0 ) )break;
 			TranslateMessage ( &msg );
 			DispatchMessage ( &msg );
-		} else {
+		}
+		else {
 			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 			lastTime = currentTime;
 
@@ -702,7 +751,7 @@ void PRApplication::run () {
 	if ( m_game ) m_game->onInitialize ();
 
 	while ( window.isVisible ) {
-		NSEvent * event = [ [ NSApplication sharedApplication ] nextEventMatchingMask:NSAnyEventMask untilDate:nil inMode:NSDefaultRunLoopMode dequeue:YES ];
+		NSEvent * event = [ [ NSApplication sharedApplication ] nextEventMatchingMask:NSAnyEventMask untilDate : nil inMode : NSDefaultRunLoopMode dequeue : YES ];
 		switch ( event.type ) {
 		case NSKeyDown:
 			if ( LqLauncher::getInstance ()->getScene () )
@@ -805,7 +854,7 @@ void PRApplication::run () {
 				if ( PRApplication::sharedApplication ()->getScene () )
 					PRApplication::sharedApplication ()->getScene ()->onMouseUp ( button, g_MouseX, g_MouseY );
 			}
-			break;
+								break;
 			case MotionNotify:
 				g_MouseX = xev.xmotion.x; g_MouseY = xev.xmotion.x;
 				if ( PRApplication::sharedApplication ()->getScene () )
@@ -846,8 +895,8 @@ void PRApplication::run () {
 			}
 
 			if ( this->engine.app->destroyRequested != 0 ) {
-				if ( m_game )
-					m_game->onDestroy ();
+				if ( m_game ) m_game->onDestroy ();
+				SAFE_DELETE ( this->m_graphicsContext );
 				return;
 			}
 		}
@@ -858,7 +907,7 @@ void PRApplication::run () {
 
 			if ( m_game != nullptr ) {
 				m_game->onUpdate ( elapsedTime );
-				if ( this->m_graphicsContext == nullptr || ( ( PRGraphicsContext_OpenGL* ) this->m_graphicsContext )->display != nullptr )
+				if ( this->m_graphicsContext == nullptr || ( ( PRGraphicsContext_OpenGL* ) this->m_graphicsContext )->display == nullptr )
 					continue;
 				m_game->onDraw ( elapsedTime );
 			}
@@ -1330,7 +1379,8 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 
 	if ( !isExtensionSupported ( glxExts, "GLX_ARB_create_context" ) || glXCreateContextAttribsARB == nullptr ) {
 		glContext = glXCreateContext ( app->display, app->visualInfo, nullptr, true );
-	} else {
+	}
+	else {
 		GLint visualAttr [] = {
 			GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, true, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 			GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR, None
@@ -1368,21 +1418,18 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	EGLint w, h, format;
 	EGLint numConfigs;
 	EGLConfig config;
-	EGLSurface surface;
-	EGLContext context;
 
-	EGLDisplay display = eglGetDisplay ( EGL_DEFAULT_DISPLAY );
+	display = eglGetDisplay ( EGL_DEFAULT_DISPLAY );
 
 	eglInitialize ( display, 0, 0 );
 
 	eglChooseConfig ( display, attribs, &config, 1, &numConfigs );
-
 	eglGetConfigAttrib ( display, config, EGL_NATIVE_VISUAL_ID, &format );
 
 	ANativeWindow_setBuffersGeometry ( PRApplication::sharedApplication ()->engine.app->window, 0, 0, format );
 
 	surface = eglCreateWindowSurface ( display, config, PRApplication::sharedApplication ()->engine.app->window, NULL );
-	EGLint createAttribs [] = { EGL_CONTEXT_CLIENT_VERSION, ( rendererType - PRRendererType_OpenGLES1 ) + 1 };
+	EGLint createAttribs [] = { EGL_CONTEXT_CLIENT_VERSION, ( rendererType - PRRendererType_OpenGLES1 ) + 1, EGL_NONE };
 	context = eglCreateContext ( display, config, NULL, createAttribs );
 
 	if ( eglMakeCurrent ( display, surface, surface, context ) == EGL_FALSE )
@@ -1501,80 +1548,80 @@ PRGraphicsContext_Metal::~PRGraphicsContext_Metal () {
 
 #if defined ( POLYRAM_VULKAN )
 /*PRGraphicsContext_Vulkan::PRGraphicsContext_Vulkan ( PRApplication * app ) {
-	VkApplicationInfo applicationInfo;
-	VkInstanceCreateInfo instanceInfo;
+VkApplicationInfo applicationInfo;
+VkInstanceCreateInfo instanceInfo;
 
-	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pNext = nullptr;
-	applicationInfo.pApplicationName = "libPolyram";
-	applicationInfo.pEngineName = "libPolyram";
-	applicationInfo.engineVersion = 1;
-	applicationInfo.apiVersion = VK_API_VERSION;
+applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+applicationInfo.pNext = nullptr;
+applicationInfo.pApplicationName = "libPolyram";
+applicationInfo.pEngineName = "libPolyram";
+applicationInfo.engineVersion = 1;
+applicationInfo.apiVersion = VK_API_VERSION;
 
-	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	instanceInfo.pNext = nullptr;
-	instanceInfo.flags = 0;
-	instanceInfo.pApplicationInfo = &applicationInfo;
-	instanceInfo.enabledLayerCount = 0;
-	instanceInfo.ppEnabledLayerNames = nullptr;
-	instanceInfo.enabledExtensionCount = 0;
-	instanceInfo.ppEnabledExtensionNames = nullptr;
+instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+instanceInfo.pNext = nullptr;
+instanceInfo.flags = 0;
+instanceInfo.pApplicationInfo = &applicationInfo;
+instanceInfo.enabledLayerCount = 0;
+instanceInfo.ppEnabledLayerNames = nullptr;
+instanceInfo.enabledExtensionCount = 0;
+instanceInfo.ppEnabledExtensionNames = nullptr;
 
-	VkResult result = vkCreateInstance ( &instanceInfo, nullptr, &instance );
-	if ( result != VK_SUCCESS )
-		throw std::runtime_error ( "Failed to create Vulkan instance." );
+VkResult result = vkCreateInstance ( &instanceInfo, nullptr, &instance );
+if ( result != VK_SUCCESS )
+throw std::runtime_error ( "Failed to create Vulkan instance." );
 
-	uint32_t deviceCount = 0;
-	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, nullptr );
-	if ( result != VK_SUCCESS )
-		throw std::runtime_error ( "Failed to query the number of physical devices present." );
+uint32_t deviceCount = 0;
+result = vkEnumeratePhysicalDevices ( instance, &deviceCount, nullptr );
+if ( result != VK_SUCCESS )
+throw std::runtime_error ( "Failed to query the number of physical devices present." );
 
-	if ( deviceCount == 0 )
-		throw std::runtime_error ( "Couldn't detect any device present with Vulkan support." );
+if ( deviceCount == 0 )
+throw std::runtime_error ( "Couldn't detect any device present with Vulkan support." );
 
-	std::vector<VkPhysicalDevice> physicalDevices ( deviceCount );
-	result = vkEnumeratePhysicalDevices ( instance, &deviceCount, &physicalDevices [ 0 ] );
-	if ( result != VK_SUCCESS )
-		throw std::runtime_error ( "Faied to enumerate physical devices presen." );
+std::vector<VkPhysicalDevice> physicalDevices ( deviceCount );
+result = vkEnumeratePhysicalDevices ( instance, &deviceCount, &physicalDevices [ 0 ] );
+if ( result != VK_SUCCESS )
+throw std::runtime_error ( "Faied to enumerate physical devices presen." );
 
-	VkDeviceCreateInfo deviceInfo;
-	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceInfo.pNext = nullptr;
-	deviceInfo.flags = 0;
-	deviceInfo.enabledLayerCount = 0;
-	deviceInfo.ppEnabledLayerNames = nullptr;
-	deviceInfo.enabledExtensionCount = 0;
-	deviceInfo.ppEnabledExtensionNames = nullptr;
-	deviceInfo.pEnabledFeatures = nullptr;
+VkDeviceCreateInfo deviceInfo;
+deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+deviceInfo.pNext = nullptr;
+deviceInfo.flags = 0;
+deviceInfo.enabledLayerCount = 0;
+deviceInfo.ppEnabledLayerNames = nullptr;
+deviceInfo.enabledExtensionCount = 0;
+deviceInfo.ppEnabledExtensionNames = nullptr;
+deviceInfo.pEnabledFeatures = nullptr;
 
-	float queuePriorities [] = { 1.0f };
-	VkDeviceQueueCreateInfo deviceQueueInfo;
-	deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	deviceQueueInfo.pNext = nullptr;
-	deviceQueueInfo.flags = 0;
-	deviceQueueInfo.queueFamilyIndex = 0;
-	deviceQueueInfo.queueCount = 1;
-	deviceQueueInfo.pQueuePriorities = queuePriorities;
+float queuePriorities [] = { 1.0f };
+VkDeviceQueueCreateInfo deviceQueueInfo;
+deviceQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+deviceQueueInfo.pNext = nullptr;
+deviceQueueInfo.flags = 0;
+deviceQueueInfo.queueFamilyIndex = 0;
+deviceQueueInfo.queueCount = 1;
+deviceQueueInfo.pQueuePriorities = queuePriorities;
 
-	deviceInfo.queueCreateInfoCount = 1;
-	deviceInfo.pQueueCreateInfos = &deviceQueueInfo;
+deviceInfo.queueCreateInfoCount = 1;
+deviceInfo.pQueueCreateInfos = &deviceQueueInfo;
 
-	result = vkCreateDevice ( physicalDevices [ 0 ], &deviceInfo, nullptr, &device );
-	if ( result != VK_SUCCESS )
-		throw std::runtime_error ( "Failed creating logical device." );
+result = vkCreateDevice ( physicalDevices [ 0 ], &deviceInfo, nullptr, &device );
+if ( result != VK_SUCCESS )
+throw std::runtime_error ( "Failed creating logical device." );
 
-	vkGetDeviceQueue ( device, 0, 0, &queue );
+vkGetDeviceQueue ( device, 0, 0, &queue );
 }
 
 PRGraphicsContext_Vulkan::~PRGraphicsContext_Vulkan ()
 {
-	if ( device != VK_NULL_HANDLE )
-	{
-		vkDeviceWaitIdle ( device );
-		vkDestroyDevice ( device, nullptr );
-	}
-	if ( instance != VK_NULL_HANDLE )
-		vkDestroyInstance ( instance, nullptr );
+if ( device != VK_NULL_HANDLE )
+{
+vkDeviceWaitIdle ( device );
+vkDestroyDevice ( device, nullptr );
+}
+if ( instance != VK_NULL_HANDLE )
+vkDestroyInstance ( instance, nullptr );
 }*/
 #endif
 
@@ -1595,7 +1642,7 @@ PRVector2 PRVector2::normalize () { PRVector2 temp; normalize ( this, &temp ); r
 
 void PRVector2::lengthSquared ( const PRVector2 * v, float * result ) { *result = v->x * v->x + v->y * v->y; }
 void PRVector2::length ( const PRVector2 * v, float * result ) { float ls; lengthSquared ( v, &ls ); *result = sqrtf ( ls ); }
-void PRVector2::normalize ( const PRVector2 * v, PRVector2 * result ) { float len; length ( v, &len ); result->x = v->x / len; result->y = v->y / len; }
+void PRVector2::normalize ( const PRVector2 * v, PRVector2 * result ) { float len; length ( v, &len ); divide ( v, len, result ); }
 
 float PRVector2::lengthSquared ( const PRVector2 & v ) { float temp; lengthSquared ( &v, &temp ); return temp; }
 float PRVector2::length ( const PRVector2 & v ) { float temp; length ( &v, &temp ); return temp; }
@@ -1696,9 +1743,7 @@ void PRVector3::length ( const PRVector3 * v, float * result ) { float ls; lengt
 void PRVector3::normalize ( const PRVector3 * v, PRVector3 * result )
 {
 	float len; length ( v, &len );
-	result->x = v->x / len;
-	result->y = v->y / len;
-	result->z = v->z / len;
+	divide ( v, len, result );
 }
 
 float PRVector3::lengthSquared ( const PRVector3 & v ) { float temp; lengthSquared ( &v, &temp ); return temp; }
@@ -1835,10 +1880,7 @@ void PRVector4::lengthSquared ( const PRVector4 * v, float * result ) { *result 
 void PRVector4::length ( const PRVector4 * v, float * result ) { float ls; lengthSquared ( v, &ls ); *result = sqrtf ( ls ); }
 void PRVector4::normalize ( const PRVector4 * v, PRVector4 * result ) {
 	float len; length ( v, &len );
-	result->x = v->x / len;
-	result->y = v->y / len;
-	result->z = v->z / len;
-	result->w = v->w / len;
+	divide ( v, len, result );
 }
 
 float PRVector4::lengthSquared ( const PRVector4 & v ) { float temp; lengthSquared ( &v, &temp ); return temp; }
@@ -1968,17 +2010,20 @@ PRQuaternion::PRQuaternion ( const PRMatrix & m ) {
 		num = 0.5f / num;
 		x = ( m._23 - m._32 ) * num; y = ( m._31 - m._13 ) * num;
 		z = ( m._12 - m._21 ) * num; w = num * 0.5f;
-	} else if ( ( m._11 >= m._22 ) && ( m._11 >= m._33 ) ) {
+	}
+	else if ( ( m._11 >= m._22 ) && ( m._11 >= m._33 ) ) {
 		float num7 = sqrtf ( ( ( 1.0f + m._11 ) - m._22 ) - m._33 );
 		float num4 = 0.5f / num7;
 		x = 0.5f * num7; y = ( m._12 + m._21 ) * num4;
 		z = ( m._13 + m._31 ) * num4; w = ( m._23 - m._32 ) * num4;
-	} else if ( m._22 > m._33 ) {
+	}
+	else if ( m._22 > m._33 ) {
 		float num6 = sqrtf ( ( ( 1.0f + m._22 ) - m._11 ) - m._33 );
 		float num3 = 0.5f / num6;
 		x = ( m._21 + m._12 ) * num3; y = 0.5f * num6;
 		z = ( m._32 + m._23 ) * num3; w = ( m._31 - m._13 ) * num3;
-	} else {
+	}
+	else {
 		float num5 = sqrtf ( ( ( 1.0f + m._33 ) - m._11 ) - m._22 );
 		float num2 = 0.5f / num5;
 		x = ( m._31 + m._13 ) * num2; y = ( m._32 + m._23 ) * num2;
@@ -2525,6 +2570,7 @@ bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 		PRIsEquals ( v1._41, v2._41 ) && PRIsEquals ( v1._42, v2._42 ) && PRIsEquals ( v1._43, v2._43 ) && PRIsEquals ( v1._44, v2._44 );
 }
 
+/*
 #if PRPlatformUNIX
 #	include <SOIL/SOIL.h>
 #elif PRPlatformGoogleAndroid
@@ -2533,59 +2579,59 @@ bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 
 PRImageLoader::PRImageLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
-	CFBundleRef mainBundle = CFBundleGetMainBundle ();
-	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
-	char path [ 1024 ];
-	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
-		throw std::runtime_error ( "Cannot get resource directory path." );
-	CFRelease ( resourceURL );
+CFBundleRef mainBundle = CFBundleGetMainBundle ();
+CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
+char path [ 1024 ];
+if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
+throw std::runtime_error ( "Cannot get resource directory path." );
+CFRelease ( resourceURL );
 
-	chdir ( path );
+chdir ( path );
 #endif
 
 #if PRPlatformUNIX
-	m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
-	if ( m_data == nullptr )
-		throw std::runtime_error ( "Error from SOIL_load_image ()." );
+m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
+if ( m_data == nullptr )
+throw std::runtime_error ( "Error from SOIL_load_image ()." );
 #elif !PRPlatformMicrosoftWindowsFamily
-	m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
-	if ( m_data == nullptr )
-		throw std::runtime_error ( stbi_failure_reason () );
+m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
+if ( m_data == nullptr )
+throw std::runtime_error ( stbi_failure_reason () );
 #else
-	USES_CONVERSION;
+USES_CONVERSION;
 
-	IWICImagingFactory * factory;
-	IWICBitmapDecoder * decoder;
-	IWICBitmapFrameDecode * frameDecode;
-	IWICFormatConverter * formatConverter;
+IWICImagingFactory * factory;
+IWICBitmapDecoder * decoder;
+IWICBitmapFrameDecode * frameDecode;
+IWICFormatConverter * formatConverter;
 
-	char fullpath [ 2048 ] = { 0, };
+char fullpath [ 2048 ] = { 0, };
 #if PRPlatformMicrosoftWindowsRT
-	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
-	strcat_s ( fullpath, 2048, "\\Assets\\" );
+strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
+strcat_s ( fullpath, 2048, "\\Assets\\" );
 #endif
-	strcat_s ( fullpath, 2048, filename.c_str () );
+strcat_s ( fullpath, 2048, filename.c_str () );
 
-	if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
-		throw std::runtime_error ( "Cannot create IWICImagingFactory." );
+if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
+throw std::runtime_error ( "Cannot create IWICImagingFactory." );
 
-	if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
-		throw std::runtime_error ( "Cannot load image file." );
+if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
+throw std::runtime_error ( "Cannot load image file." );
 
-	decoder->GetFrame ( 0, &frameDecode );
-	frameDecode->GetSize ( &m_width, &m_height );
+decoder->GetFrame ( 0, &frameDecode );
+frameDecode->GetSize ( &m_width, &m_height );
 
-	factory->CreateFormatConverter ( &formatConverter );
-	if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
-		throw std::runtime_error ( "Cannot create format converter." );
+factory->CreateFormatConverter ( &formatConverter );
+if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
+throw std::runtime_error ( "Cannot create format converter." );
 
-	m_data = new int [ m_width * m_height ];
-	formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
+m_data = new int [ m_width * m_height ];
+formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
 
-	formatConverter->Release ();
-	frameDecode->Release ();
-	decoder->Release ();
-	factory->Release ();
+formatConverter->Release ();
+frameDecode->Release ();
+decoder->Release ();
+factory->Release ();
 #endif
 }
 
@@ -2593,7 +2639,7 @@ PRImageLoader::~PRImageLoader () { if ( m_data ) free ( ( unsigned char * ) m_da
 
 unsigned PRImageLoader::getWidth () { return m_width; }
 unsigned PRImageLoader::getHeight () { return m_height; }
-const void * PRImageLoader::getData () { return m_data; }
+const void * PRImageLoader::getData () { return m_data; }*/
 
 PRDataLoader::PRDataLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
@@ -2649,33 +2695,33 @@ struct vertex { PRVector3 position; PRVector2 texCoord; PRVector4 diffuse; };
 struct polygonTriangle { vertex v1, v2, v3; };
 struct polygonLine { vertex v1, v2; };
 
-void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
-//void generateTeapot ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGrid ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGuide ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 
-PRDefaultModelGenerator::PRDefaultModelGenerator ( PRDefaultModelType modelType, PRDefaultModelProperty properties,
-	PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale ) {
+PRModelGenerator::PRModelGenerator ( PRModelType modelType, PRModelProperty properties,
+	PRModelTexCoord tcs, const PRVector3 * scale ) {
 	switch ( modelType ) {
-	case PRDefaultModelType_Box:		generateCube ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRDefaultModelType_Rectangle:	generateRect ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRDefaultModelType_Sphere:		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRDefaultModelType_Circle:		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRDefaultModelType_Grid:		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRDefaultModelType_Guide:		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	//case LqDefaultModelType_Teapot:	generateTeapot ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Box:		generateCube ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Rectangle:	generateRect ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Sphere:		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Circle:		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Grid:		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Guide:		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize ); break;
 	}
+	m_properties = properties;
 }
 
-const void* PRDefaultModelGenerator::getData () { return m_data; }
-unsigned PRDefaultModelGenerator::getDataSize () { return m_dataSize; }
+PRModelProperty PRModelGenerator::getProperties () { return m_properties; }
+const void* PRModelGenerator::getData () { return m_data; }
+unsigned PRModelGenerator::getDataSize () { return m_dataSize; }
 
-PRDefaultModelGenerator::~PRDefaultModelGenerator () { SAFE_DELETE_ARRAY ( m_data ); }
+PRModelGenerator::~PRModelGenerator () { SAFE_DELETE_ARRAY ( m_data ); }
 
-void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	polygonTriangle *vertices = ( polygonTriangle* ) data;
 
@@ -2687,16 +2733,16 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
-		if ( properties & PRDefaultModelProperty_Normal ) {
+		if ( properties & PRModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord ) {
+		if ( properties & PRModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v1.texCoord.x );
-			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse ) {
+		if ( properties & PRModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v1.diffuse.x );
 			vv.push_back ( vertices->v1.diffuse.y );
 			vv.push_back ( vertices->v1.diffuse.z );
@@ -2707,16 +2753,16 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
-		if ( properties & PRDefaultModelProperty_Normal ) {
+		if ( properties & PRModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord ) {
+		if ( properties & PRModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v2.texCoord.x );
-			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse ) {
+		if ( properties & PRModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v2.diffuse.x );
 			vv.push_back ( vertices->v2.diffuse.y );
 			vv.push_back ( vertices->v2.diffuse.z );
@@ -2727,16 +2773,16 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 		if ( scale != nullptr ) p3 = p3 * *scale;
 		vv.push_back ( p3.x ); vv.push_back ( p3.y ); vv.push_back ( p3.z );
 
-		if ( properties & PRDefaultModelProperty_Normal ) {
+		if ( properties & PRModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord ) {
+		if ( properties & PRModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v3.texCoord.x );
-			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v3.texCoord.y : vertices->v3.texCoord.y );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v3.texCoord.y : vertices->v3.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse ) {
+		if ( properties & PRModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v3.diffuse.x );
 			vv.push_back ( vertices->v3.diffuse.y );
 			vv.push_back ( vertices->v3.diffuse.z );
@@ -2755,7 +2801,7 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRDefaultModelPrope
 #endif
 }
 
-void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs,
+void generateLineModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs,
 	const PRVector3 * scale, void** result, unsigned * length ) {
 	polygonLine *vertices = ( polygonLine* ) data;
 
@@ -2767,16 +2813,16 @@ void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty 
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
-		if ( properties & PRDefaultModelProperty_Normal ) {
+		if ( properties & PRModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord ) {
+		if ( properties & PRModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v1.texCoord.x );
-			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse ) {
+		if ( properties & PRModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v1.diffuse.x );
 			vv.push_back ( vertices->v1.diffuse.y );
 			vv.push_back ( vertices->v1.diffuse.z );
@@ -2787,16 +2833,16 @@ void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty 
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
-		if ( properties & PRDefaultModelProperty_Normal ) {
+		if ( properties & PRModelProperty_Normal ) {
 			vv.push_back ( norm.x ); vv.push_back ( norm.y ); vv.push_back ( norm.z );
 		}
 
-		if ( properties & PRDefaultModelProperty_TexCoord ) {
+		if ( properties & PRModelProperty_TexCoord ) {
 			vv.push_back ( vertices->v2.texCoord.x );
-			vv.push_back ( tcs == PRDefaultModelTexCoordSystem_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
 		}
 
-		if ( properties & PRDefaultModelProperty_Diffuse ) {
+		if ( properties & PRModelProperty_Diffuse ) {
 			vv.push_back ( vertices->v2.diffuse.x );
 			vv.push_back ( vertices->v2.diffuse.y );
 			vv.push_back ( vertices->v2.diffuse.z );
@@ -2815,69 +2861,69 @@ void generateLineModel ( void * data, unsigned dataSize, PRDefaultModelProperty 
 #endif
 }
 
-void generateCube ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	vertex cube [] = {
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
 
-		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, +0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
 
-		{ { -0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
 
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
 
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
 
-		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, -0.5f }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, +0.5f }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, +0.5f }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, -0.5f }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } }
+		{ { -0.5f, +0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, -0.5f }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, +0.5f }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } }
 	};
 	generateTriangleModel ( cube, sizeof ( cube ), properties, tcs, scale, result, length );
 }
 
-void generateRect ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length )
 {
 	vertex rect [] = {
-		{ { -0.5f, -0.5f, 0 }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, 0 }, { 1.0f, 0.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, 0 }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, 0 }, { 1.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, 0 }, { 0.0f, 1.0f }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, 0 }, { 0.0f, 0.0f }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, 0 }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, 0 }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
 	};
 	generateTriangleModel ( rect, sizeof ( rect ), properties, tcs, scale, result, length );
 }
 
-void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	// Source from "http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c"
 
@@ -2921,7 +2967,6 @@ void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 	sphere.resize ( indices.size () );
 	int j = 0;
 	for ( auto i = indices.begin (); i != indices.end (); ++i ) {
-		//if ( *i >= vertices.size () ) continue;
 		vertex vtx;
 		vtx.position = vertices [ *i ];
 		vtx.texCoord = texcoords [ *i ];
@@ -2942,7 +2987,7 @@ void generateSphere ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 	delete [] temp;
 }
 
-void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	unsigned sectors = scale == nullptr ? 20 : ( unsigned ) PRMax ( scale->x, scale->y ) * 10;
 
@@ -2979,7 +3024,7 @@ void generateCircle ( PRDefaultModelProperty properties, PRDefaultModelTexCoordS
 	delete [] temp;
 }
 
-void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateGrid ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	polygonLine vertices [ 202 ];
 	unsigned index = 0;
@@ -3004,7 +3049,7 @@ void generateGrid ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSys
 	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
 }
 
-void generateGuide ( PRDefaultModelProperty properties, PRDefaultModelTexCoordSystem tcs, const PRVector3 * scale,
+void generateGuide ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	polygonLine vertices [ 3 ] = {
 		{ { { 0, 0, 0 }, { 0, 0 }, { 1, 0, 0, 1 } }, { { 1, 0, 0 }, { 1, 0 }, { 1, 0, 0, 1 } } },

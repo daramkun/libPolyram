@@ -41,6 +41,6 @@ MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 {
 	MyScene scene;
 	std::string title ( "Test" );
-	PRApplication application ( &scene, PRRendererType_OpenGLES2, 720, 1280, title, nullptr );
+	PRApplication application ( &scene, PRRendererType_OpenGLES2, 720, 1280, title, state );
 	application.run ();
 }

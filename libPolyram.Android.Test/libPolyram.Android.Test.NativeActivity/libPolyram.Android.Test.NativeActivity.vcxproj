@@ -280,7 +280,7 @@
       <AdditionalIncludeDirectories>..\..\libPolyram;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);Polyram_Android;stdc++;m;GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);Polyram_Android;stdc++;m;GLESv1_CM;GLESv2;EGL</LibraryDependencies>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\Build\$(PlatformTarget)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SharedLibrarySearchPath>..\..\Build\$(PlatformTarget)\;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
