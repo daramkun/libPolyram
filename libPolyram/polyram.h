@@ -353,6 +353,7 @@ public:
 	void setCursorPosition ( int x, int y );
 
 	void run ();
+	void exit ();
 
 public:
 	static PRApplication * sharedApplication ();

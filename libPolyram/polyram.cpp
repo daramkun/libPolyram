@@ -940,6 +940,25 @@ void PRApplication::run () {
 	if ( m_game ) m_game->onDestroy ();
 }
 
+void PRApplication::exit () {
+#if PRPlatformMicrosoftWindowsNT
+	PostQuitMessage ( 0 );
+#elif PRPlatformMicrosoftWindowsRT
+	this->window->Close ();
+#elif PRPlatformAppleOSX
+	if ( window.isVisible )
+		[window orderOut:window];
+#elif PRPlatformAppleiOS
+
+#elif PRPlatformUNIX
+	XEvent xev;
+	xev.type = ClientMessage;
+	XSendEvent ( display, window, false, 0, &xev );
+#elif PRPlatformGoogleAndroid
+	ANativeActivity_finish ( engine.app->activity );
+#endif
+}
+
 PRApplication * PRApplication::sharedApplication () { return g_sharedApplication; }
 
 #if POLYRAM_D3D9
