@@ -1,4 +1,6 @@
 #include "polyram.h"
+#include <stdarg.h>
+#include <regex>
 
 PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 ) {
 	PRVector3 temp1 = v2 - v1, temp2 = v3 - v1;
@@ -34,7 +36,6 @@ PRVersion::PRVersion ( std::string & versionString ) {
 			minor = atoi ( ( *( ++++match.begin () ) ).str ().c_str () );
 	}
 }
-
 PRVersion::PRVersion ( int _major, int _minor ) { major = _major; minor = _minor; }
 
 #if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
@@ -160,7 +161,7 @@ PRKeys keyValueConvertTo ( int key ) {
 		if ( key == 186 ) return PRKeys_Semicolon; if ( key == 192 ) return PRKeys_Grave;
 		if ( key == 222 ) return PRKeys_Quotation;
 		break;
-#elif PRPlatformAppleOSX
+#elif PRPlatformAppleFamily
 	case 0x7E: return PRKeys_Up; case 0x7D: return PRKeys_Down; case 0x7B: return PRKeys_Left; case 0x7C: return PRKeys_Right;
 	case 0x24: return PRKeys_Return; case 0x31: return PRKeys_Space; case 0x33: return PRKeys_Backspace;
 	case 0x30: return PRKeys_Tab; case 0x35: return PRKeys_Escape;
@@ -497,7 +498,8 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
-		//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
+	//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
+	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
 #elif PRPlatformMicrosoftWindowsRT
 	m_rendererType = rendererType;
@@ -527,6 +529,7 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
 	case PRRendererType_Metal: m_graphicsContext = new PRGraphicsContext_Metal ( this ); break;
+	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
 #elif PRPlatformUNIX
 	display = XOpenDisplay ( nullptr );
@@ -567,6 +570,7 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
 #elif PRPlatformAppleiOS
 
@@ -589,6 +593,7 @@ PRApplication::PRApplication ( PRGame * game, PRRendererType rendererType, int w
 					PRApplication::sharedApplication ()->m_graphicsContext =
 						new PRGraphicsContext_OpenGL ( PRApplication::sharedApplication (), PRApplication::sharedApplication ()->m_rendererType );
 					break;
+				default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 				}
 			}
 			break;
@@ -714,19 +719,22 @@ void PRApplication::getClientSize ( int * width, int * height ) {
 #endif
 }
 
-void PRApplication::setCursorPosition ( int x, int y ) {
+bool PRApplication::setCursorPosition ( int x, int y ) {
 #if PRPlatformMicrosoftWindowsNT
 	POINT pos;
 	ClientToScreen ( m_hWnd, &pos );
 	SetCursorPos ( pos.x, pos.y );
+	return true;
 #elif PRPlatformMicrosoftWindowsRT
 
 #elif PRPlatformAppleOSX
 	CGDirectDisplayID displayID = ( CGDirectDisplayID ) [ [ [ [ NSScreen mainScreen ] deviceDescription ] objectForKey:@"NSScreenNumber"] intValue ];
 	CGDisplayMoveCursorToPoint ( displayID, [ window convertRectToScreen : CGRectMake ( x, y, 0, 0 ) ].origin );
+	return true;
 #elif PRPlatformUNIX
 	XMoveWindow ( display, window, x, y );
 	XFlush ( display );
+	return true;
 #elif PRPlatformAppleiOS
 
 #elif PRPlatformGoogleAndroid
@@ -734,10 +742,37 @@ void PRApplication::setCursorPosition ( int x, int y ) {
 #elif PRPlatformWeb
 
 #endif
+	return false;
+}
+
+bool PRApplication::setCursorVisible ( bool visible )
+{
+#if PRPlatformMicrosoftWindowsNT
+	ShowCursor ( visible );
+	return true;
+#elif PRPlatformMicrosoftWindowsRT
+	window->PointerCursor = visible ? ref new Windows::UI::Core::CoreCursor ( Windows::UI::Core::CoreCursorType::Arrow, 1 ) : nullptr;
+	return true;
+#elif PRPlatformAppleOSX
+	if ( !visible ) [ NSCursor hide ];
+	else [ NSCursor unhide ];
+	return true;
+#elif PRPlatformUNIX
+
+#elif PRPlatformAppleiOS
+
+#elif PRPlatformGoogleAndroid
+
+#elif PRPlatformWeb
+
+#endif
+	return false;
 }
 
 void PRApplication::run () {
-	double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
+#if !PRPlatformMicrosoftWindowsRT
+	double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime;
+#endif
 
 #if PRPlatformMicrosoftWindowsNT
 	ShowWindow ( m_hWnd, SW_SHOW );
@@ -1478,10 +1513,6 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApplication * app, PRRend
 	eglQuerySurface ( display, surface, EGL_WIDTH, &w );
 	eglQuerySurface ( display, surface, EGL_HEIGHT, &h );
 
-	this->display = display;
-	this->context = context;
-	this->surface = surface;
-
 	PRApplication::sharedApplication ()->engine.width = w;
 	PRApplication::sharedApplication ()->engine.height = h;
 #endif
@@ -1665,6 +1696,7 @@ PRGraphicsContext_Vulkan::~PRGraphicsContext_Vulkan ()
 }*/
 #endif
 
+#define COPIEDMETHOD0(x,y) x temp; y ( &temp ); return temp;
 #define COPIEDMETHOD1(x,y,z) x temp; y ( z, &temp ); return temp;
 #define COPIEDMETHOD2(x,y,z,w) x temp; y ( z, w, &temp ); return temp;
 
@@ -2098,10 +2130,10 @@ void PRQuaternion::invert ( const PRQuaternion * v, PRQuaternion * result ) {
 	result->w = v->w / len;
 }
 
-float PRQuaternion::lengthSquared ( const PRQuaternion & v ) { float temp; lengthSquared ( &v, &temp ); return temp; }
-float PRQuaternion::length ( const PRQuaternion & v ) { float temp; length ( &v, &temp ); return temp; }
-PRQuaternion PRQuaternion::normalize ( const PRQuaternion & v ) { PRQuaternion temp; normalize ( &v, &temp ); return temp; }
-PRQuaternion PRQuaternion::invert ( const PRQuaternion & v ) { PRQuaternion temp; invert ( &v, &temp ); return temp; }
+float PRQuaternion::lengthSquared ( const PRQuaternion & v ) { COPIEDMETHOD1 ( float, lengthSquared, &v ); }
+float PRQuaternion::length ( const PRQuaternion & v ) { COPIEDMETHOD1 ( float, length, &v ); }
+PRQuaternion PRQuaternion::normalize ( const PRQuaternion & v ) { COPIEDMETHOD1 ( PRQuaternion, normalize, &v ); }
+PRQuaternion PRQuaternion::invert ( const PRQuaternion & v ) { COPIEDMETHOD1 ( PRQuaternion, invert, &v ); }
 
 void PRQuaternion::add ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result ) {
 	result->x = v1->x + v2->x;
@@ -2235,21 +2267,11 @@ void PRMatrix::invert ( const PRMatrix * m, PRMatrix * result ) {
 	result->_34 = -( num1 * num35 - num2 * num37 + num4 * num39 ) * num27;
 	result->_44 = ( num1 * num36 - num2 * num38 + num3 * num39 ) * num27;
 }
-PRMatrix PRMatrix::invert ( const PRMatrix & m ) {
-	PRMatrix temp;
-	invert ( &m, &temp );
-	return temp;
-}
 void PRMatrix::transpose ( const PRMatrix * m, PRMatrix * result ) {
 	result->_11 = m->_11; result->_12 = m->_21; result->_13 = m->_31; result->_14 = m->_41;
 	result->_21 = m->_12; result->_22 = m->_22; result->_23 = m->_32; result->_24 = m->_42;
 	result->_31 = m->_13; result->_32 = m->_23; result->_33 = m->_33; result->_34 = m->_43;
 	result->_41 = m->_14; result->_42 = m->_24; result->_43 = m->_34; result->_44 = m->_44;
-}
-PRMatrix PRMatrix::transpose ( const PRMatrix & m ) {
-	PRMatrix temp;
-	transpose ( &m, &temp );
-	return temp;
 }
 void PRMatrix::determinant ( const PRMatrix * m, float * result ) {
 	float num22 = m->_11, num21 = m->_12, num20 = m->_13, num19 = m->_14, num12 = m->_21, num11 = m->_22, num10 = m->_23, num9 = m->_24;
@@ -2262,11 +2284,9 @@ void PRMatrix::determinant ( const PRMatrix * m, float * result ) {
 		( num20 * ( ( ( num12 * num17 ) - ( num11 * num15 ) ) + ( num9 * num13 ) ) ) ) -
 		( num19 * ( ( ( num12 * num16 ) - ( num11 * num14 ) ) + ( num10 * num13 ) ) ) );
 }
-float PRMatrix::determinant ( const PRMatrix & m ) {
-	float temp;
-	determinant ( &m, &temp );
-	return temp;
-}
+PRMatrix PRMatrix::invert ( const PRMatrix & m ) { COPIEDMETHOD1 ( PRMatrix, invert, &m ); }
+PRMatrix PRMatrix::transpose ( const PRMatrix & m ) { COPIEDMETHOD1 ( PRMatrix, transpose, &m ); }
+float PRMatrix::determinant ( const PRMatrix & m ) { COPIEDMETHOD1 ( float, determinant, &m ); }
 
 void PRMatrix::add ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result ) {
 	result->_11 = v1->_11 + v2->_11; result->_12 = v1->_12 + v2->_12; result->_13 = v1->_13 + v2->_13; result->_14 = v1->_14 + v2->_14;

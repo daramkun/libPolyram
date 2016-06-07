@@ -29,10 +29,8 @@
 #include <exception>
 #include <math.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <string>
-#include <regex>
 
 #if ( defined ( _WINDOWS ) || defined ( _WIN32 ) || defined ( _WIN64 ) || defined ( WIN32 ) || defined ( WIN64 ) )
 #	include <Windows.h>
@@ -240,7 +238,7 @@ struct engine {
 
 #define SAFE_RELEASE(x)			if ( x ) x->Release (); x = nullptr;
 #define SAFE_DELETE(x)			if ( x ) delete x; x = nullptr;
-#define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] x; x = nullptr;
+#define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] ( char * ) x; x = nullptr;
 
 #define PR_Epsilon				1.19209290E-07F
 #define PR_NaN					NAN;
@@ -359,7 +357,8 @@ public:
 	void setGraphicsContext ( PRGraphicsContext * graphicsContext );
 	void getClientSize ( int * width, int * height );
 
-	void setCursorPosition ( int x, int y );
+	bool setCursorPosition ( int x, int y );
+	bool setCursorVisible ( bool visible );
 
 	void run ();
 	void exit ();
