@@ -2,11 +2,6 @@
 #include <stdarg.h>
 #include <regex>
 
-PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 ) {
-	PRVector3 temp1 = v2 - v1, temp2 = v3 - v1;
-	return PRVector3::cross ( temp1, temp2 ).normalize ();
-}
-
 PRGame::PRGame () { }
 PRGame::~PRGame () { }
 void PRGame::onInitialize () { }
@@ -37,57 +32,6 @@ PRVersion::PRVersion ( std::string & versionString ) {
 	}
 }
 PRVersion::PRVersion ( int _major, int _minor ) { major = _major; minor = _minor; }
-
-#if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
-LARGE_INTEGER performanceFrequency;
-bool isPerformanceFrequencySupport = false;
-#endif
-
-double PRGetCurrentSecond () {
-#if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
-	isPerformanceFrequencySupport = QueryPerformanceFrequency ( &performanceFrequency ) ? true : false;
-	if ( isPerformanceFrequencySupport ) {
-		LARGE_INTEGER getTime;
-		QueryPerformanceCounter ( &getTime );
-		return ( getTime.QuadPart / ( double ) performanceFrequency.QuadPart );
-	}
-	else
-#if !PRPlatformMicrosoftWindowsRT
-		return timeGetTime () / 1000.0;
-#else
-		return 0;
-#endif
-#elif PRPlatformAppleFamily || PRPlatformUNIXFamily
-	timeval tv;
-	gettimeofday ( &tv, nullptr );
-	return ( tv.tv_sec * 1000 + tv.tv_usec / 1000 ) / 1000.0;
-#endif
-}
-
-void PRPrintLog ( const char * format, ... ) {
-	va_list vl;
-	va_start ( vl, format );
-	char text [ 1024 ];
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	vsprintf_s ( text, 1023, format, vl );
-#else
-	vsprintf ( text, format, vl );
-#endif
-	va_end ( vl );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	size_t len = strlen ( text );
-	text [ len ] = '\n';
-	text [ len + 1 ] = '\0';
-	OutputDebugStringA ( text );
-#elif PRPlatformGoogleAndroid
-	__android_log_print ( ANDROID_LOG_INFO, "libPolyram", text );
-#else
-	size_t len = strlen ( text );
-	text [ len ] = '\n';
-	text [ len + 1 ] = '\0';
-	fprintf ( stderr, text );
-#endif
-}
 
 PRGraphicsContext::~PRGraphicsContext () { }
 
@@ -3116,4 +3060,60 @@ void generateGuide ( PRModelProperty properties, PRModelTexCoord tcs, const PRVe
 		{ { { 0, 0, 0 }, { 0, 0 }, { 0, 0, 1, 1 } }, { { 0, 0, 1 }, { 0, 1 }, { 0, 0, 1, 1 } } },
 	};
 	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
+}
+
+PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 ) {
+	PRVector3 temp1 = v2 - v1, temp2 = v3 - v1;
+	return PRVector3::cross ( temp1, temp2 ).normalize ();
+}
+
+#if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
+LARGE_INTEGER performanceFrequency;
+bool isPerformanceFrequencySupport = false;
+#endif
+
+double PRGetCurrentSecond () {
+#if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
+	isPerformanceFrequencySupport = QueryPerformanceFrequency ( &performanceFrequency ) ? true : false;
+	if ( isPerformanceFrequencySupport ) {
+		LARGE_INTEGER getTime;
+		QueryPerformanceCounter ( &getTime );
+		return ( getTime.QuadPart / ( double ) performanceFrequency.QuadPart );
+	}
+	else
+#if !PRPlatformMicrosoftWindowsRT
+		return timeGetTime () / 1000.0;
+#else
+		return 0;
+#endif
+#elif PRPlatformAppleFamily || PRPlatformUNIXFamily
+	timeval tv;
+	gettimeofday ( &tv, nullptr );
+	return ( tv.tv_sec * 1000 + tv.tv_usec / 1000 ) / 1000.0;
+#endif
+}
+
+void PRPrintLog ( const char * format, ... ) {
+	va_list vl;
+	va_start ( vl, format );
+	char text [ 1024 ];
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	vsprintf_s ( text, 1023, format, vl );
+#else
+	vsprintf ( text, format, vl );
+#endif
+	va_end ( vl );
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	size_t len = strlen ( text );
+	text [ len ] = '\n';
+	text [ len + 1 ] = '\0';
+	OutputDebugStringA ( text );
+#elif PRPlatformGoogleAndroid
+	__android_log_print ( ANDROID_LOG_INFO, "libPolyram", text );
+#else
+	size_t len = strlen ( text );
+	text [ len ] = '\n';
+	text [ len + 1 ] = '\0';
+	fprintf ( stderr, text );
+#endif
 }

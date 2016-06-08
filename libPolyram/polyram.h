@@ -236,41 +236,6 @@ struct engine {
 #	define POLYRAMDECLSPEC
 #endif
 
-#define SAFE_RELEASE(x)			if ( x ) x->Release (); x = nullptr;
-#define SAFE_DELETE(x)			if ( x ) delete x; x = nullptr;
-#define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] ( char * ) x; x = nullptr;
-
-#define PR_Epsilon				1.19209290E-07F
-#define PR_NaN					NAN;
-#define PR_PositiveInfinite		HUGE_VALF
-#define PR_NegativeInfinite		-HUGE_VALF
-#define PR_PI					3.1415926536f
-#define PR_PIover2				1.5707963268f
-#define PR_PIover4				0.7853981634f
-#define PR_2PI					6.2831853072f
-#define PR_E					2.7182818285f
-#define PR_Log10E				0.4342944819f
-#define PR_Log2E				1.4426950409f
-
-struct PRVector2;
-struct PRVector3;
-struct PRVector4;
-struct PRQuaternion;
-struct PRMatrix;
-
-#define PRMin( x, y )			( ( x > y ) ? y : x )
-#define PRMax( x, y )			( ( x > y ) ? x : y )
-#define PRPow2( x )				( x * x )
-#define PRPow3( x )				( x * x * x )
-#define PRToDegree( x )			( x * 180 / PR_PI )
-#define PRToRadian( x )			( x * PR_PI / 180 )
-
-#define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
-POLYRAMDECLSPEC PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
-
-POLYRAMDECLSPEC double PRGetCurrentSecond ();
-POLYRAMDECLSPEC void PRPrintLog ( const char * format, ... );
-
 enum PRKeys {
 	PRKeys_Unknown,
 	PRKeys_Up, PRKeys_Down, PRKeys_Left, PRKeys_Right,
@@ -505,6 +470,12 @@ public:
 #endif
 
 #define GETGRAPHICSCONTEXT(x) auto graphicsContext = static_cast<x*> ( PRApplication::sharedApplication ()->getGraphicsContext () )
+
+struct PRVector2;
+struct PRVector3;
+struct PRVector4;
+struct PRQuaternion;
+struct PRMatrix;
 
 struct POLYRAMDECLSPEC PRVector2 {
 public:
@@ -970,6 +941,35 @@ private:
 	void * m_data;
 	unsigned m_dataSize;
 };
+
+#define SAFE_RELEASE(x)			if ( x ) x->Release (); x = nullptr;
+#define SAFE_DELETE(x)			if ( x ) delete x; x = nullptr;
+#define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] ( char * ) x; x = nullptr;
+
+#define PR_Epsilon				1.19209290E-07F
+#define PR_NaN					NAN;
+#define PR_PositiveInfinite		HUGE_VALF
+#define PR_NegativeInfinite		-HUGE_VALF
+#define PR_PI					3.1415926536f
+#define PR_PIover2				1.5707963268f
+#define PR_PIover4				0.7853981634f
+#define PR_2PI					6.2831853072f
+#define PR_E					2.7182818285f
+#define PR_Log10E				0.4342944819f
+#define PR_Log2E				1.4426950409f
+
+#define PRMin( x, y )			( ( x > y ) ? y : x )
+#define PRMax( x, y )			( ( x > y ) ? x : y )
+#define PRPow2( x )				( x * x )
+#define PRPow3( x )				( x * x * x )
+#define PRToDegree( x )			( x * 180 / PR_PI )
+#define PRToRadian( x )			( x * PR_PI / 180 )
+
+#define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
+POLYRAMDECLSPEC PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
+
+POLYRAMDECLSPEC double PRGetCurrentSecond ();
+POLYRAMDECLSPEC void PRPrintLog ( const char * format, ... );
 
 #if PRPlatformMicrosoftWindowsNT
 #	define MAIN_FUNC_ATTR 
