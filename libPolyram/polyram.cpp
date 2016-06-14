@@ -2734,15 +2734,17 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 	FILE * fp = PR_openFile ( filename, "rt" );
 
 	// Original Source from "http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading"
-	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
-	std::vector<PRVector3> temp_vertices;
-	std::vector<PRVector2> temp_uvs;
-	std::vector<PRVector3> temp_normals;
+	std::vector<unsigned> vIndices, uvIndices, nIndices;
+	std::vector<PRVector3> tempVertices;
+	std::vector<PRVector2> tempUVs;
+	std::vector<PRVector3> tempNormals;
+
+	char lineHeader [ 128 ];
+	char stupidBuffer [ 1024 ];
 
 	PRModelProperty prop = PRModelProperty_Position;
 
 	while ( 1 ) {
-		char lineHeader [ 128 ];
 		int res = fscanf ( fp, "%s", lineHeader );
 		if ( res == EOF )
 			break;
@@ -2750,85 +2752,76 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 		if ( strcmp ( lineHeader, "v" ) == 0 ) {
 			PRVector3 vertex;
 			fscanf ( fp, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-			temp_vertices.push_back ( vertex );
-			prop |= PRModelProperty_Position;
+			tempVertices.push_back ( vertex );
 		} else if ( strcmp ( lineHeader, "vt" ) == 0 ) {
 			PRVector2 uv;
 			fscanf ( fp, "%f %f\n", &uv.x, &uv.y );
-			temp_uvs.push_back ( uv );
+			tempUVs.push_back ( uv );
 			prop |= PRModelProperty_TexCoord;
 		} else if ( strcmp ( lineHeader, "vn" ) == 0 ) {
 			PRVector3 normal;
 			fscanf ( fp, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
-			temp_normals.push_back ( normal );
+			tempNormals.push_back ( normal );
 			prop |= PRModelProperty_Normal;
 		} else if ( strcmp ( lineHeader, "f" ) == 0 ) {
-			std::string vertex1, vertex2, vertex3;
-			unsigned int vertexIndex [ 3 ] = { 0, }, uvIndex [ 3 ] = { 0, }, normalIndex [ 3 ] = { 0, };
+			//std::string vertex1, vertex2, vertex3;
+			unsigned vi [ 3 ] = { 0, }, uvi [ 3 ] = { 0, }, ni [ 3 ] = { 0, };
 			if ( prop == ( PRModelProperty_Position | PRModelProperty_Normal | PRModelProperty_TexCoord ) ) {
-				int matches = fscanf ( fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex [ 0 ], &uvIndex [ 0 ], &normalIndex [ 0 ],
-					&vertexIndex [ 1 ], &uvIndex [ 1 ], &normalIndex [ 1 ], &vertexIndex [ 2 ], &uvIndex [ 2 ], &normalIndex [ 2 ] );
+				int matches = fscanf ( fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vi [ 0 ], &uvi [ 0 ], &ni [ 0 ],
+					&vi [ 1 ], &uvi [ 1 ], &ni [ 1 ], &vi [ 2 ], &uvi [ 2 ], &ni [ 2 ] );
 				if ( matches != 9 )
 					throw std::runtime_error ( "File format is invalid." );
 			} else if ( prop == ( PRModelProperty_Position | PRModelProperty_Normal ) ) {
-				int matches = fscanf ( fp, "%d//%d %d//%d %d//%d\n", &vertexIndex [ 0 ], &normalIndex [ 0 ],
-					&vertexIndex [ 1 ], &normalIndex [ 1 ], &vertexIndex [ 2 ], &normalIndex [ 2 ] );
+				int matches = fscanf ( fp, "%d//%d %d//%d %d//%d\n", &vi [ 0 ], &ni [ 0 ],
+					&vi [ 1 ], &ni [ 1 ], &vi [ 2 ], &ni [ 2 ] );
 				if ( matches != 6 )
 					throw std::runtime_error ( "File format is invalid." );
 			} else if ( prop == ( PRModelProperty_Position | PRModelProperty_TexCoord ) ) {
-				int matches = fscanf ( fp, "%d/%d %d/%d %d/%d\n", &vertexIndex [ 0 ], &uvIndex [ 0 ],
-					&vertexIndex [ 1 ], &uvIndex [ 1 ], &vertexIndex [ 2 ], &uvIndex [ 2 ] );
+				int matches = fscanf ( fp, "%d/%d %d/%d %d/%d\n", &vi [ 0 ], &uvi [ 0 ],
+					&vi [ 1 ], &uvi [ 1 ], &vi [ 2 ], &uvi [ 2 ] );
 				if ( matches != 6 )
 					throw std::runtime_error ( "File format is invalid." );
 			} else if ( prop == PRModelProperty_Position ) {
-				int matches = fscanf ( fp, "%d %d %d\n", &vertexIndex [ 0 ], &vertexIndex [ 1 ], &vertexIndex [ 2 ] );
+				int matches = fscanf ( fp, "%d %d %d\n", &vi [ 0 ], &vi [ 1 ], &vi [ 2 ] );
 				if ( matches != 3 )
 					throw std::runtime_error ( "File format is invalid." );
 			}
 
-			vertexIndices.push_back ( vertexIndex [ 0 ] );
-			vertexIndices.push_back ( vertexIndex [ 1 ] );
-			vertexIndices.push_back ( vertexIndex [ 2 ] );
+			vIndices.push_back ( vi [ 0 ] ); vIndices.push_back ( vi [ 1 ] ); vIndices.push_back ( vi [ 2 ] );
 
 			if ( prop & PRModelProperty_TexCoord ) {
-				uvIndices.push_back ( uvIndex [ 0 ] );
-				uvIndices.push_back ( uvIndex [ 1 ] );
-				uvIndices.push_back ( uvIndex [ 2 ] );
+				uvIndices.push_back ( uvi [ 0 ] ); uvIndices.push_back ( uvi [ 1 ] ); uvIndices.push_back ( uvi [ 2 ] );
 			}
 			if ( prop & PRModelProperty_Normal ) {
-				normalIndices.push_back ( normalIndex [ 0 ] );
-				normalIndices.push_back ( normalIndex [ 1 ] );
-				normalIndices.push_back ( normalIndex [ 2 ] );
+				nIndices.push_back ( ni [ 0 ] ); nIndices.push_back ( ni [ 1 ] ); nIndices.push_back ( ni [ 2 ] );
 			}
-		} else {
-			char stupidBuffer [ 1000 ];
-			fgets ( stupidBuffer, 1000, fp );
-		}
+		} else fgets ( stupidBuffer, 1024, fp );
 	}
 
 	std::vector<float> vv;
-	for ( unsigned int i = 0; i < vertexIndices.size (); i++ ) {
-		unsigned int vertexIndex = vertexIndices [ i ];
-		unsigned int uvIndex = uvIndices.size () > 0 ? uvIndices [ i ] : 0;
-		unsigned int normalIndex = normalIndices.size () > 0 ? normalIndices [ i ] : 0;
-
-		PRVector3 vertex = temp_vertices [ vertexIndex - 1 ];
+	unsigned vertexIndicesSize = vIndices.size ();
+	for ( unsigned i = 0; i < vertexIndicesSize; ++i ) {
+		unsigned vertexIndex = vIndices [ i ];
+		PRVector3 vertex = tempVertices [ vertexIndex - 1 ];
 		vv.push_back ( vertex.x ); vv.push_back ( vertex.y ); vv.push_back ( vertex.z );
+
 		if ( prop & PRModelProperty_Normal ) {
-			PRVector3 normal = temp_normals [ normalIndex - 1 ];
+			unsigned normalIndex = nIndices [ i ];
+			PRVector3 normal = tempNormals [ normalIndex - 1 ];
 			vv.push_back ( normal.x ); vv.push_back ( normal.y ); vv.push_back ( normal.z );
 		}
+
 		if ( prop & PRModelProperty_TexCoord ) {
-			PRVector2 uv = temp_uvs [ uvIndex - 1 ];
+			unsigned uvIndex = uvIndices [ i ];
+			PRVector2 uv = tempUVs [ uvIndex - 1 ];
 			vv.push_back ( uv.x ); vv.push_back ( uv.y );
 		}
-		vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 );
 	}
 
 	m_data = new float [ vv.size () ];
 	m_dataSize = vv.size () * sizeof ( float );
 	memcpy ( m_data, &vv [ 0 ], m_dataSize );
-	m_properties = prop | PRModelProperty_Diffuse;
+	m_properties = prop;
 }
 
 PRModelProperty PRModelGenerator::getProperties () { return m_properties; }
