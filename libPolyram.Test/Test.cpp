@@ -23,11 +23,19 @@ public:
 			"uniform mat4 world;\n"
 			"uniform mat4 view;\n"
 			"uniform mat4 proj;\n"
+			"uniform vec4 worldLightPosition;\n"
+			"out vec4 out_col;\n"
 			"void main () {\n"
 			"	gl_Position = vec4 ( in_pos, 1 );\n"
 			"	gl_Position = world * gl_Position;\n"
+			"	\n"
+			"	vec3 lightDir = gl_Position.xyz - worldLightPosition.xyz;\n"
+			"	lightDir = normalize ( lightDir );\n"
+			"	\n"
 			"	gl_Position = view * gl_Position;\n"
 			"	gl_Position = proj * gl_Position;\n"
+			"	\n"
+			"	out_col = vec4 ( 1, 1, 1, 1 ) * dot ( -lightDir, in_nor );"
 			"}";
 		vertexShader = glCreateShader ( GL_VERTEX_SHADER );
 		GLint vertexShaderStringLength = strlen ( vertexShaderString );
@@ -37,8 +45,9 @@ public:
 		if ( bufferLength > 0 )
 			PRPrintLog ( buffer );
 		const GLchar * fragmentShaderString = "#version 330\n"
+			"in vec4 out_col;"
 			"void main () {\n"
-			"	gl_FragColor = vec4 ( 1, 1, 1, 1 );\n"
+			"	gl_FragColor = clamp ( out_col, 0, 1 );\n"
 			"}";
 		fragmentShader = glCreateShader ( GL_FRAGMENT_SHADER );
 		GLint fragmentShaderStringLength = strlen ( fragmentShaderString );
@@ -128,6 +137,10 @@ public:
 		PRMatrix proj;
 		PRMatrix::createPerspectiveFieldOfViewRH ( PR_PIover4, 1280 / 720.f, 0.001f, 1000.0f, &proj );
 		glUniformMatrix4fv ( glGetUniformLocation ( program, "proj" ), 1, false, ( GLfloat* ) &proj );
+
+		PRVector4 worldLightPosition ( 10, 10, 10, 1 );
+		glUniform4f ( glGetUniformLocation ( program, "worldLightPosition" ),
+			worldLightPosition.x, worldLightPosition.y, worldLightPosition.z, worldLightPosition.w );
 
 		//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
 
