@@ -10,7 +10,9 @@ public:
 	{
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
 		
+		PRModelGenerator * gen = new PRModelGenerator ( std::string ( "bunny.obj" ), PRModelTexCoord_ST );
 
+		delete gen;
 	}
 
 	void onDestroy ()
@@ -31,8 +33,12 @@ public:
 MAIN_FUNC_ATTR
 MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 {
-	MyScene scene;
-	std::string title ( "Test" );
-	PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
-	application.run ();
+	try {
+		MyScene scene;
+		std::string title ( "Test" );
+		PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
+		application.run ();
+	} catch ( std::exception & ex ) {
+		PRPrintLog ( ex.what () );
+	}
 }
