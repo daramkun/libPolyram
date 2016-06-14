@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "polyram.h"
 #include <stdarg.h>
 #include <regex>
@@ -2704,6 +2705,8 @@ struct vertex { PRVector3 position; PRVector2 texCoord; PRVector4 diffuse; };
 struct polygonTriangle { vertex v1, v2, v3; };
 struct polygonLine { vertex v1, v2; };
 
+void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+	void** result, unsigned * length );
 void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
@@ -2758,7 +2761,8 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 		} else if ( strcmp ( lineHeader, "f" ) == 0 ) {
 			std::string vertex1, vertex2, vertex3;
 			unsigned int vertexIndex [ 3 ], uvIndex [ 3 ], normalIndex [ 3 ];
-			int matches = fscanf ( fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex [ 0 ], &uvIndex [ 0 ], &normalIndex [ 0 ], &vertexIndex [ 1 ], &uvIndex [ 1 ], &normalIndex [ 1 ], &vertexIndex [ 2 ], &uvIndex [ 2 ], &normalIndex [ 2 ] );
+			int matches = fscanf ( fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex [ 0 ], &uvIndex [ 0 ], &normalIndex [ 0 ],
+				&vertexIndex [ 1 ], &uvIndex [ 1 ], &normalIndex [ 1 ], &vertexIndex [ 2 ], &uvIndex [ 2 ], &normalIndex [ 2 ] );
 			if ( matches != 9 ) {
 				throw std::runtime_error ( "File can't be read by our simple parser :-( Try exporting with other options\n" );
 			}

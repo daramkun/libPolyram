@@ -1,4 +1,4 @@
-#define POLYRAM_D3D11
+#define POLYRAM_OPENGL
 #include "polyram.h"
 
 class MyScene : public PRGame
@@ -8,7 +8,7 @@ public:
 public:
 	void onInitialize ()
 	{
-		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
+		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
 		
 
 	}
@@ -20,11 +20,11 @@ public:
 
 	void onDraw ( double dt )
 	{
-		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
+		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
 
 
 
-		graphicsContext->dxgiSwapChain->Present ( 1, 0 );
+		graphicsContext->swapBuffers ();
 	}
 };
 
@@ -33,6 +33,6 @@ MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 {
 	MyScene scene;
 	std::string title ( "Test" );
-	PRApplication application ( &scene, PRRendererType_Direct3D11, 1280, 720, title );
+	PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
 	application.run ();
 }
