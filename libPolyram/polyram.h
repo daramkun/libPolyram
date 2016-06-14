@@ -916,18 +916,22 @@ private:
 
 enum PRModelType { PRModelType_Box, PRModelType_Rectangle, PRModelType_Sphere, PRModelType_Circle, PRModelType_Grid, PRModelType_Guide, };
 
-enum PRModelProperty {
+enum {
 	PRModelProperty_Position = 0,
 	PRModelProperty_Normal = 1 << 0,
 	PRModelProperty_TexCoord = 1 << 1,
 	PRModelProperty_Diffuse = 1 << 2,
 };
+typedef int PRModelProperty;
 
 enum PRModelTexCoord { PRModelTexCoord_UV, PRModelTexCoord_ST };
 
 class POLYRAMDECLSPEC PRModelGenerator {
 public:
 	PRModelGenerator ( PRModelType modelType, PRModelProperty properties,
+		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );
+	// This constructor only support OBJ file format with XYZ, Normal, UV and Triangle faces format.
+	PRModelGenerator ( std::string & filename,
 		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );
 	~PRModelGenerator ();
 

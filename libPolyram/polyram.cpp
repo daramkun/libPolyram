@@ -2580,6 +2580,44 @@ bool operator== ( const PRMatrix & v1, const PRMatrix & v2 ) {
 #	include "stb_image/stb_image_aug.h"
 #endif
 
+FILE* PR_openFile ( std::string & filename, const char * openmode ) {
+#if PRPlatformAppleFamily
+	CFBundleRef mainBundle = CFBundleGetMainBundle ();
+	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
+	char path [ 1024 ];
+	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
+		throw std::runtime_error ( "Cannot get resource directory path." );
+	CFRelease ( resourceURL );
+
+	chdir ( path );
+#endif
+
+#if PRPlatformMicrosoftWindowsRT
+	USES_CONVERSION;
+#endif
+
+	char fullpath [ 2048 ] = { 0, };
+#if PRPlatformMicrosoftWindowsRT
+	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
+	strcat_s ( fullpath, 2048, "\\" );
+#endif
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	strcat_s ( fullpath, 2048, filename.c_str () );
+#else
+	strcat ( fullpath, filename.c_str () );
+#endif
+
+#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
+	FILE * fp;
+	fopen_s ( &fp, fullpath, openmode );
+#else
+	FILE * fp = fopen ( fullpath, openmode );
+#endif
+	if ( fp == nullptr )
+		throw std::runtime_error ( "File Not Found." );
+	return fp;
+}
+
 PRImageLoader::PRImageLoader ( std::string & filename ) {
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
@@ -2645,40 +2683,8 @@ unsigned PRImageLoader::getHeight () { return m_height; }
 const void * PRImageLoader::getData () { return m_data; }
 
 PRDataLoader::PRDataLoader ( std::string & filename ) {
-#if PRPlatformAppleFamily
-	CFBundleRef mainBundle = CFBundleGetMainBundle ();
-	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
-	char path [ 1024 ];
-	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
-		throw std::runtime_error ( "Cannot get resource directory path." );
-	CFRelease ( resourceURL );
+	FILE * fp = PR_openFile ( filename, "rb" );
 
-	chdir ( path );
-#endif
-
-#if PRPlatformMicrosoftWindowsRT
-	USES_CONVERSION;
-#endif
-
-	char fullpath [ 2048 ] = { 0, };
-#if PRPlatformMicrosoftWindowsRT
-	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
-	strcat_s ( fullpath, 2048, "\\" );
-#endif
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	strcat_s ( fullpath, 2048, filename.c_str () );
-#else
-	strcat ( fullpath, filename.c_str () );
-#endif
-
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	FILE * fp;
-	fopen_s ( &fp, fullpath, "rb" );
-#else
-	FILE * fp = fopen ( fullpath, "rb" );
-#endif
-	if ( fp == nullptr )
-		throw std::runtime_error ( "File Not Found." );
 	fseek ( fp, 0, SEEK_END );
 	m_dataSize = ( unsigned ) ftell ( fp );
 	fseek ( fp, 0, SEEK_SET );
@@ -2716,6 +2722,80 @@ PRModelGenerator::PRModelGenerator ( PRModelType modelType, PRModelProperty prop
 	case PRModelType_Guide:		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize ); break;
 	}
 	m_properties = properties;
+}
+
+PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs, const PRVector3 * scale ) {
+	if ( filename.substr ( filename.size () - 3, 3 ).compare ( "obj" ) != 0 )
+		throw std::runtime_error ( "This object can read Wavefront's OBJ file only." );
+
+	FILE * fp = PR_openFile ( filename, "rt" );
+
+	// Source from "http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading"
+	std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
+	std::vector<PRVector3> temp_vertices;
+	std::vector<PRVector2> temp_uvs;
+	std::vector<PRVector3> temp_normals;
+
+	while ( 1 ) {
+		char lineHeader [ 128 ];
+		int res = fscanf ( fp, "%s", lineHeader );
+		if ( res == EOF )
+			break;
+
+		if ( strcmp ( lineHeader, "v" ) == 0 ) {
+			PRVector3 vertex;
+			fscanf ( fp, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+			temp_vertices.push_back ( vertex );
+		} else if ( strcmp ( lineHeader, "vt" ) == 0 ) {
+			PRVector2 uv;
+			fscanf ( fp, "%f %f\n", &uv.x, &uv.y );
+			//uv.y = -uv.y;
+			temp_uvs.push_back ( uv );
+		} else if ( strcmp ( lineHeader, "vn" ) == 0 ) {
+			PRVector3 normal;
+			fscanf ( fp, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+			temp_normals.push_back ( normal );
+		} else if ( strcmp ( lineHeader, "f" ) == 0 ) {
+			std::string vertex1, vertex2, vertex3;
+			unsigned int vertexIndex [ 3 ], uvIndex [ 3 ], normalIndex [ 3 ];
+			int matches = fscanf ( fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex [ 0 ], &uvIndex [ 0 ], &normalIndex [ 0 ], &vertexIndex [ 1 ], &uvIndex [ 1 ], &normalIndex [ 1 ], &vertexIndex [ 2 ], &uvIndex [ 2 ], &normalIndex [ 2 ] );
+			if ( matches != 9 ) {
+				throw std::runtime_error ( "File can't be read by our simple parser :-( Try exporting with other options\n" );
+			}
+			vertexIndices.push_back ( vertexIndex [ 0 ] );
+			vertexIndices.push_back ( vertexIndex [ 1 ] );
+			vertexIndices.push_back ( vertexIndex [ 2 ] );
+			uvIndices.push_back ( uvIndex [ 0 ] );
+			uvIndices.push_back ( uvIndex [ 1 ] );
+			uvIndices.push_back ( uvIndex [ 2 ] );
+			normalIndices.push_back ( normalIndex [ 0 ] );
+			normalIndices.push_back ( normalIndex [ 1 ] );
+			normalIndices.push_back ( normalIndex [ 2 ] );
+		} else {
+			char stupidBuffer [ 1000 ];
+			fgets ( stupidBuffer, 1000, fp );
+		}
+	}
+
+	std::vector<float> vv;
+	for ( unsigned int i = 0; i < vertexIndices.size (); i++ ) {
+		unsigned int vertexIndex = vertexIndices [ i ];
+		unsigned int uvIndex = uvIndices [ i ];
+		unsigned int normalIndex = normalIndices [ i ];
+
+		PRVector3 vertex = temp_vertices [ vertexIndex - 1 ];
+		PRVector2 uv = temp_uvs [ uvIndex - 1 ];
+		PRVector3 normal = temp_normals [ normalIndex - 1 ];
+
+		vv.push_back ( vertex.x ); vv.push_back ( vertex.y ); vv.push_back ( vertex.z );
+		vv.push_back ( normal.x ); vv.push_back ( normal.y ); vv.push_back ( normal.z );
+		vv.push_back ( uv.x ); vv.push_back ( uv.y );
+		vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 );
+	}
+
+	generateTriangleModel ( &vv [ 0 ], vv.size (),
+		PRModelProperty_Position | PRModelProperty_Normal | PRModelProperty_TexCoord | PRModelProperty_Diffuse,
+		tcs, scale, &m_data, &m_dataSize );
 }
 
 PRModelProperty PRModelGenerator::getProperties () { return m_properties; }
