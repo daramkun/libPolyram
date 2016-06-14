@@ -2399,7 +2399,7 @@ void PRMatrix::createLookAtRH ( const PRVector3 * position, const PRVector3 * ta
 		xaxis.x, yaxis.x, zaxis.x, 0,
 		xaxis.y, yaxis.y, zaxis.y, 0,
 		xaxis.z, yaxis.z, zaxis.z, 0,
-		PRVector3::dot ( xaxis, *position ), PRVector3::dot ( yaxis, *position ), PRVector3::dot ( zaxis, *position ), 1 );
+		-PRVector3::dot ( xaxis, *position ), -PRVector3::dot ( yaxis, *position ), -PRVector3::dot ( zaxis, *position ), 1 );
 }
 PRMatrix PRMatrix::createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector ) {
 	PRMatrix temp;
@@ -2474,21 +2474,21 @@ void PRMatrix::createPerspectiveOffCenterRH ( float l, float r, float b, float t
 		0, 0, zn * zf / ( zn - zf ), 1 );
 }
 void PRMatrix::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix * result ) {
-	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
+	float ys = 1 / tanf ( fov * 0.5f ), xs = ys / aspect;
 	*result = PRMatrix (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
 		0, 0, zf / ( zf - zn ), 1,
-		0, 0, -zn * zf / ( zf - zn ), 0
+		0, 0, ( -zn * zf ) / ( zf - zn ), 0
 	);
 }
 void PRMatrix::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix * result ) {
-	float ys = cosf ( fov / 2 ) / sinf ( fov / 2 ), xs = ys / aspect;
+	float ys = 1 / tanf ( fov * 0.5f ), xs = ys / aspect;
 	*result = PRMatrix (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
-		0, 0, zf / ( zn - zf ), 1,
-		0, 0, zn * zf / ( zn - zf ), 0
+		0, 0, zf / ( zn - zf ), -1,
+		0, 0, ( zn * zf ) / ( zn - zf ), 0
 	);
 }
 PRMatrix PRMatrix::createOrthographicLH ( float w, float h, float zn, float zf ) {
@@ -2825,7 +2825,9 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 		vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 ); vv.push_back ( 1 );
 	}
 
-	generateTriangleModel ( &vv [ 0 ], vv.size () * sizeof ( float ), prop | PRModelProperty_Diffuse, tcs, scale, &m_data, &m_dataSize );
+	m_data = new float [ vv.size () ];
+	m_dataSize = vv.size () * sizeof ( float );
+	memcpy ( m_data, &vv [ 0 ], m_dataSize );
 	m_properties = prop | PRModelProperty_Diffuse;
 }
 
