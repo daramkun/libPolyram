@@ -14,6 +14,8 @@ public:
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
 
 		glEnable ( GL_DEPTH_TEST );
+		glEnable ( GL_CULL_FACE );
+		glFrontFace ( GL_CCW );
 
 		GLchar buffer [ 1024 ];
 		GLint bufferLength;
@@ -118,28 +120,26 @@ public:
 		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		glUseProgram ( program );
-		PRMatrix world, temp;
-		//PRVector3 scale ( 0.1f, 0.1f, 0.1f );
-		//PRMatrix::createScale ( &scale, &world );
+		PRMat world, temp;
+		//PRVec3 scale ( 0.1f, 0.1f, 0.1f );
+		//PRMat::createScale ( &scale, &world );
 		static float rot = 0;
 		rot += ( dt / 3 );
-		PRMatrix::createRotationY ( rot, &temp );
-		//PRMatrix::multiply ( &world, &temp, &world );
+		PRMat::createRotationY ( rot, &temp );
+		//PRMat::multiply ( &world, &temp, &world );
 		glUniformMatrix4fv ( glGetUniformLocation ( program, "world" ), 1, false, ( GLfloat* ) &temp );
 
-		PRMatrix view;
-		PRMatrix::createLookAtRH ( &PRVector3 ( 4, 4, 4 ), &PRVector3 ( 0, 0, 0 ), &PRVector3 ( 0, 1, 0 ), &view );
+		PRMat view;
+		PRMat::createLookAtRH ( &PRVec3 ( 4, 4, 4 ), &PRVec3 ( 0, 0, 0 ), &PRVec3 ( 0, 1, 0 ), &view );
 		glUniformMatrix4fv ( glGetUniformLocation ( program, "view" ), 1, false, ( GLfloat* ) &view );
 
-		PRMatrix proj;
-		PRMatrix::createPerspectiveFieldOfViewRH ( PR_PIover4, 1280 / 720.f, 0.001f, 1000.0f, &proj );
+		PRMat proj;
+		PRMat::createPerspectiveFieldOfViewRH ( PR_PIover4, 1280 / 720.f, 0.001f, 1000.0f, &proj );
 		glUniformMatrix4fv ( glGetUniformLocation ( program, "proj" ), 1, false, ( GLfloat* ) &proj );
 
-		PRVector3 worldLightPosition ( 10, 10, 10 );
+		PRVec3 worldLightPosition ( 10, 10, 10 );
 		glUniform3f ( glGetUniformLocation ( program, "worldLightPosition" ),
 			worldLightPosition.x, worldLightPosition.y, worldLightPosition.z );
-
-		glEnable ( GL_CULL_FACE );
 
 		//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
 
@@ -156,8 +156,8 @@ MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 	try {
 		MyScene scene;
 		std::string title ( "Test" );
-		PRApplication application ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
-		application.run ();
+		PRApp app ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
+		app.run ();
 	} catch ( std::exception & ex ) {
 		PRPrintLog ( ex.what () );
 	}

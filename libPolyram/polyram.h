@@ -307,14 +307,14 @@ struct POLYRAMDECLSPEC PRVersion {
 
 class POLYRAMDECLSPEC PRGraphicsContext { public: virtual ~PRGraphicsContext (); };
 
-class POLYRAMDECLSPEC PRApplication {
+class POLYRAMDECLSPEC PRApp {
 public:
-	PRApplication ( PRGame * game, PRRendererType rendererType, int width, int height, std::string & title
+	PRApp ( PRGame * game, PRRendererType rendererType, int width, int height, std::string & title
 #if PRPlatformGoogleAndroid
 		, struct android_app * state
 #endif
 	);
-	~PRApplication ();
+	~PRApp ();
 
 public:
 	PRGame * getScene ();
@@ -329,7 +329,7 @@ public:
 	void exit ();
 
 public:
-	static PRApplication * sharedApplication ();
+	static PRApp * sharedApp ();
 
 private:
 	PRGame * m_game;
@@ -359,7 +359,7 @@ public:
 #if defined ( POLYRAM_D3D9 )
 class POLYRAMDECLSPEC PRGraphicsContext_Direct3D9 : public PRGraphicsContext {
 public:
-	PRGraphicsContext_Direct3D9 ( PRApplication * app );
+	PRGraphicsContext_Direct3D9 ( PRApp * app );
 	~PRGraphicsContext_Direct3D9 ();
 
 public:
@@ -369,7 +369,7 @@ public:
 #if defined ( POLYRAM_D3D11 )
 class POLYRAMDECLSPEC PRGraphicsContext_Direct3D11 : public PRGraphicsContext {
 public:
-	PRGraphicsContext_Direct3D11 ( PRApplication * app );
+	PRGraphicsContext_Direct3D11 ( PRApp * app );
 	~PRGraphicsContext_Direct3D11 ();
 
 public:
@@ -388,7 +388,7 @@ public:
 #if defined ( POLYRAM_D3D12 )
 class POLYRAMDECLSPEC PRGraphicsContext_Direct3D12 : public PRGraphicsContext {
 public:
-	PRGraphicsContext_Direct3D12 ( PRApplication * app );
+	PRGraphicsContext_Direct3D12 ( PRApp * app );
 	~PRGraphicsContext_Direct3D12 ();
 
 public:
@@ -417,7 +417,7 @@ public:
 #if defined ( POLYRAM_OPENGL )
 class POLYRAMDECLSPEC PRGraphicsContext_OpenGL : public PRGraphicsContext {
 public:
-	PRGraphicsContext_OpenGL ( PRApplication * app, PRRendererType rendererType );
+	PRGraphicsContext_OpenGL ( PRApp * app, PRRendererType rendererType );
 	~PRGraphicsContext_OpenGL ();
 
 public:
@@ -444,7 +444,7 @@ public:
 #if defined ( POLYRAM_METAL )
 class POLYRAMDECLSPEC PRGraphicsContext_Metal : public PRGraphicsContext {
 public:
-	PRGraphicsContext_Metal ( PRApplication * app );
+	PRGraphicsContext_Metal ( PRApp * app );
 	~PRGraphicsContext_Metal ();
 
 public:
@@ -457,7 +457,7 @@ public:
 #if defined ( POLYRAM_VULKAN )
 /*class PRGraphicsContext_Vulkan : public PRGraphicsContext {
 public:
-	PRGraphicsContext_Vulkan ( PRApplication * app );
+	PRGraphicsContext_Vulkan ( PRApp * app );
 	~PRGraphicsContext_Vulkan ();
 
 public:
@@ -469,313 +469,313 @@ public:
 };*/
 #endif
 
-#define GETGRAPHICSCONTEXT(x) auto graphicsContext = static_cast<x*> ( PRApplication::sharedApplication ()->getGraphicsContext () )
+#define GETGRAPHICSCONTEXT(x) auto graphicsContext = static_cast<x*> ( PRApp::sharedApp ()->getGraphicsContext () )
 
-struct PRVector2;
-struct PRVector3;
-struct PRVector4;
-struct PRQuaternion;
-struct PRMatrix;
+struct PRVec2;
+struct PRVec3;
+struct PRVec4;
+struct PRQuat;
+struct PRMat;
 
-struct POLYRAMDECLSPEC PRVector2 {
+struct POLYRAMDECLSPEC PRVec2 {
 public:
 	float x, y;
 
 public:
-	PRVector2 ();
-	PRVector2 ( float v );
-	PRVector2 ( float x, float y );
+	PRVec2 ();
+	PRVec2 ( float v );
+	PRVec2 ( float x, float y );
 
 public:
 	void lengthSquared ( float * result );
 	void length ( float * result );
-	void normalize ( PRVector2 * result );
+	void normalize ( PRVec2 * result );
 
 	float lengthSquared ();
 	float length ();
-	PRVector2 normalize ();
+	PRVec2 normalize ();
 
 public:
-	static void lengthSquared ( const PRVector2 * v, float * result );
-	static void length ( const PRVector2 * v, float * result );
-	static void normalize ( const PRVector2 * v, PRVector2 * result );
+	static void lengthSquared ( const PRVec2 * v, float * result );
+	static void length ( const PRVec2 * v, float * result );
+	static void normalize ( const PRVec2 * v, PRVec2 * result );
 
-	static float lengthSquared ( const PRVector2 & v );
-	static float length ( const PRVector2 & v );
-	static PRVector2 normalize ( const PRVector2 & v );
-
-public:
-	static void add ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result );
-	static void subtract ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result );
-	static void negate ( const PRVector2 * v1, PRVector2 * result );
-	static void multiply ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result );
-	static void multiply ( const PRVector2 * v1, float v2, PRVector2 * result );
-	static void multiply ( float v1, const PRVector2 * v2, PRVector2 * result );
-	static void divide ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result );
-	static void divide ( const PRVector2 * v1, float v2, PRVector2 * result );
-
-	static void dot ( const PRVector2 * v1, const PRVector2 * v2, float * result );
-	static void dot ( const PRVector2 * v1, float v2, float * result );
-	static void cross ( const PRVector2 * v1, const PRVector2 * v2, PRVector2 * result );
-
-	static PRVector2 add ( const PRVector2 & v1, const PRVector2 & v2 );
-	static PRVector2 subtract ( const PRVector2 & v1, const PRVector2 & v2 );
-	static PRVector2 negate ( const PRVector2 & v1 );
-	static PRVector2 multiply ( const PRVector2 & v1, const PRVector2 & v2 );
-	static PRVector2 multiply ( const PRVector2 & v1, float v2 );
-	static PRVector2 multiply ( float v1, const PRVector2 & v2 );
-	static PRVector2 divide ( const PRVector2 & v1, const PRVector2 & v2 );
-	static PRVector2 divide ( const PRVector2 & v1, float v2 );
-
-	static float dot ( const PRVector2 & v1, const PRVector2 & v2 );
-	static float dot ( const PRVector2 & v1, float v2 );
-	static PRVector2 cross ( const PRVector2 & v1, const PRVector2 & v2 );
+	static float lengthSquared ( const PRVec2 & v );
+	static float length ( const PRVec2 & v );
+	static PRVec2 normalize ( const PRVec2 & v );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector2 * result );
-	static void transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector2 * result );
+	static void add ( const PRVec2 * v1, const PRVec2 * v2, PRVec2 * result );
+	static void subtract ( const PRVec2 * v1, const PRVec2 * v2, PRVec2 * result );
+	static void negate ( const PRVec2 * v1, PRVec2 * result );
+	static void multiply ( const PRVec2 * v1, const PRVec2 * v2, PRVec2 * result );
+	static void multiply ( const PRVec2 * v1, float v2, PRVec2 * result );
+	static void multiply ( float v1, const PRVec2 * v2, PRVec2 * result );
+	static void divide ( const PRVec2 * v1, const PRVec2 * v2, PRVec2 * result );
+	static void divide ( const PRVec2 * v1, float v2, PRVec2 * result );
 
-	static PRVector2 transform ( const PRVector2 & pos, const PRMatrix & mat );
-	static PRVector2 transformNormal ( const PRVector2 & nor, const PRMatrix & mat );
+	static void dot ( const PRVec2 * v1, const PRVec2 * v2, float * result );
+	static void dot ( const PRVec2 * v1, float v2, float * result );
+	static void cross ( const PRVec2 * v1, const PRVec2 * v2, PRVec2 * result );
+
+	static PRVec2 add ( const PRVec2 & v1, const PRVec2 & v2 );
+	static PRVec2 subtract ( const PRVec2 & v1, const PRVec2 & v2 );
+	static PRVec2 negate ( const PRVec2 & v1 );
+	static PRVec2 multiply ( const PRVec2 & v1, const PRVec2 & v2 );
+	static PRVec2 multiply ( const PRVec2 & v1, float v2 );
+	static PRVec2 multiply ( float v1, const PRVec2 & v2 );
+	static PRVec2 divide ( const PRVec2 & v1, const PRVec2 & v2 );
+	static PRVec2 divide ( const PRVec2 & v1, float v2 );
+
+	static float dot ( const PRVec2 & v1, const PRVec2 & v2 );
+	static float dot ( const PRVec2 & v1, float v2 );
+	static PRVec2 cross ( const PRVec2 & v1, const PRVec2 & v2 );
+
+public:
+	static void transform ( const PRVec2 * pos, const PRMat * mat, PRVec2 * result );
+	static void transformNormal ( const PRVec2 * nor, const PRMat * mat, PRVec2 * result );
+
+	static PRVec2 transform ( const PRVec2 & pos, const PRMat & mat );
+	static PRVec2 transformNormal ( const PRVec2 & nor, const PRMat & mat );
 };
 
-POLYRAMDECLSPEC PRVector2 operator+ ( const PRVector2 & v1, const PRVector2 & v2 );
-POLYRAMDECLSPEC PRVector2 operator- ( const PRVector2 & v1, const PRVector2 & v2 );
-POLYRAMDECLSPEC PRVector2 operator- ( const PRVector2 & v1 );
-POLYRAMDECLSPEC PRVector2 operator* ( const PRVector2 & v1, const PRVector2 & v2 );
-POLYRAMDECLSPEC PRVector2 operator* ( const PRVector2 & v1, float v2 );
-POLYRAMDECLSPEC PRVector2 operator* ( float v1, const PRVector2 & v2 );
-POLYRAMDECLSPEC PRVector2 operator/ ( const PRVector2 & v1, const PRVector2 & v2 );
-POLYRAMDECLSPEC PRVector2 operator/ ( const PRVector2 & v1, float v2 );
-POLYRAMDECLSPEC bool operator== ( const PRVector2 & v1, const PRVector2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator+ ( const PRVec2 & v1, const PRVec2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator- ( const PRVec2 & v1, const PRVec2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator- ( const PRVec2 & v1 );
+POLYRAMDECLSPEC PRVec2 operator* ( const PRVec2 & v1, const PRVec2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator* ( const PRVec2 & v1, float v2 );
+POLYRAMDECLSPEC PRVec2 operator* ( float v1, const PRVec2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator/ ( const PRVec2 & v1, const PRVec2 & v2 );
+POLYRAMDECLSPEC PRVec2 operator/ ( const PRVec2 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVec2 & v1, const PRVec2 & v2 );
 
-struct POLYRAMDECLSPEC PRVector3 {
+struct POLYRAMDECLSPEC PRVec3 {
 public:
 	float x, y, z;
 
 public:
-	PRVector3 ();
-	PRVector3 ( float v );
-	PRVector3 ( float x, float y, float z );
-	PRVector3 ( const PRVector2 & v, float z );
+	PRVec3 ();
+	PRVec3 ( float v );
+	PRVec3 ( float x, float y, float z );
+	PRVec3 ( const PRVec2 & v, float z );
 
 public:
 	void lengthSquared ( float * result );
 	void length ( float * result );
-	void normalize ( PRVector3 * result );
+	void normalize ( PRVec3 * result );
 
 	float lengthSquared ();
 	float length ();
-	PRVector3 normalize ();
+	PRVec3 normalize ();
 
 public:
-	static void lengthSquared ( const PRVector3 * v, float * result );
-	static void length ( const PRVector3 * v, float * result );
-	static void normalize ( const PRVector3 * v, PRVector3 * result );
+	static void lengthSquared ( const PRVec3 * v, float * result );
+	static void length ( const PRVec3 * v, float * result );
+	static void normalize ( const PRVec3 * v, PRVec3 * result );
 
-	static float lengthSquared ( const PRVector3 & v );
-	static float length ( const PRVector3 & v );
-	static PRVector3 normalize ( const PRVector3 & v );
-
-public:
-	static void add ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result );
-	static void subtract ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result );
-	static void negate ( const PRVector3 * v1, PRVector3 * result );
-	static void multiply ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result );
-	static void multiply ( const PRVector3 * v1, float v2, PRVector3 * result );
-	static void multiply ( float v1, const PRVector3 * v2, PRVector3 * result );
-	static void divide ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result );
-	static void divide ( const PRVector3 * v1, float v2, PRVector3 * result );
-
-	static void dot ( const PRVector3 * v1, const PRVector3 * v2, float * result );
-	static void dot ( const PRVector3 * v1, float v2, float * result );
-	static void cross ( const PRVector3 * v1, const PRVector3 * v2, PRVector3 * result );
-
-	static PRVector3 add ( const PRVector3 & v1, const PRVector3 & v2 );
-	static PRVector3 subtract ( const PRVector3 & v1, const PRVector3 & v2 );
-	static PRVector3 negate ( const PRVector3 & v1 );
-	static PRVector3 multiply ( const PRVector3 & v1, const PRVector3 & v2 );
-	static PRVector3 multiply ( const PRVector3 & v1, float v2 );
-	static PRVector3 multiply ( float v1, const PRVector3 & v2 );
-	static PRVector3 divide ( const PRVector3 & v1, const PRVector3 & v2 );
-	static PRVector3 divide ( const PRVector3 & v1, float v2 );
-
-	static float dot ( const PRVector3 & v1, const PRVector3 & v2 );
-	static float dot ( const PRVector3 & v1, float v2 );
-	static PRVector3 cross ( const PRVector3 & v1, const PRVector3 & v2 );
+	static float lengthSquared ( const PRVec3 & v );
+	static float length ( const PRVec3 & v );
+	static PRVec3 normalize ( const PRVec3 & v );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector3 * result );
-	static void transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector3 * result );
-	static void transform ( const PRVector3 * pos, const PRQuaternion * q, PRVector3 * result );
-	static void transformNormal ( const PRVector2 * nor, const PRMatrix * mat, PRVector3 * result );
-	static void transformNormal ( const PRVector3 * nor, const PRMatrix * mat, PRVector3 * result );
+	static void add ( const PRVec3 * v1, const PRVec3 * v2, PRVec3 * result );
+	static void subtract ( const PRVec3 * v1, const PRVec3 * v2, PRVec3 * result );
+	static void negate ( const PRVec3 * v1, PRVec3 * result );
+	static void multiply ( const PRVec3 * v1, const PRVec3 * v2, PRVec3 * result );
+	static void multiply ( const PRVec3 * v1, float v2, PRVec3 * result );
+	static void multiply ( float v1, const PRVec3 * v2, PRVec3 * result );
+	static void divide ( const PRVec3 * v1, const PRVec3 * v2, PRVec3 * result );
+	static void divide ( const PRVec3 * v1, float v2, PRVec3 * result );
 
-	static PRVector3 transform ( const PRVector2 & pos, const PRMatrix & mat );
-	static PRVector3 transform ( const PRVector3 & pos, const PRMatrix & mat );
-	static PRVector3 transform ( const PRVector3 & pos, const PRQuaternion & q );
-	static PRVector3 transformNormal ( const PRVector2 & nor, const PRMatrix & mat );
-	static PRVector3 transformNormal ( const PRVector3 & nor, const PRMatrix & mat );
+	static void dot ( const PRVec3 * v1, const PRVec3 * v2, float * result );
+	static void dot ( const PRVec3 * v1, float v2, float * result );
+	static void cross ( const PRVec3 * v1, const PRVec3 * v2, PRVec3 * result );
+
+	static PRVec3 add ( const PRVec3 & v1, const PRVec3 & v2 );
+	static PRVec3 subtract ( const PRVec3 & v1, const PRVec3 & v2 );
+	static PRVec3 negate ( const PRVec3 & v1 );
+	static PRVec3 multiply ( const PRVec3 & v1, const PRVec3 & v2 );
+	static PRVec3 multiply ( const PRVec3 & v1, float v2 );
+	static PRVec3 multiply ( float v1, const PRVec3 & v2 );
+	static PRVec3 divide ( const PRVec3 & v1, const PRVec3 & v2 );
+	static PRVec3 divide ( const PRVec3 & v1, float v2 );
+
+	static float dot ( const PRVec3 & v1, const PRVec3 & v2 );
+	static float dot ( const PRVec3 & v1, float v2 );
+	static PRVec3 cross ( const PRVec3 & v1, const PRVec3 & v2 );
+
+public:
+	static void transform ( const PRVec2 * pos, const PRMat * mat, PRVec3 * result );
+	static void transform ( const PRVec3 * pos, const PRMat * mat, PRVec3 * result );
+	static void transform ( const PRVec3 * pos, const PRQuat * q, PRVec3 * result );
+	static void transformNormal ( const PRVec2 * nor, const PRMat * mat, PRVec3 * result );
+	static void transformNormal ( const PRVec3 * nor, const PRMat * mat, PRVec3 * result );
+
+	static PRVec3 transform ( const PRVec2 & pos, const PRMat & mat );
+	static PRVec3 transform ( const PRVec3 & pos, const PRMat & mat );
+	static PRVec3 transform ( const PRVec3 & pos, const PRQuat & q );
+	static PRVec3 transformNormal ( const PRVec2 & nor, const PRMat & mat );
+	static PRVec3 transformNormal ( const PRVec3 & nor, const PRMat & mat );
 };
 
-POLYRAMDECLSPEC PRVector3 operator+ ( const PRVector3 & v1, const PRVector3 & v2 );
-POLYRAMDECLSPEC PRVector3 operator- ( const PRVector3 & v1, const PRVector3 & v2 );
-POLYRAMDECLSPEC PRVector3 operator- ( const PRVector3 & v1 );
-POLYRAMDECLSPEC PRVector3 operator* ( const PRVector3 & v1, const PRVector3 & v2 );
-POLYRAMDECLSPEC PRVector3 operator* ( const PRVector3 & v1, float v2 );
-POLYRAMDECLSPEC PRVector3 operator* ( float v1, const PRVector3 & v2 );
-POLYRAMDECLSPEC PRVector3 operator/ ( const PRVector3 & v1, const PRVector3 & v2 );
-POLYRAMDECLSPEC PRVector3 operator/ ( const PRVector3 & v1, float v2 );
-POLYRAMDECLSPEC bool operator== ( const PRVector3 & v1, const PRVector3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator+ ( const PRVec3 & v1, const PRVec3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator- ( const PRVec3 & v1, const PRVec3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator- ( const PRVec3 & v1 );
+POLYRAMDECLSPEC PRVec3 operator* ( const PRVec3 & v1, const PRVec3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator* ( const PRVec3 & v1, float v2 );
+POLYRAMDECLSPEC PRVec3 operator* ( float v1, const PRVec3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator/ ( const PRVec3 & v1, const PRVec3 & v2 );
+POLYRAMDECLSPEC PRVec3 operator/ ( const PRVec3 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVec3 & v1, const PRVec3 & v2 );
 
-struct POLYRAMDECLSPEC PRVector4 {
+struct POLYRAMDECLSPEC PRVec4 {
 public:
 	float x, y, z, w;
 
 public:
-	PRVector4 ();
-	PRVector4 ( float v );
-	PRVector4 ( float x, float y, float z, float w );
-	PRVector4 ( const PRVector2 & v, float z, float w );
-	PRVector4 ( const PRVector3 & v, float w );
-	PRVector4 ( const PRQuaternion & q );
+	PRVec4 ();
+	PRVec4 ( float v );
+	PRVec4 ( float x, float y, float z, float w );
+	PRVec4 ( const PRVec2 & v, float z, float w );
+	PRVec4 ( const PRVec3 & v, float w );
+	PRVec4 ( const PRQuat & q );
 
 public:
 	void lengthSquared ( float * result );
 	void length ( float * result );
-	void normalize ( PRVector4 * result );
+	void normalize ( PRVec4 * result );
 
 	float lengthSquared ();
 	float length ();
-	PRVector4 normalize ();
+	PRVec4 normalize ();
 
 public:
-	static void lengthSquared ( const PRVector4 * v, float * result );
-	static void length ( const PRVector4 * v, float * result );
-	static void normalize ( const PRVector4 * v, PRVector4 * result );
+	static void lengthSquared ( const PRVec4 * v, float * result );
+	static void length ( const PRVec4 * v, float * result );
+	static void normalize ( const PRVec4 * v, PRVec4 * result );
 
-	static float lengthSquared ( const PRVector4 & v );
-	static float length ( const PRVector4 & v );
-	static PRVector4 normalize ( const PRVector4 & v );
-
-public:
-	static void add ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result );
-	static void subtract ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result );
-	static void negate ( const PRVector4 * v1, PRVector4 * result );
-	static void multiply ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result );
-	static void multiply ( const PRVector4 * v1, float v2, PRVector4 * result );
-	static void multiply ( float v1, const PRVector4 * v2, PRVector4 * result );
-	static void divide ( const PRVector4 * v1, const PRVector4 * v2, PRVector4 * result );
-	static void divide ( const PRVector4 * v1, float v2, PRVector4 * result );
-
-	static void dot ( const PRVector4 * v1, const PRVector4 * v2, float * result );
-	static void dot ( const PRVector4 * v1, float v2, float * result );
-
-	static PRVector4 add ( const PRVector4 & v1, const PRVector4 & v2 );
-	static PRVector4 subtract ( const PRVector4 & v1, const PRVector4 & v2 );
-	static PRVector4 negate ( const PRVector4 & v1 );
-	static PRVector4 multiply ( const PRVector4 & v1, const PRVector4 & v2 );
-	static PRVector4 multiply ( const PRVector4 & v1, float v2 );
-	static PRVector4 multiply ( float v1, const PRVector4 & v2 );
-	static PRVector4 divide ( const PRVector4 & v1, const PRVector4 & v2 );
-	static PRVector4 divide ( const PRVector4 & v1, float v2 );
-
-	static float dot ( const PRVector4 & v1, const PRVector4 & v2 );
-	static float dot ( const PRVector4 & v1, float v2 );
+	static float lengthSquared ( const PRVec4 & v );
+	static float length ( const PRVec4 & v );
+	static PRVec4 normalize ( const PRVec4 & v );
 
 public:
-	static void transform ( const PRVector2 * pos, const PRMatrix * mat, PRVector4 * result );
-	static void transform ( const PRVector3 * pos, const PRMatrix * mat, PRVector4 * result );
-	static void transform ( const PRVector4 * pos, const PRMatrix * mat, PRVector4 * result );
+	static void add ( const PRVec4 * v1, const PRVec4 * v2, PRVec4 * result );
+	static void subtract ( const PRVec4 * v1, const PRVec4 * v2, PRVec4 * result );
+	static void negate ( const PRVec4 * v1, PRVec4 * result );
+	static void multiply ( const PRVec4 * v1, const PRVec4 * v2, PRVec4 * result );
+	static void multiply ( const PRVec4 * v1, float v2, PRVec4 * result );
+	static void multiply ( float v1, const PRVec4 * v2, PRVec4 * result );
+	static void divide ( const PRVec4 * v1, const PRVec4 * v2, PRVec4 * result );
+	static void divide ( const PRVec4 * v1, float v2, PRVec4 * result );
 
-	static PRVector4 transform ( const PRVector2 & pos, const PRMatrix & mat );
-	static PRVector4 transform ( const PRVector3 & pos, const PRMatrix & mat );
-	static PRVector4 transform ( const PRVector4 & pos, const PRMatrix & mat );
+	static void dot ( const PRVec4 * v1, const PRVec4 * v2, float * result );
+	static void dot ( const PRVec4 * v1, float v2, float * result );
+
+	static PRVec4 add ( const PRVec4 & v1, const PRVec4 & v2 );
+	static PRVec4 subtract ( const PRVec4 & v1, const PRVec4 & v2 );
+	static PRVec4 negate ( const PRVec4 & v1 );
+	static PRVec4 multiply ( const PRVec4 & v1, const PRVec4 & v2 );
+	static PRVec4 multiply ( const PRVec4 & v1, float v2 );
+	static PRVec4 multiply ( float v1, const PRVec4 & v2 );
+	static PRVec4 divide ( const PRVec4 & v1, const PRVec4 & v2 );
+	static PRVec4 divide ( const PRVec4 & v1, float v2 );
+
+	static float dot ( const PRVec4 & v1, const PRVec4 & v2 );
+	static float dot ( const PRVec4 & v1, float v2 );
+
+public:
+	static void transform ( const PRVec2 * pos, const PRMat * mat, PRVec4 * result );
+	static void transform ( const PRVec3 * pos, const PRMat * mat, PRVec4 * result );
+	static void transform ( const PRVec4 * pos, const PRMat * mat, PRVec4 * result );
+
+	static PRVec4 transform ( const PRVec2 & pos, const PRMat & mat );
+	static PRVec4 transform ( const PRVec3 & pos, const PRMat & mat );
+	static PRVec4 transform ( const PRVec4 & pos, const PRMat & mat );
 };
 
-POLYRAMDECLSPEC PRVector4 operator+ ( const PRVector4 & v1, const PRVector4 & v2 );
-POLYRAMDECLSPEC PRVector4 operator- ( const PRVector4 & v1, const PRVector4 & v2 );
-POLYRAMDECLSPEC PRVector4 operator- ( const PRVector4 & v1 );
-POLYRAMDECLSPEC PRVector4 operator* ( const PRVector4 & v1, const PRVector4 & v2 );
-POLYRAMDECLSPEC PRVector4 operator* ( const PRVector4 & v1, float v2 );
-POLYRAMDECLSPEC PRVector4 operator* ( float v1, const PRVector4 & v2 );
-POLYRAMDECLSPEC PRVector4 operator/ ( const PRVector4 & v1, const PRVector4 & v2 );
-POLYRAMDECLSPEC PRVector4 operator/ ( const PRVector4 & v1, float v2 );
-POLYRAMDECLSPEC bool operator== ( const PRVector4 & v1, const PRVector4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator+ ( const PRVec4 & v1, const PRVec4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator- ( const PRVec4 & v1, const PRVec4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator- ( const PRVec4 & v1 );
+POLYRAMDECLSPEC PRVec4 operator* ( const PRVec4 & v1, const PRVec4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator* ( const PRVec4 & v1, float v2 );
+POLYRAMDECLSPEC PRVec4 operator* ( float v1, const PRVec4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator/ ( const PRVec4 & v1, const PRVec4 & v2 );
+POLYRAMDECLSPEC PRVec4 operator/ ( const PRVec4 & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRVec4 & v1, const PRVec4 & v2 );
 
-struct POLYRAMDECLSPEC PRQuaternion {
+struct POLYRAMDECLSPEC PRQuat {
 public:
 	float x, y, z, w;
 
 public:
-	PRQuaternion ();
-	PRQuaternion ( float v );
-	PRQuaternion ( float x, float y, float z, float w );
-	PRQuaternion ( const PRVector2 & v, float z, float w );
-	PRQuaternion ( const PRVector3 & v, float w );
-	PRQuaternion ( const PRVector4 & v );
-	PRQuaternion ( float yaw, float pitch, float roll );
-	PRQuaternion ( const PRMatrix & m );
+	PRQuat ();
+	PRQuat ( float v );
+	PRQuat ( float x, float y, float z, float w );
+	PRQuat ( const PRVec2 & v, float z, float w );
+	PRQuat ( const PRVec3 & v, float w );
+	PRQuat ( const PRVec4 & v );
+	PRQuat ( float yaw, float pitch, float roll );
+	PRQuat ( const PRMat & m );
 
 public:
 	void lengthSquared ( float * result );
 	void length ( float * result );
-	void normalize ( PRQuaternion * result );
-	void invert ( PRQuaternion * result );
+	void normalize ( PRQuat * result );
+	void invert ( PRQuat * result );
 
 	float lengthSquared ();
 	float length ();
-	PRQuaternion normalize ();
-	PRQuaternion invert ();
+	PRQuat normalize ();
+	PRQuat invert ();
 
 public:
-	static void lengthSquared ( const PRQuaternion * v, float * result );
-	static void length ( const PRQuaternion * v, float * result );
-	static void normalize ( const PRQuaternion * v, PRQuaternion * result );
-	static void invert ( const PRQuaternion * v, PRQuaternion * result );
+	static void lengthSquared ( const PRQuat * v, float * result );
+	static void length ( const PRQuat * v, float * result );
+	static void normalize ( const PRQuat * v, PRQuat * result );
+	static void invert ( const PRQuat * v, PRQuat * result );
 
-	static float lengthSquared ( const PRQuaternion & v );
-	static float length ( const PRQuaternion & v );
-	static PRQuaternion normalize ( const PRQuaternion & v );
-	static PRQuaternion invert ( const PRQuaternion & v );
+	static float lengthSquared ( const PRQuat & v );
+	static float length ( const PRQuat & v );
+	static PRQuat normalize ( const PRQuat & v );
+	static PRQuat invert ( const PRQuat & v );
 
 public:
-	static void add ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result );
-	static void subtract ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result );
-	static void negate ( const PRQuaternion * v1, PRQuaternion * result );
-	static void multiply ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result );
-	static void multiply ( const PRQuaternion * v1, float v2, PRQuaternion * result );
-	static void multiply ( float v1, const PRQuaternion * v2, PRQuaternion * result );
-	static void divide ( const PRQuaternion * v1, const PRQuaternion * v2, PRQuaternion * result );
-	static void divide ( const PRQuaternion * v1, float v2, PRQuaternion * result );
+	static void add ( const PRQuat * v1, const PRQuat * v2, PRQuat * result );
+	static void subtract ( const PRQuat * v1, const PRQuat * v2, PRQuat * result );
+	static void negate ( const PRQuat * v1, PRQuat * result );
+	static void multiply ( const PRQuat * v1, const PRQuat * v2, PRQuat * result );
+	static void multiply ( const PRQuat * v1, float v2, PRQuat * result );
+	static void multiply ( float v1, const PRQuat * v2, PRQuat * result );
+	static void divide ( const PRQuat * v1, const PRQuat * v2, PRQuat * result );
+	static void divide ( const PRQuat * v1, float v2, PRQuat * result );
 
-	static void dot ( const PRQuaternion * v1, const PRQuaternion * v2, float * result );
-	static void dot ( const PRQuaternion * v1, float v2, float * result );
+	static void dot ( const PRQuat * v1, const PRQuat * v2, float * result );
+	static void dot ( const PRQuat * v1, float v2, float * result );
 
-	static PRQuaternion add ( const PRQuaternion & v1, const PRQuaternion & v2 );
-	static PRQuaternion subtract ( const PRQuaternion & v1, const PRQuaternion & v2 );
-	static PRQuaternion negate ( const PRQuaternion & v1 );
-	static PRQuaternion multiply ( const PRQuaternion & v1, const PRQuaternion & v2 );
-	static PRQuaternion multiply ( const PRQuaternion & v1, float v2 );
-	static PRQuaternion multiply ( float v1, const PRQuaternion & v2 );
-	static PRQuaternion divide ( const PRQuaternion & v1, const PRQuaternion & v2 );
-	static PRQuaternion divide ( const PRQuaternion & v1, float v2 );
+	static PRQuat add ( const PRQuat & v1, const PRQuat & v2 );
+	static PRQuat subtract ( const PRQuat & v1, const PRQuat & v2 );
+	static PRQuat negate ( const PRQuat & v1 );
+	static PRQuat multiply ( const PRQuat & v1, const PRQuat & v2 );
+	static PRQuat multiply ( const PRQuat & v1, float v2 );
+	static PRQuat multiply ( float v1, const PRQuat & v2 );
+	static PRQuat divide ( const PRQuat & v1, const PRQuat & v2 );
+	static PRQuat divide ( const PRQuat & v1, float v2 );
 
-	static float dot ( const PRQuaternion & v1, const PRQuaternion & v2 );
-	static float dot ( const PRQuaternion & v1, float v2 );
+	static float dot ( const PRQuat & v1, const PRQuat & v2 );
+	static float dot ( const PRQuat & v1, float v2 );
 };
 
-POLYRAMDECLSPEC PRQuaternion operator+ ( const PRQuaternion & v1, const PRQuaternion & v2 );
-POLYRAMDECLSPEC PRQuaternion operator- ( const PRQuaternion & v1, const PRQuaternion & v2 );
-POLYRAMDECLSPEC PRQuaternion operator- ( const PRQuaternion & v1 );
-POLYRAMDECLSPEC PRQuaternion operator* ( const PRQuaternion & v1, const PRQuaternion & v2 );
-POLYRAMDECLSPEC PRQuaternion operator* ( const PRQuaternion & v1, float v2 );
-POLYRAMDECLSPEC PRQuaternion operator* ( float v1, const PRQuaternion & v2 );
-POLYRAMDECLSPEC PRQuaternion operator/ ( const PRQuaternion & v1, const PRQuaternion & v2 );
-POLYRAMDECLSPEC PRQuaternion operator/ ( const PRQuaternion & v1, float v2 );
-POLYRAMDECLSPEC bool operator== ( const PRQuaternion & v1, const PRQuaternion & v2 );
+POLYRAMDECLSPEC PRQuat operator+ ( const PRQuat & v1, const PRQuat & v2 );
+POLYRAMDECLSPEC PRQuat operator- ( const PRQuat & v1, const PRQuat & v2 );
+POLYRAMDECLSPEC PRQuat operator- ( const PRQuat & v1 );
+POLYRAMDECLSPEC PRQuat operator* ( const PRQuat & v1, const PRQuat & v2 );
+POLYRAMDECLSPEC PRQuat operator* ( const PRQuat & v1, float v2 );
+POLYRAMDECLSPEC PRQuat operator* ( float v1, const PRQuat & v2 );
+POLYRAMDECLSPEC PRQuat operator/ ( const PRQuat & v1, const PRQuat & v2 );
+POLYRAMDECLSPEC PRQuat operator/ ( const PRQuat & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRQuat & v1, const PRQuat & v2 );
 
-struct POLYRAMDECLSPEC PRMatrix {
+struct POLYRAMDECLSPEC PRMat {
 public:
 	float _11, _12, _13, _14,
 		_21, _22, _23, _24,
@@ -783,106 +783,106 @@ public:
 		_41, _42, _43, _44;
 
 public:
-	PRMatrix ();
-	PRMatrix ( float v );
-	PRMatrix ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
+	PRMat ();
+	PRMat ( float v );
+	PRMat ( float _11, float _12, float _13, float _14, float _21, float _22, float _23, float _24,
 		float _31, float _32, float _33, float _34, float _41, float _42, float _43, float _44 );
-	PRMatrix ( PRVector4 & c1, PRVector4 & c2, PRVector4 & c3, PRVector4 & c4 );
-	PRMatrix ( PRQuaternion & q );
+	PRMat ( PRVec4 & c1, PRVec4 & c2, PRVec4 & c3, PRVec4 & c4 );
+	PRMat ( PRQuat & q );
 
 public:
-	void invert ( PRMatrix * result );
-	void transpose ( PRMatrix * result );
+	void invert ( PRMat * result );
+	void transpose ( PRMat * result );
 	void determinant ( float * result );
 
-	PRMatrix invert ();
-	PRMatrix transpose ();
+	PRMat invert ();
+	PRMat transpose ();
 	float determinant ();
 
 public:
-	static void invert ( const PRMatrix * m, PRMatrix * result );
-	static PRMatrix invert ( const PRMatrix & m );
-	static void transpose ( const PRMatrix * m, PRMatrix * result );
-	static PRMatrix transpose ( const PRMatrix & m );
-	static void determinant ( const PRMatrix * m, float * result );
-	static float determinant ( const PRMatrix & m );
+	static void invert ( const PRMat * m, PRMat * result );
+	static PRMat invert ( const PRMat & m );
+	static void transpose ( const PRMat * m, PRMat * result );
+	static PRMat transpose ( const PRMat & m );
+	static void determinant ( const PRMat * m, float * result );
+	static float determinant ( const PRMat & m );
 
 public:
-	static void add ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
-	static void subtract ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
-	static void negate ( const PRMatrix * v1, PRMatrix * result );
-	static void multiply ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
-	static void multiply ( const PRMatrix * v1, float v2, PRMatrix * result );
-	static void multiply ( float v1, const PRMatrix * v2, PRMatrix * result );
-	static void divide ( const PRMatrix * v1, const PRMatrix * v2, PRMatrix * result );
-	static void divide ( const PRMatrix * v1, float v2, PRMatrix * result );
+	static void add ( const PRMat * v1, const PRMat * v2, PRMat * result );
+	static void subtract ( const PRMat * v1, const PRMat * v2, PRMat * result );
+	static void negate ( const PRMat * v1, PRMat * result );
+	static void multiply ( const PRMat * v1, const PRMat * v2, PRMat * result );
+	static void multiply ( const PRMat * v1, float v2, PRMat * result );
+	static void multiply ( float v1, const PRMat * v2, PRMat * result );
+	static void divide ( const PRMat * v1, const PRMat * v2, PRMat * result );
+	static void divide ( const PRMat * v1, float v2, PRMat * result );
 
-	static PRMatrix add ( const PRMatrix & v1, const PRMatrix & v2 );
-	static PRMatrix subtract ( const PRMatrix & v1, const PRMatrix & v2 );
-	static PRMatrix negate ( const PRMatrix & v1 );
-	static PRMatrix multiply ( const PRMatrix & v1, const PRMatrix & v2 );
-	static PRMatrix multiply ( const PRMatrix & v1, float v2 );
-	static PRMatrix multiply ( float v1, const PRMatrix & v2 );
-	static PRMatrix divide ( const PRMatrix & v1, const PRMatrix & v2 );
-	static PRMatrix divide ( const PRMatrix & v1, float v2 );
-
-public:
-	static void createTranslate ( const PRVector3 * v, PRMatrix * result );
-	static void createScale ( const PRVector3 * v, PRMatrix * result );
-	static void createRotationX ( float r, PRMatrix * result );
-	static void createRotationY ( float r, PRMatrix * result );
-	static void createRotationZ ( float r, PRMatrix * result );
-
-	static PRMatrix createTranslate ( const PRVector3 & v );
-	static PRMatrix createScale ( const PRVector3 & v );
-	static PRMatrix createRotationX ( float r );
-	static PRMatrix createRotationY ( float r );
-	static PRMatrix createRotationZ ( float r );
+	static PRMat add ( const PRMat & v1, const PRMat & v2 );
+	static PRMat subtract ( const PRMat & v1, const PRMat & v2 );
+	static PRMat negate ( const PRMat & v1 );
+	static PRMat multiply ( const PRMat & v1, const PRMat & v2 );
+	static PRMat multiply ( const PRMat & v1, float v2 );
+	static PRMat multiply ( float v1, const PRMat & v2 );
+	static PRMat divide ( const PRMat & v1, const PRMat & v2 );
+	static PRMat divide ( const PRMat & v1, float v2 );
 
 public:
-	static void createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result );
-	static void createLookAtRH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result );
+	static void createTranslate ( const PRVec3 * v, PRMat * result );
+	static void createScale ( const PRVec3 * v, PRMat * result );
+	static void createRotationX ( float r, PRMat * result );
+	static void createRotationY ( float r, PRMat * result );
+	static void createRotationZ ( float r, PRMat * result );
 
-	static PRMatrix createLookAtLH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
-	static PRMatrix createLookAtRH ( const PRVector3 & position, const PRVector3 & target, const PRVector3 & upVector );
-
-public:
-	static void createOrthographicLH ( float w, float h, float zn, float zf, PRMatrix * result );
-	static void createOrthographicRH ( float w, float h, float zn, float zf, PRMatrix * result );
-	static void createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
-	static void createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveLH ( float w, float h, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveRH ( float w, float h, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMatrix * result );
-	static void createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMatrix * result );
-
-	static PRMatrix createOrthographicLH ( float w, float h, float zn, float zf );
-	static PRMatrix createOrthographicRH ( float w, float h, float zn, float zf );
-	static PRMatrix createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix createPerspectiveLH ( float w, float h, float zn, float zf );
-	static PRMatrix createPerspectiveRH ( float w, float h, float zn, float zf );
-	static PRMatrix createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
-	static PRMatrix createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf );
-	static PRMatrix createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf );
+	static PRMat createTranslate ( const PRVec3 & v );
+	static PRMat createScale ( const PRVec3 & v );
+	static PRMat createRotationX ( float r );
+	static PRMat createRotationY ( float r );
+	static PRMat createRotationZ ( float r );
 
 public:
-	static void createBillboard ( const PRVector3 * objPos, const PRVector3 * camPos, const PRVector3 * camUpVec,
-		const PRVector3 * camForwardVec, PRMatrix * result );
+	static void createLookAtLH ( const PRVec3 * position, const PRVec3 * target, const PRVec3 * upVector, PRMat * result );
+	static void createLookAtRH ( const PRVec3 * position, const PRVec3 * target, const PRVec3 * upVector, PRMat * result );
+
+	static PRMat createLookAtLH ( const PRVec3 & position, const PRVec3 & target, const PRVec3 & upVector );
+	static PRMat createLookAtRH ( const PRVec3 & position, const PRVec3 & target, const PRVec3 & upVector );
+
+public:
+	static void createOrthographicLH ( float w, float h, float zn, float zf, PRMat * result );
+	static void createOrthographicRH ( float w, float h, float zn, float zf, PRMat * result );
+	static void createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMat * result );
+	static void createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMat * result );
+	static void createPerspectiveLH ( float w, float h, float zn, float zf, PRMat * result );
+	static void createPerspectiveRH ( float w, float h, float zn, float zf, PRMat * result );
+	static void createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMat * result );
+	static void createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMat * result );
+	static void createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMat * result );
+	static void createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMat * result );
+
+	static PRMat createOrthographicLH ( float w, float h, float zn, float zf );
+	static PRMat createOrthographicRH ( float w, float h, float zn, float zf );
+	static PRMat createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMat createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMat createPerspectiveLH ( float w, float h, float zn, float zf );
+	static PRMat createPerspectiveRH ( float w, float h, float zn, float zf );
+	static PRMat createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMat createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf );
+	static PRMat createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf );
+	static PRMat createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf );
+
+public:
+	static void createBillboard ( const PRVec3 * objPos, const PRVec3 * camPos, const PRVec3 * camUpVec,
+		const PRVec3 * camForwardVec, PRMat * result );
 };
 
-POLYRAMDECLSPEC PRMatrix operator+ ( const PRMatrix & v1, const PRMatrix & v2 );
-POLYRAMDECLSPEC PRMatrix operator- ( const PRMatrix & v1, const PRMatrix & v2 );
-POLYRAMDECLSPEC PRMatrix operator- ( const PRMatrix & v1 );
-POLYRAMDECLSPEC PRMatrix operator* ( const PRMatrix & v1, const PRMatrix & v2 );
-POLYRAMDECLSPEC PRMatrix operator* ( const PRMatrix & v1, float v2 );
-POLYRAMDECLSPEC PRMatrix operator* ( float v1, const PRMatrix & v2 );
-POLYRAMDECLSPEC PRMatrix operator/ ( const PRMatrix & v1, const PRMatrix & v2 );
-POLYRAMDECLSPEC PRMatrix operator/ ( const PRMatrix & v1, float v2 );
-POLYRAMDECLSPEC bool operator== ( const PRMatrix & v1, const PRMatrix & v2 );
+POLYRAMDECLSPEC PRMat operator+ ( const PRMat & v1, const PRMat & v2 );
+POLYRAMDECLSPEC PRMat operator- ( const PRMat & v1, const PRMat & v2 );
+POLYRAMDECLSPEC PRMat operator- ( const PRMat & v1 );
+POLYRAMDECLSPEC PRMat operator* ( const PRMat & v1, const PRMat & v2 );
+POLYRAMDECLSPEC PRMat operator* ( const PRMat & v1, float v2 );
+POLYRAMDECLSPEC PRMat operator* ( float v1, const PRMat & v2 );
+POLYRAMDECLSPEC PRMat operator/ ( const PRMat & v1, const PRMat & v2 );
+POLYRAMDECLSPEC PRMat operator/ ( const PRMat & v1, float v2 );
+POLYRAMDECLSPEC bool operator== ( const PRMat & v1, const PRMat & v2 );
 
 class POLYRAMDECLSPEC PRImageLoader {
 public:
@@ -931,10 +931,10 @@ enum PRModelTexCoord { PRModelTexCoord_UV, PRModelTexCoord_ST };
 class POLYRAMDECLSPEC PRModelGenerator {
 public:
 	PRModelGenerator ( PRModelType modelType, PRModelProperty properties, PRModelEncircling circling = PRModelEncircling_LeftHand,
-		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );
+		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVec3 * scale = nullptr );
 	// This constructor only support OBJ file format with XYZ, Normal, UV and Triangle faces format.
 	PRModelGenerator ( std::string & filename, PRModelEncircling circling = PRModelEncircling_LeftHand,
-		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVector3 * scale = nullptr );
+		PRModelTexCoord tcs = PRModelTexCoord_UV, const PRVec3 * scale = nullptr );
 	~PRModelGenerator ();
 
 public:
@@ -972,7 +972,7 @@ private:
 #define PRToRadian( x )			( x * PR_PI / 180 )
 
 #define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
-POLYRAMDECLSPEC PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 );
+POLYRAMDECLSPEC PRVec3 PRCalculateNormal ( const PRVec3 & v1, const PRVec3 & v2, const PRVec3 & v3 );
 
 POLYRAMDECLSPEC double PRGetCurrentSecond ();
 POLYRAMDECLSPEC void PRPrintLog ( const char * format, ... );
