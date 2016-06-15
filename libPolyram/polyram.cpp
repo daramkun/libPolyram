@@ -2746,8 +2746,7 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 
 	while ( 1 ) {
 		int res = fscanf ( fp, "%s", lineHeader );
-		if ( res == EOF )
-			break;
+		if ( res == EOF ) break;
 
 		if ( strcmp ( lineHeader, "v" ) == 0 ) {
 			PRVector3 vertex;
@@ -2798,29 +2797,33 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 		} else fgets ( stupidBuffer, 1024, fp );
 	}
 
-	std::vector<float> vv;
 	unsigned vertexIndicesSize = vIndices.size ();
+	unsigned stride = sizeof ( float ) * 3;
+	if ( prop & PRModelProperty_Normal ) stride += sizeof ( float ) * 3;
+	if ( prop & PRModelProperty_TexCoord ) stride += sizeof ( float ) * 2;
+
+	float * vv = new float [ vertexIndicesSize * ( stride / sizeof ( float ) ) ];
+	m_data = vv;
+	m_dataSize = vertexIndicesSize * stride;
+	unsigned count = 0;
 	for ( unsigned i = 0; i < vertexIndicesSize; ++i ) {
 		unsigned vertexIndex = vIndices [ i ];
 		PRVector3 vertex = tempVertices [ vertexIndex - 1 ];
-		vv.push_back ( vertex.x ); vv.push_back ( vertex.y ); vv.push_back ( vertex.z );
+		vv [ count++ ] = vertex.x; vv [ count++ ] = vertex.y; vv [ count++ ] = vertex.z;
 
 		if ( prop & PRModelProperty_Normal ) {
 			unsigned normalIndex = nIndices [ i ];
 			PRVector3 normal = tempNormals [ normalIndex - 1 ];
-			vv.push_back ( normal.x ); vv.push_back ( normal.y ); vv.push_back ( normal.z );
+			vv [ count++ ] = normal.x; vv [ count++ ] = normal.y; vv [ count++ ] = normal.z;
 		}
 
 		if ( prop & PRModelProperty_TexCoord ) {
 			unsigned uvIndex = uvIndices [ i ];
 			PRVector2 uv = tempUVs [ uvIndex - 1 ];
-			vv.push_back ( uv.x ); vv.push_back ( uv.y );
+			vv [ count++ ] = uv.x; vv [ count++ ] = uv.y;
 		}
 	}
 
-	m_data = new float [ vv.size () ];
-	m_dataSize = vv.size () * sizeof ( float );
-	memcpy ( m_data, &vv [ 0 ], m_dataSize );
 	m_properties = prop;
 }
 
