@@ -2347,29 +2347,19 @@ void PRMatrix::createRotationZ ( float r, PRMatrix * result ) {
 	);
 }
 PRMatrix PRMatrix::createTranslate ( const PRVector3 & v ) {
-	PRMatrix temp;
-	createTranslate ( &v, &temp );
-	return temp;
+	COPIEDMETHOD1 ( PRMatrix, createTranslate, &v );
 }
 PRMatrix PRMatrix::createScale ( const PRVector3 & v ) {
-	PRMatrix temp;
-	createScale ( &v, &temp );
-	return temp;
+	COPIEDMETHOD1 ( PRMatrix, createScale, &v );
 }
 PRMatrix PRMatrix::createRotationX ( float r ) {
-	PRMatrix temp;
-	createRotationX ( r, &temp );
-	return temp;
+	COPIEDMETHOD1 ( PRMatrix, createRotationX, r );
 }
 PRMatrix PRMatrix::createRotationY ( float r ) {
-	PRMatrix temp;
-	createRotationY ( r, &temp );
-	return temp;
+	COPIEDMETHOD1 ( PRMatrix, createRotationY, r );
 }
 PRMatrix PRMatrix::createRotationZ ( float r ) {
-	PRMatrix temp;
-	createRotationZ ( r, &temp );
-	return temp;
+	COPIEDMETHOD1 ( PRMatrix, createRotationZ, r );
 }
 void PRMatrix::createLookAtLH ( const PRVector3 * position, const PRVector3 * target, const PRVector3 * upVector, PRMatrix * result ) {
 	PRVector3 zaxis;
@@ -2602,18 +2592,9 @@ FILE* PR_openFile ( std::string & filename, const char * openmode ) {
 	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
 	strcat_s ( fullpath, 2048, "\\" );
 #endif
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	strcat_s ( fullpath, 2048, filename.c_str () );
-#else
 	strcat ( fullpath, filename.c_str () );
-#endif
 
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	FILE * fp;
-	fopen_s ( &fp, fullpath, openmode );
-#else
 	FILE * fp = fopen ( fullpath, openmode );
-#endif
 	if ( fp == nullptr )
 		throw std::runtime_error ( "File Not Found." );
 	return fp;
@@ -2705,8 +2686,6 @@ struct vertex { PRVector3 position; PRVector2 texCoord; PRVector4 diffuse; };
 struct polygonTriangle { vertex v1, v2, v3; };
 struct polygonLine { vertex v1, v2; };
 
-void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
-	void** result, unsigned * length );
 void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
@@ -2809,6 +2788,7 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 	for ( unsigned i = 0; i < vertexIndicesSize; ++i ) {
 		unsigned vertexIndex = vIndices [ i ];
 		PRVector3 vertex = tempVertices [ vertexIndex - 1 ];
+		if ( scale != nullptr ) vertex = vertex * *scale;
 		vv [ count++ ] = vertex.x; vv [ count++ ] = vertex.y; vv [ count++ ] = vertex.z;
 
 		if ( prop & PRModelProperty_Normal ) {
@@ -2820,7 +2800,7 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 		if ( prop & PRModelProperty_TexCoord ) {
 			unsigned uvIndex = uvIndices [ i ];
 			PRVector2 uv = tempUVs [ uvIndex - 1 ];
-			vv [ count++ ] = uv.x; vv [ count++ ] = uv.y;
+			vv [ count++ ] = uv.x; vv [ count++ ] = ( tcs == PRModelTexCoord_UV ? uv.y : ( 1 - uv.y ) );
 		}
 	}
 
@@ -2906,11 +2886,7 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 
 	*result = new float [ vv.size () ];
 	*length = ( unsigned ) vv.size () * sizeof ( float );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	memcpy_s ( *result, *length, &vv [ 0 ], *length );
-#else
 	memcpy ( *result, &vv [ 0 ], *length );
-#endif
 }
 
 void generateLineModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs,
@@ -2966,11 +2942,7 @@ void generateLineModel ( void * data, unsigned dataSize, PRModelProperty propert
 
 	*result = new float [ vv.size () ];
 	*length = ( unsigned ) vv.size () * sizeof ( float );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	memcpy_s ( *result, *length, &vv [ 0 ], *length );
-#else
 	memcpy ( *result, &vv [ 0 ], *length );
-#endif
 }
 
 void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
@@ -3088,11 +3060,7 @@ void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRV
 
 	float * temp = new float [ sphere.size () * sizeof ( vertex ) ];
 	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * sphere.size () );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	memcpy_s ( temp, templen, &sphere [ 0 ], templen );
-#else
 	memcpy ( temp, &sphere [ 0 ], templen );
-#endif
 
 	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
 
@@ -3125,11 +3093,7 @@ void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRV
 
 	float * temp = new float [ vertices.size () * sizeof ( vertex ) ];
 	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * vertices.size () );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	memcpy_s ( temp, templen, &vertices [ 0 ], templen );
-#else
 	memcpy ( temp, &vertices [ 0 ], templen );
-#endif
 
 	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
 
@@ -3176,25 +3140,12 @@ PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const 
 	return PRVector3::cross ( temp1, temp2 ).normalize ();
 }
 
-#if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
-LARGE_INTEGER performanceFrequency;
-bool isPerformanceFrequencySupport = false;
-#endif
-
 double PRGetCurrentSecond () {
 #if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
-	isPerformanceFrequencySupport = QueryPerformanceFrequency ( &performanceFrequency ) ? true : false;
-	if ( isPerformanceFrequencySupport ) {
-		LARGE_INTEGER getTime;
-		QueryPerformanceCounter ( &getTime );
-		return ( getTime.QuadPart / ( double ) performanceFrequency.QuadPart );
-	}
-	else
-#if !PRPlatformMicrosoftWindowsRT
-		return timeGetTime () / 1000.0;
-#else
-		return 0;
-#endif
+	LARGE_INTEGER performanceFrequency, getTime;
+	QueryPerformanceFrequency ( &performanceFrequency );
+	QueryPerformanceCounter ( &getTime );
+	return ( getTime.QuadPart / ( double ) performanceFrequency.QuadPart );
 #elif PRPlatformAppleFamily || PRPlatformUNIXFamily
 	timeval tv;
 	gettimeofday ( &tv, nullptr );
@@ -3206,23 +3157,19 @@ void PRPrintLog ( const char * format, ... ) {
 	va_list vl;
 	va_start ( vl, format );
 	char text [ 1024 ];
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	vsprintf_s ( text, 1023, format, vl );
-#else
 	vsprintf ( text, format, vl );
-#endif
 	va_end ( vl );
-#if defined ( __STDC_WANT_SECURE_LIB__ ) && ( __STDC_WANT_SECURE_LIB__ == 1 )
-	size_t len = strlen ( text );
-	text [ len ] = '\n';
-	text [ len + 1 ] = '\0';
-	OutputDebugStringA ( text );
-#elif PRPlatformGoogleAndroid
+
+#if PRPlatformGoogleAndroid
 	__android_log_print ( ANDROID_LOG_INFO, "libPolyram", text );
 #else
 	size_t len = strlen ( text );
 	text [ len ] = '\n';
 	text [ len + 1 ] = '\0';
+#	if PRPlatformMicrosoftWindowsFamily
+	OutputDebugStringA ( text );
+#	else
 	fprintf ( stderr, text );
+#	endif
 #endif
 }
