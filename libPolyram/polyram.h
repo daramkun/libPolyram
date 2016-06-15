@@ -236,22 +236,22 @@ struct engine {
 #	define POLYRAMDECLSPEC
 #endif
 
-enum PRKeys {
-	PRKeys_Unknown,
-	PRKeys_Up, PRKeys_Down, PRKeys_Left, PRKeys_Right,
-	PRKeys_Return, PRKeys_Space, PRKeys_Backspace, PRKeys_Tab, PRKeys_Escape, PRKeys_CapsLock,
-	PRKeys_F1, PRKeys_F2, PRKeys_F3, PRKeys_F4, PRKeys_F5, PRKeys_F6, PRKeys_F7, PRKeys_F8, PRKeys_F9, PRKeys_F10, PRKeys_F11, PRKeys_F12,
-	PRKeys_0, PRKeys_1, PRKeys_2, PRKeys_3, PRKeys_4, PRKeys_5, PRKeys_6, PRKeys_7, PRKeys_8, PRKeys_9,
-	PRKeys_A, PRKeys_B, PRKeys_C, PRKeys_D, PRKeys_E, PRKeys_F, PRKeys_G, PRKeys_H, PRKeys_I, PRKeys_J, PRKeys_K, PRKeys_L, PRKeys_M,
-	PRKeys_N, PRKeys_O, PRKeys_P, PRKeys_Q, PRKeys_R, PRKeys_S, PRKeys_T, PRKeys_U, PRKeys_V, PRKeys_W, PRKeys_X, PRKeys_Y, PRKeys_Z,
-	PRKeys_Grave, PRKeys_Subtract, PRKeys_Equals, PRKeys_Backslash, PRKeys_LeftBracket, PRKeys_RightBracket, PRKeys_Semicolon,
-	PRKeys_Quotation, PRKeys_Comma, PRKeys_Period, PRKeys_Slash,
-	PRKeys_Insert, PRKeys_Delete, PRKeys_Home, PRKeys_End, PRKeys_PageUp, PRKeys_PageDown,
-	PRKeys_LeftCtrl, PRKeys_LeftAlt, PRKeys_LeftShift, PRKeys_LeftWin,
-	PRKeys_RightCtrl, PRKeys_RightAlt, PRKeys_RightShift, PRKeys_RightWin,
+enum PRKey {
+	PRKey_Unknown,
+	PRKey_Up, PRKey_Down, PRKey_Left, PRKey_Right,
+	PRKey_Return, PRKey_Space, PRKey_Backspace, PRKey_Tab, PRKey_Escape, PRKey_CapsLock,
+	PRKey_F1, PRKey_F2, PRKey_F3, PRKey_F4, PRKey_F5, PRKey_F6, PRKey_F7, PRKey_F8, PRKey_F9, PRKey_F10, PRKey_F11, PRKey_F12,
+	PRKey_0, PRKey_1, PRKey_2, PRKey_3, PRKey_4, PRKey_5, PRKey_6, PRKey_7, PRKey_8, PRKey_9,
+	PRKey_A, PRKey_B, PRKey_C, PRKey_D, PRKey_E, PRKey_F, PRKey_G, PRKey_H, PRKey_I, PRKey_J, PRKey_K, PRKey_L, PRKey_M,
+	PRKey_N, PRKey_O, PRKey_P, PRKey_Q, PRKey_R, PRKey_S, PRKey_T, PRKey_U, PRKey_V, PRKey_W, PRKey_X, PRKey_Y, PRKey_Z,
+	PRKey_Grave, PRKey_Subtract, PRKey_Equals, PRKey_Backslash, PRKey_LeftBracket, PRKey_RightBracket, PRKey_Semicolon,
+	PRKey_Quotation, PRKey_Comma, PRKey_Period, PRKey_Slash,
+	PRKey_Insert, PRKey_Delete, PRKey_Home, PRKey_End, PRKey_PageUp, PRKey_PageDown,
+	PRKey_LeftCtrl, PRKey_LeftAlt, PRKey_LeftShift, PRKey_LeftWin,
+	PRKey_RightCtrl, PRKey_RightAlt, PRKey_RightShift, PRKey_RightWin,
 };
 
-enum PRMouseButton { PRMouseButton_None = 0, PRMouseButton_Left = 1, PRMouseButton_Right = 2, PRMouseButton_Middle = 4, };
+enum PRButton { PRButton_None = 0, PRButton_Left = 1, PRButton_Right = 2, PRButton_Middle = 4, };
 
 class POLYRAMDECLSPEC PRGame {
 public:
@@ -263,12 +263,12 @@ public:
 	virtual void onUpdate ( double dt );
 	virtual void onDraw ( double dt );
 
-	virtual void onKeyDown ( PRKeys key );
-	virtual void onKeyUp ( PRKeys key );
+	virtual void onKeyDown ( PRKey key );
+	virtual void onKeyUp ( PRKey key );
 
-	virtual void onMouseDown ( PRMouseButton button, int x, int y );
-	virtual void onMouseUp ( PRMouseButton button, int x, int y );
-	virtual void onMouseMove ( PRMouseButton button, int x, int y );
+	virtual void onMouseDown ( PRButton button, int x, int y );
+	virtual void onMouseUp ( PRButton button, int x, int y );
+	virtual void onMouseMove ( PRButton button, int x, int y );
 	virtual void onMouseWheel ( int wheelX, int wheelY );
 
 	virtual void onTouchDown ( int pid, int x, int y );
@@ -317,7 +317,7 @@ public:
 	~PRApp ();
 
 public:
-	PRGame * getScene ();
+	PRGame * getGame ();
 	PRGraphicsContext * getGraphicsContext ();
 	void setGraphicsContext ( PRGraphicsContext * graphicsContext );
 	void getClientSize ( int * width, int * height );

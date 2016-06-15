@@ -9,11 +9,11 @@ void PRGame::onInitialize () { }
 void PRGame::onDestroy () { }
 void PRGame::onUpdate ( double dt ) { }
 void PRGame::onDraw ( double dt ) { }
-void PRGame::onKeyDown ( PRKeys key ) { }
-void PRGame::onKeyUp ( PRKeys key ) { }
-void PRGame::onMouseDown ( PRMouseButton button, int x, int y ) { }
-void PRGame::onMouseUp ( PRMouseButton button, int x, int y ) { }
-void PRGame::onMouseMove ( PRMouseButton button, int x, int y ) { }
+void PRGame::onKeyDown ( PRKey key ) { }
+void PRGame::onKeyUp ( PRKey key ) { }
+void PRGame::onMouseDown ( PRButton button, int x, int y ) { }
+void PRGame::onMouseUp ( PRButton button, int x, int y ) { }
+void PRGame::onMouseMove ( PRButton button, int x, int y ) { }
 void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
 void PRGame::onTouchDown ( int pid, int x, int y ) { }
 void PRGame::onTouchUp ( int pid, int x, int y ) { }
@@ -36,7 +36,7 @@ PRVersion::PRVersion ( int _major, int _minor ) { major = _major; minor = _minor
 
 PRGraphicsContext::~PRGraphicsContext () { }
 
-PRKeys keyConv ( int key ) {
+PRKey keyConv ( int key ) {
 #if !PRPlatformMicrosoftWindowsRT
 	switch ( key )
 #else
@@ -44,146 +44,146 @@ PRKeys keyConv ( int key ) {
 #endif
 	{
 #if PRPlatformMicrosoftWindowsNT
-	case VK_UP: return PRKeys_Up; case VK_DOWN: return PRKeys_Down; case VK_LEFT: return PRKeys_Left; case VK_RIGHT: return PRKeys_Right;
-	case VK_RETURN: return PRKeys_Return; case VK_SPACE: return PRKeys_Space; case VK_BACK: return PRKeys_Backspace;
-	case VK_TAB: return PRKeys_Tab; case VK_ESCAPE: return PRKeys_Escape; case VK_CAPITAL: return PRKeys_CapsLock;
-	case VK_F1: return PRKeys_F1; case VK_F2: return PRKeys_F2; case VK_F3: return PRKeys_F3; case VK_F4: return PRKeys_F4;
-	case VK_F5: return PRKeys_F5; case VK_F6: return PRKeys_F6; case VK_F7: return PRKeys_F7; case VK_F8: return PRKeys_F8;
-	case VK_F9: return PRKeys_F9; case VK_F10: return PRKeys_F10; case VK_F11: return PRKeys_F11; case VK_F12: return PRKeys_F12;
-	case '0': return PRKeys_0; case '1': return PRKeys_1; case '2': return PRKeys_2; case '3': return PRKeys_3; case '4': return PRKeys_4;
-	case '5': return PRKeys_5; case '6': return PRKeys_6; case '7': return PRKeys_7; case '8': return PRKeys_8; case '9': return PRKeys_9;
-	case 'A': return PRKeys_A; case 'B': return PRKeys_B; case 'C': return PRKeys_C; case 'D': return PRKeys_D; case 'E': return PRKeys_E;
-	case 'F': return PRKeys_F; case 'G': return PRKeys_G; case 'H': return PRKeys_H; case 'I': return PRKeys_I; case 'J': return PRKeys_J;
-	case 'K': return PRKeys_K; case 'L': return PRKeys_L; case 'M': return PRKeys_M; case 'N': return PRKeys_N; case 'O': return PRKeys_O;
-	case 'P': return PRKeys_P; case 'Q': return PRKeys_Q; case 'R': return PRKeys_R; case 'S': return PRKeys_S; case 'T': return PRKeys_T;
-	case 'U': return PRKeys_U; case 'V': return PRKeys_V; case 'W': return PRKeys_W; case 'X': return PRKeys_X; case 'Y': return PRKeys_Y;
-	case 'Z': return PRKeys_Z;
-	case VK_OEM_3: return PRKeys_Grave; case VK_OEM_MINUS: return PRKeys_Subtract; case VK_OEM_PLUS: return PRKeys_Equals;
-	case VK_OEM_5: return PRKeys_Backslash; case VK_OEM_4: return PRKeys_LeftBracket; case VK_OEM_6: return PRKeys_RightBracket;
-	case VK_OEM_1: return PRKeys_Semicolon; case VK_OEM_7: return PRKeys_Quotation;
-	case VK_OEM_COMMA: return PRKeys_Comma; case VK_OEM_PERIOD: return PRKeys_Period; case VK_OEM_2: return PRKeys_Slash;
-	case VK_INSERT: return PRKeys_Insert; case VK_DELETE: return PRKeys_Delete; case VK_HOME: return PRKeys_Home; case VK_END: return PRKeys_End;
-	case VK_PRIOR: return PRKeys_PageUp; case VK_NEXT: return PRKeys_PageDown;
-	case VK_CONTROL: return GetKeyState ( VK_LCONTROL ) ? PRKeys_LeftCtrl : PRKeys_RightCtrl;
-	case VK_MENU: return GetKeyState ( VK_LMENU ) ? PRKeys_LeftAlt : PRKeys_RightAlt;
-	case VK_SHIFT: return GetKeyState ( VK_LSHIFT ) ? PRKeys_LeftShift : PRKeys_RightShift;
-	case VK_LWIN: return PRKeys_LeftWin; case VK_RWIN: return PRKeys_RightWin;
-	default: return PRKeys_Unknown;
+	case VK_UP: return PRKey_Up; case VK_DOWN: return PRKey_Down; case VK_LEFT: return PRKey_Left; case VK_RIGHT: return PRKey_Right;
+	case VK_RETURN: return PRKey_Return; case VK_SPACE: return PRKey_Space; case VK_BACK: return PRKey_Backspace;
+	case VK_TAB: return PRKey_Tab; case VK_ESCAPE: return PRKey_Escape; case VK_CAPITAL: return PRKey_CapsLock;
+	case VK_F1: return PRKey_F1; case VK_F2: return PRKey_F2; case VK_F3: return PRKey_F3; case VK_F4: return PRKey_F4;
+	case VK_F5: return PRKey_F5; case VK_F6: return PRKey_F6; case VK_F7: return PRKey_F7; case VK_F8: return PRKey_F8;
+	case VK_F9: return PRKey_F9; case VK_F10: return PRKey_F10; case VK_F11: return PRKey_F11; case VK_F12: return PRKey_F12;
+	case '0': return PRKey_0; case '1': return PRKey_1; case '2': return PRKey_2; case '3': return PRKey_3; case '4': return PRKey_4;
+	case '5': return PRKey_5; case '6': return PRKey_6; case '7': return PRKey_7; case '8': return PRKey_8; case '9': return PRKey_9;
+	case 'A': return PRKey_A; case 'B': return PRKey_B; case 'C': return PRKey_C; case 'D': return PRKey_D; case 'E': return PRKey_E;
+	case 'F': return PRKey_F; case 'G': return PRKey_G; case 'H': return PRKey_H; case 'I': return PRKey_I; case 'J': return PRKey_J;
+	case 'K': return PRKey_K; case 'L': return PRKey_L; case 'M': return PRKey_M; case 'N': return PRKey_N; case 'O': return PRKey_O;
+	case 'P': return PRKey_P; case 'Q': return PRKey_Q; case 'R': return PRKey_R; case 'S': return PRKey_S; case 'T': return PRKey_T;
+	case 'U': return PRKey_U; case 'V': return PRKey_V; case 'W': return PRKey_W; case 'X': return PRKey_X; case 'Y': return PRKey_Y;
+	case 'Z': return PRKey_Z;
+	case VK_OEM_3: return PRKey_Grave; case VK_OEM_MINUS: return PRKey_Subtract; case VK_OEM_PLUS: return PRKey_Equals;
+	case VK_OEM_5: return PRKey_Backslash; case VK_OEM_4: return PRKey_LeftBracket; case VK_OEM_6: return PRKey_RightBracket;
+	case VK_OEM_1: return PRKey_Semicolon; case VK_OEM_7: return PRKey_Quotation;
+	case VK_OEM_COMMA: return PRKey_Comma; case VK_OEM_PERIOD: return PRKey_Period; case VK_OEM_2: return PRKey_Slash;
+	case VK_INSERT: return PRKey_Insert; case VK_DELETE: return PRKey_Delete; case VK_HOME: return PRKey_Home; case VK_END: return PRKey_End;
+	case VK_PRIOR: return PRKey_PageUp; case VK_NEXT: return PRKey_PageDown;
+	case VK_CONTROL: return GetKeyState ( VK_LCONTROL ) ? PRKey_LeftCtrl : PRKey_RightCtrl;
+	case VK_MENU: return GetKeyState ( VK_LMENU ) ? PRKey_LeftAlt : PRKey_RightAlt;
+	case VK_SHIFT: return GetKeyState ( VK_LSHIFT ) ? PRKey_LeftShift : PRKey_RightShift;
+	case VK_LWIN: return PRKey_LeftWin; case VK_RWIN: return PRKey_RightWin;
+	default: return PRKey_Unknown;
 #elif PRPlatformMicrosoftWindowsRT
 		using namespace Windows::System;
-	case VirtualKey::Left: return PRKeys_Left; case VirtualKey::Right: return PRKeys_Right;
-	case VirtualKey::Up: return PRKeys_Up; case VirtualKey::Down: return PRKeys_Down;
-	case VirtualKey::A: return PRKeys_A; case VirtualKey::B: return PRKeys_B; case VirtualKey::C: return PRKeys_C; case VirtualKey::D: return PRKeys_D;
-	case VirtualKey::E: return PRKeys_E; case VirtualKey::F: return PRKeys_F; case VirtualKey::G: return PRKeys_G; case VirtualKey::H: return PRKeys_H;
-	case VirtualKey::I: return PRKeys_I; case VirtualKey::J: return PRKeys_J; case VirtualKey::K: return PRKeys_K; case VirtualKey::L: return PRKeys_L;
-	case VirtualKey::M: return PRKeys_M; case VirtualKey::N: return PRKeys_N; case VirtualKey::O: return PRKeys_O; case VirtualKey::P: return PRKeys_P;
-	case VirtualKey::Q: return PRKeys_Q; case VirtualKey::R: return PRKeys_R; case VirtualKey::S: return PRKeys_S; case VirtualKey::T: return PRKeys_T;
-	case VirtualKey::U: return PRKeys_U; case VirtualKey::V: return PRKeys_V; case VirtualKey::W: return PRKeys_W; case VirtualKey::X: return PRKeys_X;
-	case VirtualKey::Y: return PRKeys_Y; case VirtualKey::Z: return PRKeys_Z;
-	case VirtualKey::F1: return PRKeys_F1; case VirtualKey::F2: return PRKeys_F2; case VirtualKey::F3: return PRKeys_F3;
-	case VirtualKey::F4: return PRKeys_F4; case VirtualKey::F5: return PRKeys_F5; case VirtualKey::F6: return PRKeys_F6;
-	case VirtualKey::F7: return PRKeys_F7; case VirtualKey::F8: return PRKeys_F8; case VirtualKey::F9: return PRKeys_F9;
-	case VirtualKey::F10: return PRKeys_F10; case VirtualKey::F11: return PRKeys_F11; case VirtualKey::F12: return PRKeys_F12;
-	case VirtualKey::Number0: return PRKeys_0; case VirtualKey::Number1: return PRKeys_1; case VirtualKey::Number2: return PRKeys_2;
-	case VirtualKey::Number3: return PRKeys_3; case VirtualKey::Number4: return PRKeys_4; case VirtualKey::Number5: return PRKeys_5;
-	case VirtualKey::Number6: return PRKeys_6; case VirtualKey::Number7: return PRKeys_7; case VirtualKey::Number8: return PRKeys_8;
-	case VirtualKey::Number9: return PRKeys_9;
-	case VirtualKey::Back: return PRKeys_Backspace; case VirtualKey::Enter: return PRKeys_Return; case VirtualKey::Tab: return PRKeys_Tab;
-	case VirtualKey::CapitalLock: return PRKeys_CapsLock; case VirtualKey::Escape: return PRKeys_Escape; case VirtualKey::Space: return PRKeys_Space;
-	case VirtualKey::LeftControl: return PRKeys_LeftCtrl; case VirtualKey::RightControl: return PRKeys_RightCtrl;
-	case VirtualKey::LeftMenu: return PRKeys_LeftAlt; case VirtualKey::RightMenu: return PRKeys_RightAlt;
-	case VirtualKey::LeftShift: return PRKeys_LeftShift; case VirtualKey::RightShift: return PRKeys_RightShift;
-	case VirtualKey::LeftWindows: return PRKeys_LeftWin; case VirtualKey::RightWindows: return PRKeys_RightWin;
-	case VirtualKey::Insert: return PRKeys_Insert; case VirtualKey::Delete: return PRKeys_Delete; case VirtualKey::Home: return PRKeys_Home;
-	case VirtualKey::End: return PRKeys_End; case VirtualKey::PageUp: return PRKeys_PageUp; case VirtualKey::PageDown: return PRKeys_PageDown;
+	case VirtualKey::Left: return PRKey_Left; case VirtualKey::Right: return PRKey_Right;
+	case VirtualKey::Up: return PRKey_Up; case VirtualKey::Down: return PRKey_Down;
+	case VirtualKey::A: return PRKey_A; case VirtualKey::B: return PRKey_B; case VirtualKey::C: return PRKey_C; case VirtualKey::D: return PRKey_D;
+	case VirtualKey::E: return PRKey_E; case VirtualKey::F: return PRKey_F; case VirtualKey::G: return PRKey_G; case VirtualKey::H: return PRKey_H;
+	case VirtualKey::I: return PRKey_I; case VirtualKey::J: return PRKey_J; case VirtualKey::K: return PRKey_K; case VirtualKey::L: return PRKey_L;
+	case VirtualKey::M: return PRKey_M; case VirtualKey::N: return PRKey_N; case VirtualKey::O: return PRKey_O; case VirtualKey::P: return PRKey_P;
+	case VirtualKey::Q: return PRKey_Q; case VirtualKey::R: return PRKey_R; case VirtualKey::S: return PRKey_S; case VirtualKey::T: return PRKey_T;
+	case VirtualKey::U: return PRKey_U; case VirtualKey::V: return PRKey_V; case VirtualKey::W: return PRKey_W; case VirtualKey::X: return PRKey_X;
+	case VirtualKey::Y: return PRKey_Y; case VirtualKey::Z: return PRKey_Z;
+	case VirtualKey::F1: return PRKey_F1; case VirtualKey::F2: return PRKey_F2; case VirtualKey::F3: return PRKey_F3;
+	case VirtualKey::F4: return PRKey_F4; case VirtualKey::F5: return PRKey_F5; case VirtualKey::F6: return PRKey_F6;
+	case VirtualKey::F7: return PRKey_F7; case VirtualKey::F8: return PRKey_F8; case VirtualKey::F9: return PRKey_F9;
+	case VirtualKey::F10: return PRKey_F10; case VirtualKey::F11: return PRKey_F11; case VirtualKey::F12: return PRKey_F12;
+	case VirtualKey::Number0: return PRKey_0; case VirtualKey::Number1: return PRKey_1; case VirtualKey::Number2: return PRKey_2;
+	case VirtualKey::Number3: return PRKey_3; case VirtualKey::Number4: return PRKey_4; case VirtualKey::Number5: return PRKey_5;
+	case VirtualKey::Number6: return PRKey_6; case VirtualKey::Number7: return PRKey_7; case VirtualKey::Number8: return PRKey_8;
+	case VirtualKey::Number9: return PRKey_9;
+	case VirtualKey::Back: return PRKey_Backspace; case VirtualKey::Enter: return PRKey_Return; case VirtualKey::Tab: return PRKey_Tab;
+	case VirtualKey::CapitalLock: return PRKey_CapsLock; case VirtualKey::Escape: return PRKey_Escape; case VirtualKey::Space: return PRKey_Space;
+	case VirtualKey::LeftControl: return PRKey_LeftCtrl; case VirtualKey::RightControl: return PRKey_RightCtrl;
+	case VirtualKey::LeftMenu: return PRKey_LeftAlt; case VirtualKey::RightMenu: return PRKey_RightAlt;
+	case VirtualKey::LeftShift: return PRKey_LeftShift; case VirtualKey::RightShift: return PRKey_RightShift;
+	case VirtualKey::LeftWindows: return PRKey_LeftWin; case VirtualKey::RightWindows: return PRKey_RightWin;
+	case VirtualKey::Insert: return PRKey_Insert; case VirtualKey::Delete: return PRKey_Delete; case VirtualKey::Home: return PRKey_Home;
+	case VirtualKey::End: return PRKey_End; case VirtualKey::PageUp: return PRKey_PageUp; case VirtualKey::PageDown: return PRKey_PageDown;
 	default:
-		if ( key == 219 ) return PRKeys_LeftBracket; if ( key == 221 ) return PRKeys_RightBracket;
-		if ( key == 220 ) return PRKeys_Backslash; if ( key == 191 ) return PRKeys_Slash;
-		if ( key == 188 ) return PRKeys_Comma; if ( key == 190 ) return PRKeys_Period;
-		if ( key == 189 ) return PRKeys_Subtract; if ( key == 187 ) return PRKeys_Equals;
-		if ( key == 186 ) return PRKeys_Semicolon; if ( key == 192 ) return PRKeys_Grave;
-		if ( key == 222 ) return PRKeys_Quotation;
+		if ( key == 219 ) return PRKey_LeftBracket; if ( key == 221 ) return PRKey_RightBracket;
+		if ( key == 220 ) return PRKey_Backslash; if ( key == 191 ) return PRKey_Slash;
+		if ( key == 188 ) return PRKey_Comma; if ( key == 190 ) return PRKey_Period;
+		if ( key == 189 ) return PRKey_Subtract; if ( key == 187 ) return PRKey_Equals;
+		if ( key == 186 ) return PRKey_Semicolon; if ( key == 192 ) return PRKey_Grave;
+		if ( key == 222 ) return PRKey_Quotation;
 		break;
 #elif PRPlatformAppleFamily
-	case 0x7E: return PRKeys_Up; case 0x7D: return PRKeys_Down; case 0x7B: return PRKeys_Left; case 0x7C: return PRKeys_Right;
-	case 0x24: return PRKeys_Return; case 0x31: return PRKeys_Space; case 0x33: return PRKeys_Backspace;
-	case 0x30: return PRKeys_Tab; case 0x35: return PRKeys_Escape;
-	case 0x7A: return PRKeys_F1; case 0x78: return PRKeys_F2; case 0x63: return PRKeys_F3; case 0x76: return PRKeys_F4;
-	case 0x60: return PRKeys_F5; case 0x61: return PRKeys_F6; case 0x62: return PRKeys_F7; case 0x64: return PRKeys_F8;
-	case 0x65: return PRKeys_F9; case 0x6D: return PRKeys_F10; case 0x67: return PRKeys_F11; case 0x6F: return PRKeys_F12;
-	case 0x1D: return PRKeys_0; case 0x12: return PRKeys_1; case 0x13: return PRKeys_2; case 0x14: return PRKeys_3; case 0x15: return PRKeys_4;
-	case 0x17: return PRKeys_5; case 0x16: return PRKeys_6; case 0x1A: return PRKeys_7; case 0x1C: return PRKeys_8; case 0x19: return PRKeys_9;
-	case 0x00: return PRKeys_A; case 0x0B: return PRKeys_B; case 0x08: return PRKeys_C; case 0x02: return PRKeys_D; case 0x0E: return PRKeys_E;
-	case 0x03: return PRKeys_F; case 0x05: return PRKeys_G; case 0x04: return PRKeys_H; case 0x22: return PRKeys_I; case 0x26: return PRKeys_J;
-	case 0x28: return PRKeys_K; case 0x25: return PRKeys_L; case 0x2E: return PRKeys_M; case 0x2D: return PRKeys_N; case 0x1F: return PRKeys_O;
-	case 0x23: return PRKeys_P; case 0x0C: return PRKeys_Q; case 0x0F: return PRKeys_R; case 0x01: return PRKeys_S; case 0x11: return PRKeys_T;
-	case 0x20: return PRKeys_U; case 0x09: return PRKeys_V; case 0x0D: return PRKeys_W; case 0x07: return PRKeys_X; case 0x10: return PRKeys_Y;
-	case 0x06: return PRKeys_Z;
-	case 0x32: return PRKeys_Grave; case 0x1B: return PRKeys_Subtract; case 0x18: return PRKeys_Equals;
-	case 0x2A: return PRKeys_Backslash; case 0x21: return PRKeys_LeftBracket; case 0x1E: return PRKeys_RightBracket;
-	case 0x29: return PRKeys_Semicolon; case 0x27: return PRKeys_Quotation;
-	case 0x2B: return PRKeys_Comma; case 0x2F: return PRKeys_Period; case 0x2C: return PRKeys_Slash;
-	case 0x72: return PRKeys_Insert; case 0x75: return PRKeys_Delete; case 0x73: return PRKeys_Home; case 0x77: return PRKeys_End;
-	case 0x74: return PRKeys_PageUp; case 0x79: return PRKeys_PageDown;
-	case 0x3B: return PRKeys_LeftCtrl; case 0x3E: return PRKeys_RightCtrl;
-	case 0x3A: return PRKeys_LeftAlt; case 0x3D: return PRKeys_RightAlt;
-	case 0x38: return PRKeys_LeftShift; case 0x3C: return PRKeys_RightShift;
-	case 0x37: return PRKeys_LeftWin; case 0x36: return PRKeys_RightWin;
-	default: return PRKeys_Unknown;
+	case 0x7E: return PRKey_Up; case 0x7D: return PRKey_Down; case 0x7B: return PRKey_Left; case 0x7C: return PRKey_Right;
+	case 0x24: return PRKey_Return; case 0x31: return PRKey_Space; case 0x33: return PRKey_Backspace;
+	case 0x30: return PRKey_Tab; case 0x35: return PRKey_Escape;
+	case 0x7A: return PRKey_F1; case 0x78: return PRKey_F2; case 0x63: return PRKey_F3; case 0x76: return PRKey_F4;
+	case 0x60: return PRKey_F5; case 0x61: return PRKey_F6; case 0x62: return PRKey_F7; case 0x64: return PRKey_F8;
+	case 0x65: return PRKey_F9; case 0x6D: return PRKey_F10; case 0x67: return PRKey_F11; case 0x6F: return PRKey_F12;
+	case 0x1D: return PRKey_0; case 0x12: return PRKey_1; case 0x13: return PRKey_2; case 0x14: return PRKey_3; case 0x15: return PRKey_4;
+	case 0x17: return PRKey_5; case 0x16: return PRKey_6; case 0x1A: return PRKey_7; case 0x1C: return PRKey_8; case 0x19: return PRKey_9;
+	case 0x00: return PRKey_A; case 0x0B: return PRKey_B; case 0x08: return PRKey_C; case 0x02: return PRKey_D; case 0x0E: return PRKey_E;
+	case 0x03: return PRKey_F; case 0x05: return PRKey_G; case 0x04: return PRKey_H; case 0x22: return PRKey_I; case 0x26: return PRKey_J;
+	case 0x28: return PRKey_K; case 0x25: return PRKey_L; case 0x2E: return PRKey_M; case 0x2D: return PRKey_N; case 0x1F: return PRKey_O;
+	case 0x23: return PRKey_P; case 0x0C: return PRKey_Q; case 0x0F: return PRKey_R; case 0x01: return PRKey_S; case 0x11: return PRKey_T;
+	case 0x20: return PRKey_U; case 0x09: return PRKey_V; case 0x0D: return PRKey_W; case 0x07: return PRKey_X; case 0x10: return PRKey_Y;
+	case 0x06: return PRKey_Z;
+	case 0x32: return PRKey_Grave; case 0x1B: return PRKey_Subtract; case 0x18: return PRKey_Equals;
+	case 0x2A: return PRKey_Backslash; case 0x21: return PRKey_LeftBracket; case 0x1E: return PRKey_RightBracket;
+	case 0x29: return PRKey_Semicolon; case 0x27: return PRKey_Quotation;
+	case 0x2B: return PRKey_Comma; case 0x2F: return PRKey_Period; case 0x2C: return PRKey_Slash;
+	case 0x72: return PRKey_Insert; case 0x75: return PRKey_Delete; case 0x73: return PRKey_Home; case 0x77: return PRKey_End;
+	case 0x74: return PRKey_PageUp; case 0x79: return PRKey_PageDown;
+	case 0x3B: return PRKey_LeftCtrl; case 0x3E: return PRKey_RightCtrl;
+	case 0x3A: return PRKey_LeftAlt; case 0x3D: return PRKey_RightAlt;
+	case 0x38: return PRKey_LeftShift; case 0x3C: return PRKey_RightShift;
+	case 0x37: return PRKey_LeftWin; case 0x36: return PRKey_RightWin;
+	default: return PRKey_Unknown;
 #elif PRPlatformUNIX
-	case XK_Up: return PRKeys_Up; case XK_Down: return PRKeys_Down; case XK_Left: return PRKeys_Left; case XK_Right: return PRKeys_Right;
-	case XK_Return: return PRKeys_Return; case XK_space: return PRKeys_Space; case XK_BackSpace: return PRKeys_Backspace;
-	case XK_Tab: return PRKeys_Tab; case XK_Escape: return PRKeys_Escape;
-	case XK_F1: return PRKeys_F1; case XK_F2: return PRKeys_F2; case XK_F3: return PRKeys_F3; case XK_F4: return PRKeys_F4;
-	case XK_F5: return PRKeys_F5; case XK_F6: return PRKeys_F6; case XK_F7: return PRKeys_F7; case XK_F8: return PRKeys_F8;
-	case XK_F9: return PRKeys_F9; case XK_F10: return PRKeys_F10; case XK_F11: return PRKeys_F11; case XK_F12: return PRKeys_F12;
-	case XK_0: return PRKeys_0; case XK_1: return PRKeys_1; case XK_2: return PRKeys_2; case XK_3: return PRKeys_3; case XK_4: return PRKeys_4;
-	case XK_5: return PRKeys_5; case XK_6: return PRKeys_6; case XK_7: return PRKeys_7; case XK_8: return PRKeys_8; case XK_9: return PRKeys_9;
-	case XK_A: return PRKeys_A; case XK_B: return PRKeys_B; case XK_C: return PRKeys_C; case XK_D: return PRKeys_D; case XK_E: return PRKeys_E;
-	case XK_F: return PRKeys_F; case XK_G: return PRKeys_G; case XK_H: return PRKeys_H; case XK_I: return PRKeys_I; case XK_J: return PRKeys_J;
-	case XK_K: return PRKeys_K; case XK_L: return PRKeys_L; case XK_M: return PRKeys_M; case XK_N: return PRKeys_N; case XK_O: return PRKeys_O;
-	case XK_P: return PRKeys_P; case XK_Q: return PRKeys_Q; case XK_R: return PRKeys_R; case XK_S: return PRKeys_S; case XK_T: return PRKeys_T;
-	case XK_U: return PRKeys_U; case XK_V: return PRKeys_V; case XK_W: return PRKeys_W; case XK_X: return PRKeys_X; case XK_Y: return PRKeys_Y;
-	case XK_Z: return PRKeys_Z;
-	case XK_grave: return PRKeys_Grave; case XK_minus: return PRKeys_Subtract; case XK_equal: return PRKeys_Equals;
-	case XK_backslash: return PRKeys_Backslash; case XK_bracketleft: return PRKeys_LeftBracket; case XK_bracketright: return PRKeys_RightBracket;
-	case XK_semicolon: return PRKeys_Semicolon; case XK_apostrophe: return PRKeys_Quotation;
-	case XK_comma: return PRKeys_Comma; case XK_period: return PRKeys_Period; case XK_slash: return PRKeys_Slash;
-	case XK_Insert: return PRKeys_Insert; case XK_Delete: return PRKeys_Delete; case XK_Home: return PRKeys_Home; case XK_End: return PRKeys_End;
-	case XK_Page_Up: return PRKeys_PageUp; case XK_Page_Down: return PRKeys_PageDown;
-	case XK_Control_L: return PRKeys_LeftCtrl; case XK_Control_R: return PRKeys_RightCtrl;
-	case XK_Alt_L: return PRKeys_LeftAlt; case XK_Alt_R: return PRKeys_RightAlt;
-	case XK_Shift_L: return PRKeys_LeftShift; case XK_Shift_R: return PRKeys_RightShift;
-	case XK_Super_L: return PRKeys_LeftWin; case XK_Super_R: return PRKeys_RightWin;
-	default: PRKeys_Unknown;
+	case XK_Up: return PRKey_Up; case XK_Down: return PRKey_Down; case XK_Left: return PRKey_Left; case XK_Right: return PRKey_Right;
+	case XK_Return: return PRKey_Return; case XK_space: return PRKey_Space; case XK_BackSpace: return PRKey_Backspace;
+	case XK_Tab: return PRKey_Tab; case XK_Escape: return PRKey_Escape;
+	case XK_F1: return PRKey_F1; case XK_F2: return PRKey_F2; case XK_F3: return PRKey_F3; case XK_F4: return PRKey_F4;
+	case XK_F5: return PRKey_F5; case XK_F6: return PRKey_F6; case XK_F7: return PRKey_F7; case XK_F8: return PRKey_F8;
+	case XK_F9: return PRKey_F9; case XK_F10: return PRKey_F10; case XK_F11: return PRKey_F11; case XK_F12: return PRKey_F12;
+	case XK_0: return PRKey_0; case XK_1: return PRKey_1; case XK_2: return PRKey_2; case XK_3: return PRKey_3; case XK_4: return PRKey_4;
+	case XK_5: return PRKey_5; case XK_6: return PRKey_6; case XK_7: return PRKey_7; case XK_8: return PRKey_8; case XK_9: return PRKey_9;
+	case XK_A: return PRKey_A; case XK_B: return PRKey_B; case XK_C: return PRKey_C; case XK_D: return PRKey_D; case XK_E: return PRKey_E;
+	case XK_F: return PRKey_F; case XK_G: return PRKey_G; case XK_H: return PRKey_H; case XK_I: return PRKey_I; case XK_J: return PRKey_J;
+	case XK_K: return PRKey_K; case XK_L: return PRKey_L; case XK_M: return PRKey_M; case XK_N: return PRKey_N; case XK_O: return PRKey_O;
+	case XK_P: return PRKey_P; case XK_Q: return PRKey_Q; case XK_R: return PRKey_R; case XK_S: return PRKey_S; case XK_T: return PRKey_T;
+	case XK_U: return PRKey_U; case XK_V: return PRKey_V; case XK_W: return PRKey_W; case XK_X: return PRKey_X; case XK_Y: return PRKey_Y;
+	case XK_Z: return PRKey_Z;
+	case XK_grave: return PRKey_Grave; case XK_minus: return PRKey_Subtract; case XK_equal: return PRKey_Equals;
+	case XK_backslash: return PRKey_Backslash; case XK_bracketleft: return PRKey_LeftBracket; case XK_bracketright: return PRKey_RightBracket;
+	case XK_semicolon: return PRKey_Semicolon; case XK_apostrophe: return PRKey_Quotation;
+	case XK_comma: return PRKey_Comma; case XK_period: return PRKey_Period; case XK_slash: return PRKey_Slash;
+	case XK_Insert: return PRKey_Insert; case XK_Delete: return PRKey_Delete; case XK_Home: return PRKey_Home; case XK_End: return PRKey_End;
+	case XK_Page_Up: return PRKey_PageUp; case XK_Page_Down: return PRKey_PageDown;
+	case XK_Control_L: return PRKey_LeftCtrl; case XK_Control_R: return PRKey_RightCtrl;
+	case XK_Alt_L: return PRKey_LeftAlt; case XK_Alt_R: return PRKey_RightAlt;
+	case XK_Shift_L: return PRKey_LeftShift; case XK_Shift_R: return PRKey_RightShift;
+	case XK_Super_L: return PRKey_LeftWin; case XK_Super_R: return PRKey_RightWin;
+	default: PRKey_Unknown;
 #elif PRPlatformGoogleAndroid
-	case AKEYCODE_DPAD_UP: return PRKeys_Up; case AKEYCODE_DPAD_DOWN: return PRKeys_Down; case AKEYCODE_DPAD_LEFT: return PRKeys_Left; case AKEYCODE_DPAD_RIGHT: return PRKeys_Right;
-	case AKEYCODE_ENTER: return PRKeys_Return; case AKEYCODE_SPACE: return PRKeys_Space; case AKEYCODE_BACK: return PRKeys_Backspace;
-	case AKEYCODE_TAB: return PRKeys_Tab; case AKEYCODE_ESCAPE: return PRKeys_Escape;
-	case AKEYCODE_F1: return PRKeys_F1; case AKEYCODE_F2: return PRKeys_F2; case AKEYCODE_F3: return PRKeys_F3; case AKEYCODE_F4: return PRKeys_F4;
-	case AKEYCODE_F5: return PRKeys_F5; case AKEYCODE_F6: return PRKeys_F6; case AKEYCODE_F7: return PRKeys_F7; case AKEYCODE_F8: return PRKeys_F8;
-	case AKEYCODE_F9: return PRKeys_F9; case AKEYCODE_F10: return PRKeys_F10; case AKEYCODE_F11: return PRKeys_F11; case AKEYCODE_F12: return PRKeys_F12;
-	case AKEYCODE_0: return PRKeys_0; case AKEYCODE_1: return PRKeys_1; case AKEYCODE_2: return PRKeys_2; case AKEYCODE_3: return PRKeys_3; case AKEYCODE_4: return PRKeys_4;
-	case AKEYCODE_5: return PRKeys_5; case AKEYCODE_6: return PRKeys_6; case AKEYCODE_7: return PRKeys_7; case AKEYCODE_8: return PRKeys_8; case AKEYCODE_9: return PRKeys_9;
-	case AKEYCODE_A: return PRKeys_A; case AKEYCODE_B: return PRKeys_B; case AKEYCODE_C: return PRKeys_C; case AKEYCODE_D: return PRKeys_D; case AKEYCODE_E: return PRKeys_E;
-	case AKEYCODE_F: return PRKeys_F; case AKEYCODE_G: return PRKeys_G; case AKEYCODE_H: return PRKeys_H; case AKEYCODE_I: return PRKeys_I; case AKEYCODE_J: return PRKeys_J;
-	case AKEYCODE_K: return PRKeys_K; case AKEYCODE_L: return PRKeys_L; case AKEYCODE_M: return PRKeys_M; case AKEYCODE_N: return PRKeys_N; case AKEYCODE_O: return PRKeys_O;
-	case AKEYCODE_P: return PRKeys_P; case AKEYCODE_Q: return PRKeys_Q; case AKEYCODE_R: return PRKeys_R; case AKEYCODE_S: return PRKeys_S; case AKEYCODE_T: return PRKeys_T;
-	case AKEYCODE_U: return PRKeys_U; case AKEYCODE_V: return PRKeys_V; case AKEYCODE_W: return PRKeys_W; case AKEYCODE_X: return PRKeys_X; case AKEYCODE_Y: return PRKeys_Y;
-	case AKEYCODE_Z: return PRKeys_Z;
-	case AKEYCODE_GRAVE: return PRKeys_Grave; case AKEYCODE_MINUS: return PRKeys_Subtract; case AKEYCODE_EQUALS: return PRKeys_Equals;
-	case AKEYCODE_BACKSLASH: return PRKeys_Backslash; case AKEYCODE_LEFT_BRACKET: return PRKeys_LeftBracket; case AKEYCODE_RIGHT_BRACKET: return PRKeys_RightBracket;
-	case AKEYCODE_SEMICOLON: return PRKeys_Semicolon; case AKEYCODE_APOSTROPHE: return PRKeys_Quotation;
-	case AKEYCODE_COMMA: return PRKeys_Comma; case AKEYCODE_PERIOD: return PRKeys_Period; case AKEYCODE_SLASH: return PRKeys_Slash;
-	case AKEYCODE_PAGE_UP: return PRKeys_PageUp; case AKEYCODE_PAGE_DOWN: return PRKeys_PageDown; case AKEYCODE_MOVE_HOME: return PRKeys_Home; case AKEYCODE_MOVE_END: return PRKeys_End;
-	case AKEYCODE_CTRL_LEFT: return PRKeys_LeftCtrl; case AKEYCODE_CTRL_RIGHT: return PRKeys_RightCtrl;
-	case AKEYCODE_ALT_LEFT: return PRKeys_LeftAlt; case AKEYCODE_ALT_RIGHT: return PRKeys_RightAlt;
-	case AKEYCODE_SHIFT_LEFT: return PRKeys_LeftShift; case AKEYCODE_SHIFT_RIGHT: return PRKeys_RightShift;
-	case AKEYCODE_META_LEFT: return PRKeys_LeftWin; case AKEYCODE_META_RIGHT: return PRKeys_RightWin;
-	default: return PRKeys_Unknown;
+	case AKEYCODE_DPAD_UP: return PRKey_Up; case AKEYCODE_DPAD_DOWN: return PRKey_Down; case AKEYCODE_DPAD_LEFT: return PRKey_Left; case AKEYCODE_DPAD_RIGHT: return PRKey_Right;
+	case AKEYCODE_ENTER: return PRKey_Return; case AKEYCODE_SPACE: return PRKey_Space; case AKEYCODE_BACK: return PRKey_Backspace;
+	case AKEYCODE_TAB: return PRKey_Tab; case AKEYCODE_ESCAPE: return PRKey_Escape;
+	case AKEYCODE_F1: return PRKey_F1; case AKEYCODE_F2: return PRKey_F2; case AKEYCODE_F3: return PRKey_F3; case AKEYCODE_F4: return PRKey_F4;
+	case AKEYCODE_F5: return PRKey_F5; case AKEYCODE_F6: return PRKey_F6; case AKEYCODE_F7: return PRKey_F7; case AKEYCODE_F8: return PRKey_F8;
+	case AKEYCODE_F9: return PRKey_F9; case AKEYCODE_F10: return PRKey_F10; case AKEYCODE_F11: return PRKey_F11; case AKEYCODE_F12: return PRKey_F12;
+	case AKEYCODE_0: return PRKey_0; case AKEYCODE_1: return PRKey_1; case AKEYCODE_2: return PRKey_2; case AKEYCODE_3: return PRKey_3; case AKEYCODE_4: return PRKey_4;
+	case AKEYCODE_5: return PRKey_5; case AKEYCODE_6: return PRKey_6; case AKEYCODE_7: return PRKey_7; case AKEYCODE_8: return PRKey_8; case AKEYCODE_9: return PRKey_9;
+	case AKEYCODE_A: return PRKey_A; case AKEYCODE_B: return PRKey_B; case AKEYCODE_C: return PRKey_C; case AKEYCODE_D: return PRKey_D; case AKEYCODE_E: return PRKey_E;
+	case AKEYCODE_F: return PRKey_F; case AKEYCODE_G: return PRKey_G; case AKEYCODE_H: return PRKey_H; case AKEYCODE_I: return PRKey_I; case AKEYCODE_J: return PRKey_J;
+	case AKEYCODE_K: return PRKey_K; case AKEYCODE_L: return PRKey_L; case AKEYCODE_M: return PRKey_M; case AKEYCODE_N: return PRKey_N; case AKEYCODE_O: return PRKey_O;
+	case AKEYCODE_P: return PRKey_P; case AKEYCODE_Q: return PRKey_Q; case AKEYCODE_R: return PRKey_R; case AKEYCODE_S: return PRKey_S; case AKEYCODE_T: return PRKey_T;
+	case AKEYCODE_U: return PRKey_U; case AKEYCODE_V: return PRKey_V; case AKEYCODE_W: return PRKey_W; case AKEYCODE_X: return PRKey_X; case AKEYCODE_Y: return PRKey_Y;
+	case AKEYCODE_Z: return PRKey_Z;
+	case AKEYCODE_GRAVE: return PRKey_Grave; case AKEYCODE_MINUS: return PRKey_Subtract; case AKEYCODE_EQUALS: return PRKey_Equals;
+	case AKEYCODE_BACKSLASH: return PRKey_Backslash; case AKEYCODE_LEFT_BRACKET: return PRKey_LeftBracket; case AKEYCODE_RIGHT_BRACKET: return PRKey_RightBracket;
+	case AKEYCODE_SEMICOLON: return PRKey_Semicolon; case AKEYCODE_APOSTROPHE: return PRKey_Quotation;
+	case AKEYCODE_COMMA: return PRKey_Comma; case AKEYCODE_PERIOD: return PRKey_Period; case AKEYCODE_SLASH: return PRKey_Slash;
+	case AKEYCODE_PAGE_UP: return PRKey_PageUp; case AKEYCODE_PAGE_DOWN: return PRKey_PageDown; case AKEYCODE_MOVE_HOME: return PRKey_Home; case AKEYCODE_MOVE_END: return PRKey_End;
+	case AKEYCODE_CTRL_LEFT: return PRKey_LeftCtrl; case AKEYCODE_CTRL_RIGHT: return PRKey_RightCtrl;
+	case AKEYCODE_ALT_LEFT: return PRKey_LeftAlt; case AKEYCODE_ALT_RIGHT: return PRKey_RightAlt;
+	case AKEYCODE_SHIFT_LEFT: return PRKey_LeftShift; case AKEYCODE_SHIFT_RIGHT: return PRKey_RightShift;
+	case AKEYCODE_META_LEFT: return PRKey_LeftWin; case AKEYCODE_META_RIGHT: return PRKey_RightWin;
+	default: return PRKey_Unknown;
 #endif
 	}
-	return PRKeys_Unknown;
+	return PRKey_Unknown;
 }
 
 PRApp * g_sharedApp;
@@ -245,7 +245,7 @@ namespace polyram {
 				throw std::runtime_error ( "Cannot use this renderer version in this platform." );
 			}
 
-			PRApp::sharedApp ()->getScene ()->onInitialize ();
+			PRApp::sharedApp ()->getGame ()->onInitialize ();
 
 			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
 			while ( !m_windowClosed ) {
@@ -253,9 +253,9 @@ namespace polyram {
 					elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
 					lastTime = currentTime;
 
-					if ( PRApp::sharedApp ()->getScene () != nullptr ) {
-						PRApp::sharedApp ()->getScene ()->onUpdate ( elapsedTime );
-						PRApp::sharedApp ()->getScene ()->onDraw ( elapsedTime );
+					if ( PRApp::sharedApp ()->getGame () != nullptr ) {
+						PRApp::sharedApp ()->getGame ()->onUpdate ( elapsedTime );
+						PRApp::sharedApp ()->getGame ()->onDraw ( elapsedTime );
 					}
 				}
 
@@ -263,7 +263,7 @@ namespace polyram {
 			}
 		}
 
-		virtual void Uninitialize () { auto game = PRApp::sharedApp ()->getScene (); if ( game ) game->onDestroy (); }
+		virtual void Uninitialize () { auto game = PRApp::sharedApp ()->getGame (); if ( game ) game->onDestroy (); }
 
 	private:
 		void OnActivated ( Windows::ApplicationModel::Core::CoreApplicationView^ CoreAppView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ Args ) {
@@ -277,50 +277,50 @@ namespace polyram {
 		void OnWindowClosed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ e ) { m_windowClosed = true; }
 		void OnResized ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ e )
 		{
-			if ( PRApp::sharedApp ()->getScene () ) PRApp::sharedApp ()->getScene ()->onResized ();
+			if ( PRApp::sharedApp ()->getGame () ) PRApp::sharedApp ()->getGame ()->onResized ();
 		}
 		void OnKeyDown ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onKeyDown ( keyConv ( ( int ) e->VirtualKey ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onKeyDown ( keyConv ( ( int ) e->VirtualKey ) );
 		}
 		void OnKeyUp ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onKeyUp ( keyConv ( ( int ) e->VirtualKey ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( ( int ) e->VirtualKey ) );
 		}
 		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () ) {
+			if ( PRApp::sharedApp ()->getGame () ) {
 				int mouseButton;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( ( PRMouseButton ) mouseButton,
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( ( PRButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
 		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () ) {
+			if ( PRApp::sharedApp ()->getGame () ) {
 				int mouseButton;
-				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( ( PRMouseButton ) mouseButton,
+				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
+				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
+				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( ( PRButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
 		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () ) {
-				int mouseButton = PRMouseButton_None;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMouseButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMouseButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMouseButton_Middle;
-				PRApp::sharedApp ()->getScene ()->onMouseMove ( ( PRMouseButton ) mouseButton,
+			if ( PRApp::sharedApp ()->getGame () ) {
+				int mouseButton = PRButton_None;
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
 
 		void OnPointerWheel ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseWheel ( 0, e->CurrentPoint->Properties->MouseWheelDelta );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseWheel ( 0, e->CurrentPoint->Properties->MouseWheelDelta );
 		}
 	};
 
@@ -354,66 +354,66 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 	wndClass.lpfnWndProc = static_cast<WNDPROC> ( [] ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) -> LRESULT {
 		switch ( uMsg ) {
 		case WM_KEYDOWN:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onKeyDown ( keyConv ( ( int ) wParam ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onKeyDown ( keyConv ( ( int ) wParam ) );
 			break;
 		case WM_KEYUP:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onKeyUp ( keyConv ( ( int ) wParam ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( ( int ) wParam ) );
 			break;
 
 		case WM_LBUTTONDOWN:
-			g_MouseButton |= PRMouseButton_Left;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton |= PRButton_Left;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_RBUTTONDOWN:
-			g_MouseButton |= PRMouseButton_Right;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton |= PRButton_Right;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MBUTTONDOWN:
-			g_MouseButton |= PRMouseButton_Middle;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton |= PRButton_Middle;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_LBUTTONUP:
-			g_MouseButton &= PRMouseButton_Left;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton &= PRButton_Left;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_RBUTTONUP:
-			g_MouseButton &= PRMouseButton_Right;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton &= PRButton_Right;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MBUTTONUP:
-			g_MouseButton &= PRMouseButton_Middle;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
+			g_MouseButton &= PRButton_Middle;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MOUSEMOVE:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseMove ( ( PRMouseButton ) g_MouseButton, LOWORD ( lParam ), HIWORD ( lParam ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MOUSEWHEEL:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseWheel ( 0, ( int ) GET_WHEEL_DELTA_WPARAM ( wParam ) / WHEEL_DELTA );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseWheel ( 0, ( int ) GET_WHEEL_DELTA_WPARAM ( wParam ) / WHEEL_DELTA );
 			break;
 		case WM_MOUSEHWHEEL:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseWheel ( ( int ) GET_WHEEL_DELTA_WPARAM ( wParam ) / WHEEL_DELTA, 0 );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseWheel ( ( int ) GET_WHEEL_DELTA_WPARAM ( wParam ) / WHEEL_DELTA, 0 );
 			break;
 
 		case WM_ACTIVATE:
-			if ( PRApp::sharedApp ()->getScene () ) {
-				if ( wParam != WA_INACTIVE ) PRApp::sharedApp ()->getScene ()->onActivated ();
-				else PRApp::sharedApp ()->getScene ()->onDeactivated ();
+			if ( PRApp::sharedApp ()->getGame () ) {
+				if ( wParam != WA_INACTIVE ) PRApp::sharedApp ()->getGame ()->onActivated ();
+				else PRApp::sharedApp ()->getGame ()->onDeactivated ();
 			}
 			break;
 		case WM_SIZE:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onResized ();
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onResized ();
 			break;
 		default: return DefWindowProc ( hWnd, uMsg, wParam, lParam );
 		}
@@ -556,7 +556,7 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 		}
 	};
 	state->onInputEvent = [] ( struct android_app* app, AInputEvent* event ) -> int32_t {
-		PRGame * scene = PRApp::sharedApp ()->getScene ();
+		PRGame * scene = PRApp::sharedApp ()->getGame ();
 		switch ( AInputEvent_getType ( event ) ) {
 		case AINPUT_EVENT_TYPE_KEY:
 			if ( scene ) {
@@ -635,7 +635,7 @@ PRApp::~PRApp () {
 #endif
 }
 
-PRGame * PRApp::getScene () { return m_game; }
+PRGame * PRApp::getGame () { return m_game; }
 PRGraphicsContext * PRApp::getGraphicsContext () { return m_graphicsContext; }
 void PRApp::setGraphicsContext ( PRGraphicsContext * graphicsContext ) { m_graphicsContext = graphicsContext; }
 
@@ -755,49 +755,49 @@ void PRApp::run () {
 		NSEvent * event = [ [ NSApplication sharedApp ] nextEventMatchingMask:NSAnyEventMask untilDate : nil inMode : NSDefaultRunLoopMode dequeue : YES ];
 		switch ( event.type ) {
 		case NSKeyDown:
-			if ( LqLauncher::getInstance ()->getScene () )
-				LqLauncher::getInstance ()->getScene ()->onKeyDown ( keyConv ( ( int ) event.keyCode ) );
+			if ( LqLauncher::getInstance ()->getGame () )
+				LqLauncher::getInstance ()->getGame ()->onKeyDown ( keyConv ( ( int ) event.keyCode ) );
 			break;
 		case NSKeyUp:
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onKeyUp ( keyConv ( ( int ) event.keyCode ) );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( ( int ) event.keyCode ) );
 			break;
 
 		case NSLeftMouseDown:
-			g_MouseButton |= PRMouseButton_Left;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Left, g_MouseX, g_MouseY );
+			g_MouseButton |= PRButton_Left;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Left, g_MouseX, g_MouseY );
 			break;
 		case NSLeftMouseUp:
-			g_MouseButton &= PRMouseButton_Left;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Left, g_MouseX, g_MouseY );
+			g_MouseButton &= PRButton_Left;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Left, g_MouseX, g_MouseY );
 			break;
 		case NSRightMouseDown:
-			g_MouseButton |= PRMouseButton_Right;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Right, g_MouseX, g_MouseY );
+			g_MouseButton |= PRButton_Right;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Right, g_MouseX, g_MouseY );
 			break;
 		case NSRightMouseUp:
-			g_MouseButton &= PRMouseButton_Right;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Right, g_MouseX, g_MouseY );
+			g_MouseButton &= PRButton_Right;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Right, g_MouseX, g_MouseY );
 			break;
 		case NSOtherMouseDown:
-			g_MouseButton |= PRMouseButton_Middle;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseDown ( PRMouseButton_Middle, g_MouseX, g_MouseY );
+			g_MouseButton |= PRButton_Middle;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Middle, g_MouseX, g_MouseY );
 			break;
 		case NSOtherMouseUp:
-			g_MouseButton &= PRMouseButton_Middle;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseUp ( PRMouseButton_Middle, g_MouseX, g_MouseY );
+			g_MouseButton &= PRButton_Middle;
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Middle, g_MouseX, g_MouseY );
 			break;
 
 		case NSMouseMoved:
 			g_MouseX = ( int ) event.locationInWindow.x; g_MouseY = ( int ) event.locationInWindow.y;
-			if ( PRApp::sharedApp ()->getScene () )
-				PRApp::sharedApp ()->getScene ()->onMouseMove ( ( PRMouseButton ) g_MouseButton, g_MouseX, g_MouseY );
+			if ( PRApp::sharedApp ()->getGame () )
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, g_MouseX, g_MouseY );
 			break;
 
 		default: break;
@@ -823,43 +823,43 @@ void PRApp::run () {
 
 			switch ( xev.type ) {
 			case KeyPress:
-				if ( PRApp::sharedApp ()->getScene () )
-					PRApp::sharedApp ()->getScene ()->onKeyDown ( keyConv ( xev.xkey.keycode ) );
+				if ( PRApp::sharedApp ()->getGame () )
+					PRApp::sharedApp ()->getGame ()->onKeyDown ( keyConv ( xev.xkey.keycode ) );
 				break;
 			case KeyRelease:
-				if ( PRApp::sharedApp ()->getScene () )
-					PRApp::sharedApp ()->getScene ()->onKeyUp ( keyConv ( xev.xkey.keycode ) );
+				if ( PRApp::sharedApp ()->getGame () )
+					PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( xev.xkey.keycode ) );
 				break;
 
 			case ButtonPress:
-				PRMouseButton button;
+				PRButton button;
 				switch ( xev.xbutton.window ) {
-				case Button1: button = PRMouseButton_Left; break;
-				case Button2: button = PRMouseButton_Right; break;
-				case Button3: button = PRMouseButton_Middle; break;
+				case Button1: button = PRButton_Left; break;
+				case Button2: button = PRButton_Right; break;
+				case Button3: button = PRButton_Middle; break;
 				}
 
 				g_MouseButton |= button;
-				if ( PRApp::sharedApp ()->getScene () )
-					PRApp::sharedApp ()->getScene ()->onMouseDown ( button, g_MouseX, g_MouseY );
+				if ( PRApp::sharedApp ()->getGame () )
+					PRApp::sharedApp ()->getGame ()->onMouseDown ( button, g_MouseX, g_MouseY );
 				break;
 			case ButtonRelease: {
-				PRMouseButton button;
+				PRButton button;
 				switch ( xev.xbutton.window ) {
-				case Button1: button = PRMouseButton_Left; break;
-				case Button2: button = PRMouseButton_Right; break;
-				case Button3: button = PRMouseButton_Middle; break;
+				case Button1: button = PRButton_Left; break;
+				case Button2: button = PRButton_Right; break;
+				case Button3: button = PRButton_Middle; break;
 				}
 
 				g_MouseButton |= button;
-				if ( PRApp::sharedApp ()->getScene () )
-					PRApp::sharedApp ()->getScene ()->onMouseUp ( button, g_MouseX, g_MouseY );
+				if ( PRApp::sharedApp ()->getGame () )
+					PRApp::sharedApp ()->getGame ()->onMouseUp ( button, g_MouseX, g_MouseY );
 			}
 								break;
 			case MotionNotify:
 				g_MouseX = xev.xmotion.x; g_MouseY = xev.xmotion.x;
-				if ( PRApp::sharedApp ()->getScene () )
-					PRApp::sharedApp ()->getScene ()->onMouseMove ( ( PRMouseButton ) g_MouseButton, g_MouseX, g_MouseY );
+				if ( PRApp::sharedApp ()->getGame () )
+					PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, g_MouseX, g_MouseY );
 				break;
 
 			case ClientMessage: loopflag = false; break;
