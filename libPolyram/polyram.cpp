@@ -2686,27 +2686,27 @@ struct vertex { PRVector3 position; PRVector2 texCoord; PRVector4 diffuse; };
 struct polygonTriangle { vertex v1, v2, v3; };
 struct polygonLine { vertex v1, v2; };
 
-void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateGrid ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
-void generateGuide ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateCube ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateRect ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateSphere ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateCircle ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGrid ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
+void generateGuide ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length );
 
-PRModelGenerator::PRModelGenerator ( PRModelType modelType, PRModelProperty properties,
+PRModelGenerator::PRModelGenerator ( PRModelType modelType, PRModelProperty properties, PRModelEncircling circling,
 	PRModelTexCoord tcs, const PRVector3 * scale ) {
 	switch ( modelType ) {
-	case PRModelType_Box:		generateCube ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRModelType_Rectangle:	generateRect ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRModelType_Sphere:		generateSphere ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRModelType_Circle:		generateCircle ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRModelType_Grid:		generateGrid ( properties, tcs, scale, &m_data, &m_dataSize ); break;
-	case PRModelType_Guide:		generateGuide ( properties, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Box:		generateCube ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Rectangle:	generateRect ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Sphere:	generateSphere ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Circle:	generateCircle ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Grid:		generateGrid ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
+	case PRModelType_Guide:		generateGuide ( properties, circling, tcs, scale, &m_data, &m_dataSize ); break;
 	}
 	m_properties = properties;
 }
 
-PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs, const PRVector3 * scale ) {
+PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale ) {
 	if ( filename.substr ( filename.size () - 3, 3 ).compare ( "obj" ) != 0 )
 		throw std::runtime_error ( "This object can read Wavefront's OBJ file only." );
 
@@ -2722,6 +2722,9 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 	char stupidBuffer [ 1024 ];
 
 	PRModelProperty prop = PRModelProperty_Position;
+
+	unsigned i1 = 0, i2 = 1, i3 = 2;
+	if ( circling == PRModelEncircling_LeftHand ) { i1 = 1; i2 = 0; i3 = 2; }
 
 	while ( 1 ) {
 		int res = fscanf ( fp, "%s", lineHeader );
@@ -2765,13 +2768,13 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelTexCoord tcs
 					throw std::runtime_error ( "File format is invalid." );
 			}
 
-			vIndices.push_back ( vi [ 0 ] ); vIndices.push_back ( vi [ 1 ] ); vIndices.push_back ( vi [ 2 ] );
+			vIndices.push_back ( vi [ i1 ] ); vIndices.push_back ( vi [ i2 ] ); vIndices.push_back ( vi [ i3 ] );
 
 			if ( prop & PRModelProperty_TexCoord ) {
-				uvIndices.push_back ( uvi [ 0 ] ); uvIndices.push_back ( uvi [ 1 ] ); uvIndices.push_back ( uvi [ 2 ] );
+				uvIndices.push_back ( uvi [ i1 ] ); uvIndices.push_back ( uvi [ i2 ] ); uvIndices.push_back ( uvi [ i3 ] );
 			}
 			if ( prop & PRModelProperty_Normal ) {
-				nIndices.push_back ( ni [ 0 ] ); nIndices.push_back ( ni [ 1 ] ); nIndices.push_back ( ni [ 2 ] );
+				nIndices.push_back ( ni [ i1 ] ); nIndices.push_back ( ni [ i2 ] ); nIndices.push_back ( ni [ i3 ] );
 			}
 		} else fgets ( stupidBuffer, 1024, fp );
 	}
@@ -2813,15 +2816,18 @@ unsigned PRModelGenerator::getDataSize () { return m_dataSize; }
 
 PRModelGenerator::~PRModelGenerator () { SAFE_DELETE_ARRAY ( m_data ); }
 
-void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
-	void** result, unsigned * length ) {
+void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelEncircling circling,
+	PRModelTexCoord tcs, const PRVector3 * scale, void** result, unsigned * length ) {
 	polygonTriangle *vertices = ( polygonTriangle* ) data;
 
 	std::vector<float> vv;
 	for ( unsigned i = 0; i < dataSize / sizeof ( polygonTriangle ); ++i ) {
-		PRVector3 norm = PRCalculateNormal ( vertices->v1.position, vertices->v2.position, vertices->v3.position );
+		PRVector3 norm = 
+			circling == PRModelEncircling_RightHand ?
+				PRCalculateNormal ( vertices->v1.position, vertices->v2.position, vertices->v3.position ) :
+				PRCalculateNormal ( vertices->v2.position, vertices->v1.position, vertices->v3.position );
 
-		PRVector3 p1 = vertices->v1.position;
+		PRVector3 p1 = ( circling == PRModelEncircling_RightHand ? vertices->v1.position : vertices->v2.position );
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
@@ -2841,7 +2847,7 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 			vv.push_back ( vertices->v1.diffuse.w );
 		}
 
-		PRVector3 p2 = vertices->v2.position;
+		PRVector3 p2 = ( circling == PRModelEncircling_RightHand ? vertices->v2.position : vertices->v1.position );
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
@@ -2889,7 +2895,7 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 	memcpy ( *result, &vv [ 0 ], *length );
 }
 
-void generateLineModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelTexCoord tcs,
+void generateLineModel ( void * data, unsigned dataSize, PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs,
 	const PRVector3 * scale, void** result, unsigned * length ) {
 	polygonLine *vertices = ( polygonLine* ) data;
 
@@ -2945,7 +2951,7 @@ void generateLineModel ( void * data, unsigned dataSize, PRModelProperty propert
 	memcpy ( *result, &vv [ 0 ], *length );
 }
 
-void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateCube ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	vertex cube [] = {
 		{ { -0.5f, -0.5f, -0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
@@ -2990,10 +2996,10 @@ void generateCube ( PRModelProperty properties, PRModelTexCoord tcs, const PRVec
 		{ { -0.5f, +0.5f, +0.5f }, { 0, 0 }, { 1, 1, 1, 1 } },
 		{ { -0.5f, +0.5f, -0.5f }, { 0, 1 }, { 1, 1, 1, 1 } }
 	};
-	generateTriangleModel ( cube, sizeof ( cube ), properties, tcs, scale, result, length );
+	generateTriangleModel ( cube, sizeof ( cube ), properties, circling, tcs, scale, result, length );
 }
 
-void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateRect ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length )
 {
 	vertex rect [] = {
@@ -3004,10 +3010,10 @@ void generateRect ( PRModelProperty properties, PRModelTexCoord tcs, const PRVec
 		{ { -0.5f, +0.5f, 0 }, { 0, 1 }, { 1, 1, 1, 1 } },
 		{ { -0.5f, -0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
 	};
-	generateTriangleModel ( rect, sizeof ( rect ), properties, tcs, scale, result, length );
+	generateTriangleModel ( rect, sizeof ( rect ), properties, circling, tcs, scale, result, length );
 }
 
-void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateSphere ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	// Source from "http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c"
 
@@ -3062,12 +3068,12 @@ void generateSphere ( PRModelProperty properties, PRModelTexCoord tcs, const PRV
 	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * sphere.size () );
 	memcpy ( temp, &sphere [ 0 ], templen );
 
-	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
+	generateTriangleModel ( temp, templen, properties, circling, tcs, scale, result, length );
 
 	delete [] temp;
 }
 
-void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateCircle ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	unsigned sectors = scale == nullptr ? 20 : ( unsigned ) PRMax ( scale->x, scale->y ) * 10;
 
@@ -3095,12 +3101,12 @@ void generateCircle ( PRModelProperty properties, PRModelTexCoord tcs, const PRV
 	unsigned templen = ( unsigned ) ( sizeof ( vertex ) * vertices.size () );
 	memcpy ( temp, &vertices [ 0 ], templen );
 
-	generateTriangleModel ( temp, templen, properties, tcs, scale, result, length );
+	generateTriangleModel ( temp, templen, properties, circling, tcs, scale, result, length );
 
 	delete [] temp;
 }
 
-void generateGrid ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateGrid ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	polygonLine vertices [ 202 ];
 	unsigned index = 0;
@@ -3122,17 +3128,17 @@ void generateGrid ( PRModelProperty properties, PRModelTexCoord tcs, const PRVec
 		vertices [ index ].v2.diffuse = PRVector4 ( 1, 1, 1, 1 );
 		++index;
 	}
-	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
+	generateLineModel ( vertices, sizeof ( vertices ), properties, circling, tcs, scale, result, length );
 }
 
-void generateGuide ( PRModelProperty properties, PRModelTexCoord tcs, const PRVector3 * scale,
+void generateGuide ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVector3 * scale,
 	void** result, unsigned * length ) {
 	polygonLine vertices [ 3 ] = {
 		{ { { 0, 0, 0 }, { 0, 0 }, { 1, 0, 0, 1 } }, { { 1, 0, 0 }, { 1, 0 }, { 1, 0, 0, 1 } } },
 		{ { { 0, 0, 0 }, { 0, 0 }, { 0, 1, 0, 1 } }, { { 0, 1, 0 }, { 1, 0 }, { 0, 1, 0, 1 } } },
 		{ { { 0, 0, 0 }, { 0, 0 }, { 0, 0, 1, 1 } }, { { 0, 0, 1 }, { 0, 1 }, { 0, 0, 1, 1 } } },
 	};
-	generateLineModel ( vertices, sizeof ( vertices ), properties, tcs, scale, result, length );
+	generateLineModel ( vertices, sizeof ( vertices ), properties, circling, tcs, scale, result, length );
 }
 
 PRVector3 PRCalculateNormal ( const PRVector3 & v1, const PRVector3 & v2, const PRVector3 & v3 ) {

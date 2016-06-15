@@ -70,7 +70,7 @@ public:
 		glGenVertexArrays ( 1, &vertexArrayObject );
 		glBindVertexArray ( vertexArrayObject );
 
-		PRModelGenerator * gen = new PRModelGenerator ( std::string ( "bunny.obj" ), PRModelTexCoord_ST );
+		PRModelGenerator * gen = new PRModelGenerator ( std::string ( "bunny.obj" ), PRModelEncircling_RightHand, PRModelTexCoord_ST );
 		glGenBuffers ( 1, &vertexBufferObject );
 		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferObject );
 
@@ -138,6 +138,8 @@ public:
 		PRVector3 worldLightPosition ( 10, 10, 10 );
 		glUniform3f ( glGetUniformLocation ( program, "worldLightPosition" ),
 			worldLightPosition.x, worldLightPosition.y, worldLightPosition.z );
+
+		glEnable ( GL_CULL_FACE );
 
 		//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
 
