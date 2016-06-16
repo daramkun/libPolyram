@@ -47,7 +47,7 @@ public:
 		glCompileShader ( vertexShader );
 		glGetShaderInfoLog ( vertexShader, 1024, &bufferLength, buffer );
 		if ( bufferLength > 0 )
-			PRPrintLog ( buffer );
+			PRLog ( buffer );
 		const GLchar * fragmentShaderString = "#version 330\n"
 			"in vec3 out_col;"
 			"void main () {\n"
@@ -59,7 +59,7 @@ public:
 		glCompileShader ( fragmentShader );
 		glGetShaderInfoLog ( vertexShader, 1024, &bufferLength, buffer );
 		if ( bufferLength > 0 )
-			PRPrintLog ( buffer );
+			PRLog ( buffer );
 
 		program = glCreateProgram ();
 		glAttachShader ( program, vertexShader );
@@ -67,7 +67,7 @@ public:
 		glLinkProgram ( program );
 		glGetProgramInfoLog ( program, 1024, &bufferLength, buffer );
 		if ( bufferLength > 0 )
-			PRPrintLog ( buffer );
+			PRLog ( buffer );
 		
 		glGenVertexArrays ( 1, &vertexArrayObject );
 		glBindVertexArray ( vertexArrayObject );
@@ -159,6 +159,6 @@ MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 		PRApp app ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
 		app.run ();
 	} catch ( std::exception & ex ) {
-		PRPrintLog ( ex.what () );
+		PRLog ( ex.what () );
 	}
 }

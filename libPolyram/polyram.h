@@ -251,7 +251,7 @@ enum PRKey {
 	PRKey_RightCtrl, PRKey_RightAlt, PRKey_RightShift, PRKey_RightWin,
 };
 
-enum PRButton { PRButton_None = 0, PRButton_Left = 1, PRButton_Right = 2, PRButton_Middle = 4, };
+enum PRMButton { PRMButton_None = 0, PRMButton_Left = 1, PRMButton_Right = 2, PRMButton_Middle = 4, };
 
 class POLYRAMDECLSPEC PRGame {
 public:
@@ -266,9 +266,9 @@ public:
 	virtual void onKeyDown ( PRKey key );
 	virtual void onKeyUp ( PRKey key );
 
-	virtual void onMouseDown ( PRButton button, int x, int y );
-	virtual void onMouseUp ( PRButton button, int x, int y );
-	virtual void onMouseMove ( PRButton button, int x, int y );
+	virtual void onMouseDown ( PRMButton button, int x, int y );
+	virtual void onMouseUp ( PRMButton button, int x, int y );
+	virtual void onMouseMove ( PRMButton button, int x, int y );
 	virtual void onMouseWheel ( int wheelX, int wheelY );
 
 	virtual void onTouchDown ( int pid, int x, int y );
@@ -884,35 +884,8 @@ POLYRAMDECLSPEC PRMat operator/ ( const PRMat & v1, const PRMat & v2 );
 POLYRAMDECLSPEC PRMat operator/ ( const PRMat & v1, float v2 );
 POLYRAMDECLSPEC bool operator== ( const PRMat & v1, const PRMat & v2 );
 
-class POLYRAMDECLSPEC PRImageLoader {
-public:
-	PRImageLoader ( std::string & filename );
-	~PRImageLoader ();
-
-public:
-	unsigned getWidth ();
-	unsigned getHeight ();
-
-	const void* getData ();
-
-private:
-	void * m_data;
-	unsigned m_width, m_height;
-};
-
-class POLYRAMDECLSPEC PRDataLoader {
-public:
-	PRDataLoader ( std::string & filename );
-	~PRDataLoader ();
-
-public:
-	const void* getData ();
-	unsigned getDataSize ();
-
-private:
-	void * m_data;
-	unsigned m_dataSize;
-};
+POLYRAMDECLSPEC bool PRGetImageData ( std::string & filename, void** buffer, unsigned * width, unsigned * height );
+POLYRAMDECLSPEC bool PRGetRawData ( std::string & filename, void** buffer, unsigned * size );
 
 enum PRModelType { PRModelType_Box, PRModelType_Rectangle, PRModelType_Sphere, PRModelType_Circle, PRModelType_Grid, PRModelType_Guide, };
 
@@ -972,10 +945,10 @@ private:
 #define PRToRadian( x )			( x * PR_PI / 180 )
 
 #define PRIsEquals( v1, v2 )	( ( v1 == v2 ) ? ( true ) : ( fabs ( v1 - v2 ) < PR_Epsilon ) )
-POLYRAMDECLSPEC PRVec3 PRCalculateNormal ( const PRVec3 & v1, const PRVec3 & v2, const PRVec3 & v3 );
+POLYRAMDECLSPEC PRVec3 PRCalcNormal ( const PRVec3 & v1, const PRVec3 & v2, const PRVec3 & v3 );
 
-POLYRAMDECLSPEC double PRGetCurrentSecond ();
-POLYRAMDECLSPEC void PRPrintLog ( const char * format, ... );
+POLYRAMDECLSPEC double PRCurrentSec ();
+POLYRAMDECLSPEC void PRLog ( const char * format, ... );
 
 #if PRPlatformMicrosoftWindowsNT
 #	define MAIN_FUNC_ATTR 

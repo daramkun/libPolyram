@@ -11,9 +11,9 @@ void PRGame::onUpdate ( double dt ) { }
 void PRGame::onDraw ( double dt ) { }
 void PRGame::onKeyDown ( PRKey key ) { }
 void PRGame::onKeyUp ( PRKey key ) { }
-void PRGame::onMouseDown ( PRButton button, int x, int y ) { }
-void PRGame::onMouseUp ( PRButton button, int x, int y ) { }
-void PRGame::onMouseMove ( PRButton button, int x, int y ) { }
+void PRGame::onMouseDown ( PRMButton button, int x, int y ) { }
+void PRGame::onMouseUp ( PRMButton button, int x, int y ) { }
+void PRGame::onMouseMove ( PRMButton button, int x, int y ) { }
 void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
 void PRGame::onTouchDown ( int pid, int x, int y ) { }
 void PRGame::onTouchUp ( int pid, int x, int y ) { }
@@ -247,10 +247,10 @@ namespace polyram {
 
 			PRApp::sharedApp ()->getGame ()->onInitialize ();
 
-			double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime, calcFps = 0;
+			double elapsedTime, lastTime = PRCurrentSec (), currentTime, calcFps = 0;
 			while ( !m_windowClosed ) {
 				if ( m_windowVisible ) {
-					elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+					elapsedTime = ( currentTime = PRCurrentSec () ) - lastTime;
 					lastTime = currentTime;
 
 					if ( PRApp::sharedApp ()->getGame () != nullptr ) {
@@ -290,30 +290,30 @@ namespace polyram {
 		void OnPointerPressed ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
 			if ( PRApp::sharedApp ()->getGame () ) {
 				int mouseButton;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( ( PRButton ) mouseButton,
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( ( PRMButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
 		void OnPointerReleased ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
 			if ( PRApp::sharedApp ()->getGame () ) {
 				int mouseButton;
-				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
-				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
-				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( ( PRButton ) mouseButton,
+				if ( !e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMButton_Left;
+				else if ( !e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMButton_Right;
+				else if ( !e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( ( PRMButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
 		void OnPointerMoved ( Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ e ) {
 			if ( PRApp::sharedApp ()->getGame () ) {
-				int mouseButton = PRButton_None;
-				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRButton_Left;
-				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRButton_Right;
-				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRButton_Middle;
-				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) mouseButton,
+				int mouseButton = PRMButton_None;
+				if ( e->CurrentPoint->Properties->IsLeftButtonPressed ) mouseButton |= PRMButton_Left;
+				else if ( e->CurrentPoint->Properties->IsRightButtonPressed ) mouseButton |= PRMButton_Right;
+				else if ( e->CurrentPoint->Properties->IsMiddleButtonPressed ) mouseButton |= PRMButton_Middle;
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) mouseButton,
 					( int ) e->CurrentPoint->Position.X, ( int ) e->CurrentPoint->Position.Y );
 			}
 		}
@@ -363,38 +363,38 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 			break;
 
 		case WM_LBUTTONDOWN:
-			g_MouseButton |= PRButton_Left;
+			g_MouseButton |= PRMButton_Left;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_RBUTTONDOWN:
-			g_MouseButton |= PRButton_Right;
+			g_MouseButton |= PRMButton_Right;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MBUTTONDOWN:
-			g_MouseButton |= PRButton_Middle;
+			g_MouseButton |= PRMButton_Middle;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_LBUTTONUP:
-			g_MouseButton &= PRButton_Left;
+			g_MouseButton &= PRMButton_Left;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Left, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_RBUTTONUP:
-			g_MouseButton &= PRButton_Right;
+			g_MouseButton &= PRMButton_Right;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Right, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MBUTTONUP:
-			g_MouseButton &= PRButton_Middle;
+			g_MouseButton &= PRMButton_Middle;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Middle, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MOUSEMOVE:
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, LOWORD ( lParam ), HIWORD ( lParam ) );
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) g_MouseButton, LOWORD ( lParam ), HIWORD ( lParam ) );
 			break;
 		case WM_MOUSEWHEEL:
 			if ( PRApp::sharedApp ()->getGame () )
@@ -716,7 +716,7 @@ bool PRApp::setCursorVisible ( bool visible )
 
 void PRApp::run () {
 #if !PRPlatformMicrosoftWindowsRT
-	double elapsedTime, lastTime = PRGetCurrentSecond (), currentTime;
+	double elapsedTime, lastTime = PRCurrentSec (), currentTime;
 #endif
 
 #if PRPlatformMicrosoftWindowsNT
@@ -733,7 +733,7 @@ void PRApp::run () {
 			DispatchMessage ( &msg );
 		}
 		else {
-			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+			elapsedTime = ( currentTime = PRCurrentSec () ) - lastTime;
 			lastTime = currentTime;
 
 			if ( m_game != nullptr ) {
@@ -764,47 +764,47 @@ void PRApp::run () {
 			break;
 
 		case NSLeftMouseDown:
-			g_MouseButton |= PRButton_Left;
+			g_MouseButton |= PRMButton_Left;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Left, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Left, g_MouseX, g_MouseY );
 			break;
 		case NSLeftMouseUp:
-			g_MouseButton &= PRButton_Left;
+			g_MouseButton &= PRMButton_Left;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Left, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Left, g_MouseX, g_MouseY );
 			break;
 		case NSRightMouseDown:
-			g_MouseButton |= PRButton_Right;
+			g_MouseButton |= PRMButton_Right;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Right, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Right, g_MouseX, g_MouseY );
 			break;
 		case NSRightMouseUp:
-			g_MouseButton &= PRButton_Right;
+			g_MouseButton &= PRMButton_Right;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Right, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Right, g_MouseX, g_MouseY );
 			break;
 		case NSOtherMouseDown:
-			g_MouseButton |= PRButton_Middle;
+			g_MouseButton |= PRMButton_Middle;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRButton_Middle, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseDown ( PRMButton_Middle, g_MouseX, g_MouseY );
 			break;
 		case NSOtherMouseUp:
-			g_MouseButton &= PRButton_Middle;
+			g_MouseButton &= PRMButton_Middle;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRButton_Middle, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseUp ( PRMButton_Middle, g_MouseX, g_MouseY );
 			break;
 
 		case NSMouseMoved:
 			g_MouseX = ( int ) event.locationInWindow.x; g_MouseY = ( int ) event.locationInWindow.y;
 			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) g_MouseButton, g_MouseX, g_MouseY );
 			break;
 
 		default: break;
 		}
 		[ [ NSApplication sharedApp ] sendEvent:event ];
 
-		elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+		elapsedTime = ( currentTime = PRCurrentSec () ) - lastTime;
 		lastTime = currentTime;
 
 		if ( m_game != nullptr ) {
@@ -832,11 +832,11 @@ void PRApp::run () {
 				break;
 
 			case ButtonPress:
-				PRButton button;
+				PRMButton button;
 				switch ( xev.xbutton.window ) {
-				case Button1: button = PRButton_Left; break;
-				case Button2: button = PRButton_Right; break;
-				case Button3: button = PRButton_Middle; break;
+				case Button1: button = PRMButton_Left; break;
+				case Button2: button = PRMButton_Right; break;
+				case Button3: button = PRMButton_Middle; break;
 				}
 
 				g_MouseButton |= button;
@@ -844,11 +844,11 @@ void PRApp::run () {
 					PRApp::sharedApp ()->getGame ()->onMouseDown ( button, g_MouseX, g_MouseY );
 				break;
 			case ButtonRelease: {
-				PRButton button;
+				PRMButton button;
 				switch ( xev.xbutton.window ) {
-				case Button1: button = PRButton_Left; break;
-				case Button2: button = PRButton_Right; break;
-				case Button3: button = PRButton_Middle; break;
+				case Button1: button = PRMButton_Left; break;
+				case Button2: button = PRMButton_Right; break;
+				case Button3: button = PRMButton_Middle; break;
 				}
 
 				g_MouseButton |= button;
@@ -859,14 +859,14 @@ void PRApp::run () {
 			case MotionNotify:
 				g_MouseX = xev.xmotion.x; g_MouseY = xev.xmotion.x;
 				if ( PRApp::sharedApp ()->getGame () )
-					PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRButton ) g_MouseButton, g_MouseX, g_MouseY );
+					PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) g_MouseButton, g_MouseX, g_MouseY );
 				break;
 
 			case ClientMessage: loopflag = false; break;
 			}
 		}
 
-		elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+		elapsedTime = ( currentTime = PRCurrentSec () ) - lastTime;
 		lastTime = currentTime;
 
 		if ( m_game != nullptr ) {
@@ -903,7 +903,7 @@ void PRApp::run () {
 		}
 
 		if ( engine.animating ) {
-			elapsedTime = ( currentTime = PRGetCurrentSecond () ) - lastTime;
+			elapsedTime = ( currentTime = PRCurrentSec () ) - lastTime;
 			lastTime = currentTime;
 
 			if ( m_game != nullptr ) {
@@ -1466,12 +1466,12 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApp * app, PRRendererType
 		throw std::runtime_error ( "OpenGL Error." );
 
 #if PRPlatformDesktops
-	PRPrintLog ( "OGL ERR: %d", glGetError () );
+	PRLog ( "OGL ERR: %d", glGetError () );
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit ();
 	if ( glewError != GLEW_OK )
 		throw std::runtime_error ( ( const char* ) glewGetErrorString ( glewError ) );
-	PRPrintLog ( "OGL ERR in GLEW: %d", glGetError () );
+	PRLog ( "OGL ERR in GLEW: %d", glGetError () );
 #endif
 
 	glClearColor ( 0, 0, 0, 1 );
@@ -1482,7 +1482,7 @@ PRGraphicsContext_OpenGL::PRGraphicsContext_OpenGL ( PRApp * app, PRRendererType
 #endif
 	glClearStencil ( 0 );
 	glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
-	PRPrintLog ( "OGL ERR: %d", glGetError () );
+	PRLog ( "OGL ERR: %d", glGetError () );
 }
 
 PRGraphicsContext_OpenGL::~PRGraphicsContext_OpenGL () {
@@ -2169,12 +2169,12 @@ PRMat::PRMat ( PRVec4 & c1, PRVec4 & c2, PRVec4 & c3, PRVec4 & c4 )
 	: _11 ( c1.x ), _12 ( c1.y ), _13 ( c1.z ), _14 ( c1.w ), _21 ( c2.x ), _22 ( c2.y ), _23 ( c2.z ), _24 ( c2.w ),
 	_31 ( c3.x ), _32 ( c3.y ), _33 ( c3.z ), _34 ( c3.w ), _41 ( c4.x ), _42 ( c4.y ), _43 ( c4.z ), _44 ( c4.w ) { }
 PRMat::PRMat ( PRQuat & q ) {
-	float num9 = q.x * q.x, num8 = q.y * q.y, num7 = q.z * q.z, num6 = q.x * q.y;
-	float num5 = q.z * q.w, num4 = q.z * q.x, num3 = q.y * q.w, num2 = q.y * q.z;
-	float num1 = q.x * q.w;
-	_11 = 1.0f - ( 2.0f * ( num8 + num7 ) ); _12 = 2.0f * ( num6 + num5 ); _13 = 2.0f * ( num4 - num3 ); _14 = 0;
-	_21 = 2.0f * ( num6 - num5 ); _22 = 1.0f - ( 2.0f * ( num7 + num9 ) ); _23 = 2.0f * ( num2 + num1 ); _24 = 0;
-	_31 = 2.0f * ( num4 + num3 ); _32 = 2.0f * ( num2 - num1 ); _33 = 1.0f - ( 2.0f * ( num8 + num9 ) ); _34 = 0;
+	float n9 = q.x * q.x, n8 = q.y * q.y, n7 = q.z * q.z, n6 = q.x * q.y;
+	float n5 = q.z * q.w, n4 = q.z * q.x, n3 = q.y * q.w, n2 = q.y * q.z;
+	float n1 = q.x * q.w;
+	_11 = 1.0f - ( 2.0f * ( n8 + n7 ) ); _12 = 2.0f * ( n6 + n5 ); _13 = 2.0f * ( n4 - n3 ); _14 = 0;
+	_21 = 2.0f * ( n6 - n5 ); _22 = 1.0f - ( 2.0f * ( n7 + n9 ) ); _23 = 2.0f * ( n2 + n1 ); _24 = 0;
+	_31 = 2.0f * ( n4 + n3 ); _32 = 2.0f * ( n2 - n1 ); _33 = 1.0f - ( 2.0f * ( n8 + n9 ) ); _34 = 0;
 	_41 = 0; _42 = 0; _43 = 0; _44 = 1;
 }
 
@@ -2187,30 +2187,30 @@ PRMat PRMat::transpose () { PRMat temp; transpose ( &temp ); return temp; }
 float PRMat::determinant () { float temp; determinant ( &temp ); return temp; }
 
 void PRMat::invert ( const PRMat * m, PRMat * result ) {
-	float num1 = m->_11, num2 = m->_12, num3 = m->_13, num4 = m->_14, num5 = m->_21, num6 = m->_22, num7 = m->_23, num8 = m->_24;
-	float num9 = m->_31, num10 = m->_32, num11 = m->_33, num12 = m->_34, num13 = m->_41, num14 = m->_42, num15 = m->_43, num16 = m->_44;
-	float num17 = num11 * num16 - num12 * num15, num18 = num10 * num16 - num12 * num14, num19 = num10 * num15 - num11 * num14;
-	float num20 = num9 * num16 - num12 * num13, num21 = num9 * num15 - num11 * num13, num22 = num9 * num14 - num10 * num13;
-	float num23 = num6 * num17 - num7 * num18 + num8 * num19, num24 = -( num5 * num17 - num7 * num20 + num8 * num21 );
-	float num25 = num5 * num18 - num6 * num20 + num8 * num22, num26 = -( num5 * num19 - num6 * num21 + num7 * num22 );
-	float num27 = 1.0f / ( num1 * num23 + num2 * num24 + num3 * num25 + num4 * num26 );
-	result->_11 = num23 * num27; result->_21 = num24 * num27; result->_31 = num25 * num27; result->_41 = num26 * num27;
-	result->_12 = -( num2 * num17 - num3 * num18 + num4 * num19 ) * num27;
-	result->_22 = ( num1 * num17 - num3 * num20 + num4 * num21 ) * num27;
-	result->_32 = -( num1 * num18 - num2 * num20 + num4 * num22 ) * num27;
-	result->_42 = ( num1 * num19 - num2 * num21 + num3 * num22 ) * num27;
-	float num28 = num7 * num16 - num8 * num15, num29 = num6 * num16 - num8 * num14, num30 = num6 * num15 - num7 * num14;
-	float num31 = num5 * num16 - num8 * num13, num32 = num5 * num15 - num7 * num13, num33 = num5 * num14 - num6 * num13;
-	result->_13 = ( num2 * num28 - num3 * num29 + num4 * num30 ) * num27;
-	result->_23 = -( num1 * num28 - num3 * num31 + num4 * num32 ) * num27;
-	result->_33 = ( num1 * num29 - num2 * num31 + num4 * num33 ) * num27;
-	result->_43 = -( num1 * num30 - num2 * num32 + num3 * num33 ) * num27;
-	float num34 = num7 * num12 - num8 * num11, num35 = num6 * num12 - num8 * num10, num36 = num6 * num11 - num7 * num10;
-	float num37 = num5 * num12 - num8 * num9, num38 = num5 * num11 - num7 * num9, num39 = num5 * num10 - num6 * num9;
-	result->_14 = -( num2 * num34 - num3 * num35 + num4 * num36 ) * num27;
-	result->_24 = ( num1 * num34 - num3 * num37 + num4 * num38 ) * num27;
-	result->_34 = -( num1 * num35 - num2 * num37 + num4 * num39 ) * num27;
-	result->_44 = ( num1 * num36 - num2 * num38 + num3 * num39 ) * num27;
+	float n1 = m->_11, n2 = m->_12, n3 = m->_13, n4 = m->_14, n5 = m->_21, n6 = m->_22, n7 = m->_23, n8 = m->_24;
+	float n9 = m->_31, n10 = m->_32, n11 = m->_33, n12 = m->_34, n13 = m->_41, n14 = m->_42, n15 = m->_43, n16 = m->_44;
+	float n17 = n11 * n16 - n12 * n15, n18 = n10 * n16 - n12 * n14, n19 = n10 * n15 - n11 * n14;
+	float n20 = n9 * n16 - n12 * n13, n21 = n9 * n15 - n11 * n13, n22 = n9 * n14 - n10 * n13;
+	float n23 = n6 * n17 - n7 * n18 + n8 * n19, n24 = -( n5 * n17 - n7 * n20 + n8 * n21 );
+	float n25 = n5 * n18 - n6 * n20 + n8 * n22, n26 = -( n5 * n19 - n6 * n21 + n7 * n22 );
+	float n27 = 1.0f / ( n1 * n23 + n2 * n24 + n3 * n25 + n4 * n26 );
+	result->_11 = n23 * n27; result->_21 = n24 * n27; result->_31 = n25 * n27; result->_41 = n26 * n27;
+	result->_12 = -( n2 * n17 - n3 * n18 + n4 * n19 ) * n27;
+	result->_22 = ( n1 * n17 - n3 * n20 + n4 * n21 ) * n27;
+	result->_32 = -( n1 * n18 - n2 * n20 + n4 * n22 ) * n27;
+	result->_42 = ( n1 * n19 - n2 * n21 + n3 * n22 ) * n27;
+	float n28 = n7 * n16 - n8 * n15, n29 = n6 * n16 - n8 * n14, n30 = n6 * n15 - n7 * n14;
+	float n31 = n5 * n16 - n8 * n13, n32 = n5 * n15 - n7 * n13, n33 = n5 * n14 - n6 * n13;
+	result->_13 = ( n2 * n28 - n3 * n29 + n4 * n30 ) * n27;
+	result->_23 = -( n1 * n28 - n3 * n31 + n4 * n32 ) * n27;
+	result->_33 = ( n1 * n29 - n2 * n31 + n4 * n33 ) * n27;
+	result->_43 = -( n1 * n30 - n2 * n32 + n3 * n33 ) * n27;
+	float n34 = n7 * n12 - n8 * n11, n35 = n6 * n12 - n8 * n10, n36 = n6 * n11 - n7 * n10;
+	float n37 = n5 * n12 - n8 * n9, n38 = n5 * n11 - n7 * n9, n39 = n5 * n10 - n6 * n9;
+	result->_14 = -( n2 * n34 - n3 * n35 + n4 * n36 ) * n27;
+	result->_24 = ( n1 * n34 - n3 * n37 + n4 * n38 ) * n27;
+	result->_34 = -( n1 * n35 - n2 * n37 + n4 * n39 ) * n27;
+	result->_44 = ( n1 * n36 - n2 * n38 + n3 * n39 ) * n27;
 }
 void PRMat::transpose ( const PRMat * m, PRMat * result ) {
 	result->_11 = m->_11; result->_12 = m->_21; result->_13 = m->_31; result->_14 = m->_41;
@@ -2219,15 +2219,15 @@ void PRMat::transpose ( const PRMat * m, PRMat * result ) {
 	result->_41 = m->_14; result->_42 = m->_24; result->_43 = m->_34; result->_44 = m->_44;
 }
 void PRMat::determinant ( const PRMat * m, float * result ) {
-	float num22 = m->_11, num21 = m->_12, num20 = m->_13, num19 = m->_14, num12 = m->_21, num11 = m->_22, num10 = m->_23, num9 = m->_24;
-	float num8 = m->_31, num7 = m->_32, num6 = m->_33, num5 = m->_34, num4 = m->_41, num3 = m->_42, num2 = m->_43, num = m->_44;
-	float num18 = ( num6 * num ) - ( num5 * num2 ), num17 = ( num7 * num ) - ( num5 * num3 );
-	float num16 = ( num7 * num2 ) - ( num6 * num3 ), num15 = ( num8 * num ) - ( num5 * num4 );
-	float num14 = ( num8 * num2 ) - ( num6 * num4 ), num13 = ( num8 * num3 ) - ( num7 * num4 );
-	*result = ( ( ( ( num22 * ( ( ( num11 * num18 ) - ( num10 * num17 ) ) + ( num9 * num16 ) ) ) -
-		( num21 * ( ( ( num12 * num18 ) - ( num10 * num15 ) ) + ( num9 * num14 ) ) ) ) +
-		( num20 * ( ( ( num12 * num17 ) - ( num11 * num15 ) ) + ( num9 * num13 ) ) ) ) -
-		( num19 * ( ( ( num12 * num16 ) - ( num11 * num14 ) ) + ( num10 * num13 ) ) ) );
+	float n22 = m->_11, n21 = m->_12, n20 = m->_13, n19 = m->_14, n12 = m->_21, n11 = m->_22, n10 = m->_23, n9 = m->_24;
+	float n8 = m->_31, n7 = m->_32, n6 = m->_33, n5 = m->_34, n4 = m->_41, n3 = m->_42, n2 = m->_43, n1 = m->_44;
+	float n18 = ( n6 * n1 ) - ( n5 * n2 ), n17 = ( n7 * n1 ) - ( n5 * n3 );
+	float n16 = ( n7 * n2 ) - ( n6 * n3 ), n15 = ( n8 * n1 ) - ( n5 * n4 );
+	float n14 = ( n8 * n2 ) - ( n6 * n4 ), n13 = ( n8 * n3 ) - ( n7 * n4 );
+	*result = ( ( ( ( n22 * ( ( ( n11 * n18 ) - ( n10 * n17 ) ) + ( n9 * n16 ) ) ) -
+		( n21 * ( ( ( n12 * n18 ) - ( n10 * n15 ) ) + ( n9 * n14 ) ) ) ) +
+		( n20 * ( ( ( n12 * n17 ) - ( n11 * n15 ) ) + ( n9 * n13 ) ) ) ) -
+		( n19 * ( ( ( n12 * n16 ) - ( n11 * n14 ) ) + ( n10 * n13 ) ) ) );
 }
 PRMat PRMat::invert ( const PRMat & m ) { COPIEDMETHOD1 ( PRMat, invert, &m ); }
 PRMat PRMat::transpose ( const PRMat & m ) { COPIEDMETHOD1 ( PRMat, transpose, &m ); }
@@ -2595,12 +2595,11 @@ FILE* PR_openFile ( std::string & filename, const char * openmode ) {
 	strcat ( fullpath, filename.c_str () );
 
 	FILE * fp = fopen ( fullpath, openmode );
-	if ( fp == nullptr )
-		throw std::runtime_error ( "File Not Found." );
 	return fp;
 }
 
-PRImageLoader::PRImageLoader ( std::string & filename ) {
+bool PRGetImageData ( std::string & filename, void ** buffer, unsigned * width, unsigned * height )
+{
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
@@ -2613,13 +2612,13 @@ PRImageLoader::PRImageLoader ( std::string & filename ) {
 #endif
 
 #if PRPlatformUNIX
-	m_data = SOIL_load_image ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, nullptr, 4 );
-	if ( m_data == nullptr )
-		throw std::runtime_error ( "Error from SOIL_load_image ()." );
+	*buffer = SOIL_load_image ( filename.c_str (), ( int* ) width, ( int* ) height, nullptr, 4 );
+	if ( *buffer == nullptr )
+		return false;
 #elif !PRPlatformMicrosoftWindowsFamily
-	m_data = stbi_load ( filename.c_str (), ( int* ) &m_width, ( int* ) &m_height, 0, 4 );
-	if ( m_data == nullptr )
-		throw std::runtime_error ( stbi_failure_reason () );
+	*buffer = stbi_load ( filename.c_str (), ( int* ) width, ( int* ) height, 0, 4 );
+	if ( *buffer == nullptr )
+		return false;
 #else
 	USES_CONVERSION;
 
@@ -2636,53 +2635,48 @@ PRImageLoader::PRImageLoader ( std::string & filename ) {
 	strcat_s ( fullpath, 2048, filename.c_str () );
 
 	if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
-		throw std::runtime_error ( "Cannot create IWICImagingFactory." );
+		return false;
 
 	if ( FAILED ( factory->CreateDecoderFromFilename ( A2W ( fullpath ), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &decoder ) ) )
-		throw std::runtime_error ( "Cannot load image file." );
+		return false;
 
 	decoder->GetFrame ( 0, &frameDecode );
-	frameDecode->GetSize ( &m_width, &m_height );
+	frameDecode->GetSize ( width, height );
 
 	factory->CreateFormatConverter ( &formatConverter );
 	if ( FAILED ( formatConverter->Initialize ( frameDecode, GUID_WICPixelFormat32bppRGBA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom ) ) )
-		throw std::runtime_error ( "Cannot create format converter." );
+		return false;
 
-	m_data = new int [ m_width * m_height ];
-	formatConverter->CopyPixels ( nullptr, sizeof ( int ) * m_width, sizeof ( int ) * m_width * m_height, ( BYTE* ) m_data );
+	*buffer = new int [ *width * *height ];
+	formatConverter->CopyPixels ( nullptr, sizeof ( int ) * *width, sizeof ( int ) * *width * *height, ( BYTE* ) *buffer );
 
 	formatConverter->Release ();
 	frameDecode->Release ();
 	decoder->Release ();
 	factory->Release ();
 #endif
+
+	return true;
 }
 
-PRImageLoader::~PRImageLoader () { if ( m_data ) free ( ( unsigned char * ) m_data ); }
-
-unsigned PRImageLoader::getWidth () { return m_width; }
-unsigned PRImageLoader::getHeight () { return m_height; }
-const void * PRImageLoader::getData () { return m_data; }
-
-PRDataLoader::PRDataLoader ( std::string & filename ) {
+POLYRAMDECLSPEC bool PRGetRawData ( std::string & filename, void ** buffer, unsigned * size )
+{
 	FILE * fp = PR_openFile ( filename, "rb" );
+	if ( fp == nullptr ) return false;
 
 	fseek ( fp, 0, SEEK_END );
-	m_dataSize = ( unsigned ) ftell ( fp );
+	*size = ( unsigned ) ftell ( fp );
 	fseek ( fp, 0, SEEK_SET );
 
-	m_data = new char [ m_dataSize ];
-	fread ( m_data, m_dataSize, 1, fp );
+	*buffer = new char [ *size ];
+	fread ( *buffer, *size, 1, fp );
 
 	fclose ( fp );
+
+	return true;
 }
 
-PRDataLoader::~PRDataLoader () { SAFE_DELETE_ARRAY ( m_data ); }
-
-const void * PRDataLoader::getData () { return m_data; }
-unsigned PRDataLoader::getDataSize () { return m_dataSize; }
-
-struct vertex { PRVec3 position; PRVec2 texCoord; PRVec4 diffuse; };
+struct vertex { PRVec3 p; PRVec2 t; PRVec4 d; };
 struct polygonTriangle { vertex v1, v2, v3; };
 struct polygonLine { vertex v1, v2; };
 
@@ -2779,7 +2773,7 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelEncircling c
 		} else fgets ( stupidBuffer, 1024, fp );
 	}
 
-	unsigned vertexIndicesSize = vIndices.size ();
+	size_t vertexIndicesSize = vIndices.size ();
 	unsigned stride = sizeof ( float ) * 3;
 	if ( prop & PRModelProperty_Normal ) stride += sizeof ( float ) * 3;
 	if ( prop & PRModelProperty_TexCoord ) stride += sizeof ( float ) * 2;
@@ -2824,10 +2818,10 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 	for ( unsigned i = 0; i < dataSize / sizeof ( polygonTriangle ); ++i ) {
 		PRVec3 norm = 
 			circling == PRModelEncircling_RightHand ?
-				PRCalculateNormal ( vertices->v1.position, vertices->v2.position, vertices->v3.position ) :
-				PRCalculateNormal ( vertices->v2.position, vertices->v1.position, vertices->v3.position );
+				PRCalcNormal ( vertices->v1.p, vertices->v2.p, vertices->v3.p ) :
+				PRCalcNormal ( vertices->v2.p, vertices->v1.p, vertices->v3.p );
 
-		PRVec3 p1 = ( circling == PRModelEncircling_RightHand ? vertices->v1.position : vertices->v2.position );
+		PRVec3 p1 = ( circling == PRModelEncircling_RightHand ? vertices->v1.p : vertices->v2.p );
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
@@ -2836,18 +2830,18 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v1.texCoord.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+			vv.push_back ( vertices->v1.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.t.y : vertices->v1.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v1.diffuse.x );
-			vv.push_back ( vertices->v1.diffuse.y );
-			vv.push_back ( vertices->v1.diffuse.z );
-			vv.push_back ( vertices->v1.diffuse.w );
+			vv.push_back ( vertices->v1.d.x );
+			vv.push_back ( vertices->v1.d.y );
+			vv.push_back ( vertices->v1.d.z );
+			vv.push_back ( vertices->v1.d.w );
 		}
 
-		PRVec3 p2 = ( circling == PRModelEncircling_RightHand ? vertices->v2.position : vertices->v1.position );
+		PRVec3 p2 = ( circling == PRModelEncircling_RightHand ? vertices->v2.p : vertices->v1.p );
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
@@ -2856,18 +2850,18 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v2.texCoord.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+			vv.push_back ( vertices->v2.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.t.y : vertices->v2.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v2.diffuse.x );
-			vv.push_back ( vertices->v2.diffuse.y );
-			vv.push_back ( vertices->v2.diffuse.z );
-			vv.push_back ( vertices->v2.diffuse.w );
+			vv.push_back ( vertices->v2.d.x );
+			vv.push_back ( vertices->v2.d.y );
+			vv.push_back ( vertices->v2.d.z );
+			vv.push_back ( vertices->v2.d.w );
 		}
 
-		PRVec3 p3 = vertices->v3.position;
+		PRVec3 p3 = vertices->v3.p;
 		if ( scale != nullptr ) p3 = p3 * *scale;
 		vv.push_back ( p3.x ); vv.push_back ( p3.y ); vv.push_back ( p3.z );
 
@@ -2876,15 +2870,15 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v3.texCoord.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v3.texCoord.y : vertices->v3.texCoord.y );
+			vv.push_back ( vertices->v3.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v3.t.y : vertices->v3.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v3.diffuse.x );
-			vv.push_back ( vertices->v3.diffuse.y );
-			vv.push_back ( vertices->v3.diffuse.z );
-			vv.push_back ( vertices->v3.diffuse.w );
+			vv.push_back ( vertices->v3.d.x );
+			vv.push_back ( vertices->v3.d.y );
+			vv.push_back ( vertices->v3.d.z );
+			vv.push_back ( vertices->v3.d.w );
 		}
 
 		++vertices;
@@ -2901,9 +2895,9 @@ void generateLineModel ( void * data, unsigned dataSize, PRModelProperty propert
 
 	std::vector<float> vv;
 	for ( unsigned i = 0; i < dataSize / sizeof ( polygonLine ); ++i ) {
-		PRVec3 norm = vertices->v2.position - vertices->v1.position;
+		PRVec3 norm = vertices->v2.p - vertices->v1.p;
 
-		PRVec3 p1 = vertices->v1.position;
+		PRVec3 p1 = vertices->v1.p;
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
@@ -2912,18 +2906,18 @@ void generateLineModel ( void * data, unsigned dataSize, PRModelProperty propert
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v1.texCoord.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.texCoord.y : vertices->v1.texCoord.y );
+			vv.push_back ( vertices->v1.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.t.y : vertices->v1.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v1.diffuse.x );
-			vv.push_back ( vertices->v1.diffuse.y );
-			vv.push_back ( vertices->v1.diffuse.z );
-			vv.push_back ( vertices->v1.diffuse.w );
+			vv.push_back ( vertices->v1.d.x );
+			vv.push_back ( vertices->v1.d.y );
+			vv.push_back ( vertices->v1.d.z );
+			vv.push_back ( vertices->v1.d.w );
 		}
 
-		PRVec3 p2 = vertices->v2.position;
+		PRVec3 p2 = vertices->v2.p;
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
@@ -2932,15 +2926,15 @@ void generateLineModel ( void * data, unsigned dataSize, PRModelProperty propert
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v2.texCoord.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.texCoord.y : vertices->v2.texCoord.y );
+			vv.push_back ( vertices->v2.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.t.y : vertices->v2.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v2.diffuse.x );
-			vv.push_back ( vertices->v2.diffuse.y );
-			vv.push_back ( vertices->v2.diffuse.z );
-			vv.push_back ( vertices->v2.diffuse.w );
+			vv.push_back ( vertices->v2.d.x );
+			vv.push_back ( vertices->v2.d.y );
+			vv.push_back ( vertices->v2.d.z );
+			vv.push_back ( vertices->v2.d.w );
 		}
 
 		++vertices;
@@ -3058,9 +3052,9 @@ void generateSphere ( PRModelProperty properties, PRModelEncircling circling, PR
 	int j = 0;
 	for ( auto i = indices.begin (); i != indices.end (); ++i ) {
 		vertex vtx;
-		vtx.position = vertices [ *i ];
-		vtx.texCoord = texcoords [ *i ];
-		vtx.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vtx.p = vertices [ *i ];
+		vtx.t = texcoords [ *i ];
+		vtx.d = PRVec4 ( 1, 1, 1, 1 );
 		sphere [ j++ ] = vtx;
 	}
 
@@ -3081,19 +3075,19 @@ void generateCircle ( PRModelProperty properties, PRModelEncircling circling, PR
 	for ( float r = 0; r <= PR_2PI; r += ( PR_2PI / sectors ) ) {
 		vertex vtx;
 
-		vtx.position = PRVec3 ( 0, 0, 0 );
-		vtx.texCoord = PRVec2 ( 0.5f, 0.5f );
-		vtx.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vtx.p = PRVec3 ( 0, 0, 0 );
+		vtx.t = PRVec2 ( 0.5f, 0.5f );
+		vtx.d = PRVec4 ( 1, 1, 1, 1 );
 		vertices.push_back ( vtx );
 
-		vtx.position = PRVec3 ( cos ( r ), sin ( r ), 0 ) * 0.5f;
-		vtx.texCoord = PRVec2 ( vtx.position.x + 0.5f, vtx.position.y + 0.5f );
-		vtx.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vtx.p = PRVec3 ( cos ( r ), sin ( r ), 0 ) * 0.5f;
+		vtx.t = PRVec2 ( vtx.p.x + 0.5f, vtx.p.y + 0.5f );
+		vtx.d = PRVec4 ( 1, 1, 1, 1 );
 		vertices.push_back ( vtx );
 
-		vtx.position = PRVec3 ( cos ( r + ( PR_2PI / sectors ) ), sin ( r + ( PR_2PI / sectors ) ), 0 ) * 0.5f;
-		vtx.texCoord = PRVec2 ( vtx.position.x + 0.5f, vtx.position.y + 0.5f );
-		vtx.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vtx.p = PRVec3 ( cos ( r + ( PR_2PI / sectors ) ), sin ( r + ( PR_2PI / sectors ) ), 0 ) * 0.5f;
+		vtx.t = PRVec2 ( vtx.p.x + 0.5f, vtx.p.y + 0.5f );
+		vtx.d = PRVec4 ( 1, 1, 1, 1 );
 		vertices.push_back ( vtx );
 	}
 
@@ -3111,21 +3105,21 @@ void generateGrid ( PRModelProperty properties, PRModelEncircling circling, PRMo
 	polygonLine vertices [ 202 ];
 	unsigned index = 0;
 	for ( unsigned z = 0; z <= 100; ++z ) {
-		vertices [ index ].v1.position = PRVec3 ( -50, 0, ( float ) z - 50 );
-		vertices [ index ].v1.texCoord = PRVec2 ( 0, 0 );
-		vertices [ index ].v1.diffuse = PRVec4 ( 1, 1, 1, 1 );
-		vertices [ index ].v2.position = PRVec3 ( 50, 0, ( float ) z - 50 );
-		vertices [ index ].v2.texCoord = PRVec2 ( 1, 0 );
-		vertices [ index ].v2.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vertices [ index ].v1.p = PRVec3 ( -50, 0, ( float ) z - 50 );
+		vertices [ index ].v1.t = PRVec2 ( 0, 0 );
+		vertices [ index ].v1.d = PRVec4 ( 1, 1, 1, 1 );
+		vertices [ index ].v2.p = PRVec3 ( 50, 0, ( float ) z - 50 );
+		vertices [ index ].v2.t = PRVec2 ( 1, 0 );
+		vertices [ index ].v2.d = PRVec4 ( 1, 1, 1, 1 );
 		++index;
 	}
 	for ( unsigned x = 0; x <= 100; ++x ) {
-		vertices [ index ].v1.position = PRVec3 ( ( float ) x - 50, 0, -50 );
-		vertices [ index ].v1.texCoord = PRVec2 ( 0, 0 );
-		vertices [ index ].v1.diffuse = PRVec4 ( 1, 1, 1, 1 );
-		vertices [ index ].v2.position = PRVec3 ( ( float ) x - 50, 0, 50 );
-		vertices [ index ].v2.texCoord = PRVec2 ( 0, 1 );
-		vertices [ index ].v2.diffuse = PRVec4 ( 1, 1, 1, 1 );
+		vertices [ index ].v1.p = PRVec3 ( ( float ) x - 50, 0, -50 );
+		vertices [ index ].v1.t = PRVec2 ( 0, 0 );
+		vertices [ index ].v1.d = PRVec4 ( 1, 1, 1, 1 );
+		vertices [ index ].v2.p = PRVec3 ( ( float ) x - 50, 0, 50 );
+		vertices [ index ].v2.t = PRVec2 ( 0, 1 );
+		vertices [ index ].v2.d = PRVec4 ( 1, 1, 1, 1 );
 		++index;
 	}
 	generateLineModel ( vertices, sizeof ( vertices ), properties, circling, tcs, scale, result, length );
@@ -3141,12 +3135,12 @@ void generateGuide ( PRModelProperty properties, PRModelEncircling circling, PRM
 	generateLineModel ( vertices, sizeof ( vertices ), properties, circling, tcs, scale, result, length );
 }
 
-PRVec3 PRCalculateNormal ( const PRVec3 & v1, const PRVec3 & v2, const PRVec3 & v3 ) {
+PRVec3 PRCalcNormal ( const PRVec3 & v1, const PRVec3 & v2, const PRVec3 & v3 ) {
 	PRVec3 temp1 = v2 - v1, temp2 = v3 - v1;
 	return PRVec3::cross ( temp1, temp2 ).normalize ();
 }
 
-double PRGetCurrentSecond () {
+double PRCurrentSec () {
 #if PRPlatformMicrosoftWindowsNT || PRPlatformMicrosoftWindowsRT
 	LARGE_INTEGER performanceFrequency, getTime;
 	QueryPerformanceFrequency ( &performanceFrequency );
@@ -3159,7 +3153,7 @@ double PRGetCurrentSecond () {
 #endif
 }
 
-void PRPrintLog ( const char * format, ... ) {
+void PRLog ( const char * format, ... ) {
 	va_list vl;
 	va_start ( vl, format );
 	char text [ 1024 ];
