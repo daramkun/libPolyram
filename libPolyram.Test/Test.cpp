@@ -11,6 +11,8 @@ public:
 	ID3D11Texture2D * texture;
 	ID3D11ShaderResourceView * textureShaderResourceView;
 
+	ID3D11SamplerState * samplerState;
+
 public:
 	void onInitialize ()
 	{
@@ -35,7 +37,7 @@ public:
 		SAFE_DELETE ( shaderData );
 
 		PRGetRawData ( std::string ( "MyPixelShader.cso" ), &shaderData, &shaderDataLength );
-		HRESULT returnCode = graphicsContext->d3dDevice->CreatePixelShader ( shaderData, shaderDataLength, nullptr, &pixelShader );
+		graphicsContext->d3dDevice->CreatePixelShader ( shaderData, shaderDataLength, nullptr, &pixelShader );
 		SAFE_DELETE ( shaderData );
 
 		void * textureData;
@@ -58,10 +60,22 @@ public:
 		graphicsContext->d3dDevice->CreateShaderResourceView ( texture, nullptr, &textureShaderResourceView );
 
 		delete [] textureData;
+
+		D3D11_SAMPLER_DESC samplerDesc;
+		memset ( &samplerDesc, 0, sizeof ( D3D11_SAMPLER_DESC ) );
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.MinLOD = -FLT_MAX;
+		samplerDesc.MaxLOD = FLT_MAX;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		graphicsContext->d3dDevice->CreateSamplerState ( &samplerDesc, &samplerState );
 	}
 
 	void onDestroy ()
 	{
+		samplerState->Release ();
 		textureShaderResourceView->Release ();
 		texture->Release ();
 		pixelShader->Release ();
@@ -81,6 +95,7 @@ public:
 		graphicsContext->immediateContext->VSSetShader ( vertexShader, nullptr, 0 );
 		graphicsContext->immediateContext->PSSetShader ( pixelShader, nullptr, 0 );
 		graphicsContext->immediateContext->PSSetShaderResources ( 0, 1, &textureShaderResourceView );
+		graphicsContext->immediateContext->PSSetSamplers ( 0, 1, &samplerState );
 
 		unsigned stride = sizeof ( PRVec3 ) + sizeof ( PRVec2 ), offset = 0;
 		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &vertexBuffer, &stride, &offset );

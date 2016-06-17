@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="polyram.h" />
+    <ClInclude Include="polyram_d3d11.h" />
   </ItemGroup>
 </Project>
