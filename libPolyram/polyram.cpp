@@ -2820,8 +2820,11 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 			circling == PRModelEncircling_RightHand ?
 				PRCalcNormal ( vertices->v1.p, vertices->v2.p, vertices->v3.p ) :
 				PRCalcNormal ( vertices->v2.p, vertices->v1.p, vertices->v3.p );
+		vertex v1 = ( circling == PRModelEncircling_RightHand ? vertices->v1 : vertices->v2 );
+		vertex v2 = ( circling == PRModelEncircling_RightHand ? vertices->v2 : vertices->v1 );
+		vertex v3 = vertices->v3;
 
-		PRVec3 p1 = ( circling == PRModelEncircling_RightHand ? vertices->v1.p : vertices->v2.p );
+		PRVec3 p1 = v1.p;
 		if ( scale != nullptr ) p1 = p1 * *scale;
 		vv.push_back ( p1.x ); vv.push_back ( p1.y ); vv.push_back ( p1.z );
 
@@ -2830,18 +2833,14 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v1.t.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v1.t.y : vertices->v1.t.y );
+			vv.push_back ( v1.t.x ); vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - v1.t.y : v1.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v1.d.x );
-			vv.push_back ( vertices->v1.d.y );
-			vv.push_back ( vertices->v1.d.z );
-			vv.push_back ( vertices->v1.d.w );
+			vv.push_back ( v1.d.x ); vv.push_back ( v1.d.y ); vv.push_back ( v1.d.z ); vv.push_back ( v1.d.w );
 		}
 
-		PRVec3 p2 = ( circling == PRModelEncircling_RightHand ? vertices->v2.p : vertices->v1.p );
+		PRVec3 p2 = v2.p;
 		if ( scale != nullptr ) p2 = p2 * *scale;
 		vv.push_back ( p2.x ); vv.push_back ( p2.y ); vv.push_back ( p2.z );
 
@@ -2850,18 +2849,14 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v2.t.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v2.t.y : vertices->v2.t.y );
+			vv.push_back ( v2.t.x ); vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - v2.t.y : v2.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v2.d.x );
-			vv.push_back ( vertices->v2.d.y );
-			vv.push_back ( vertices->v2.d.z );
-			vv.push_back ( vertices->v2.d.w );
+			vv.push_back ( v2.d.x ); vv.push_back ( v2.d.y ); vv.push_back ( v2.d.z ); vv.push_back ( v2.d.w );
 		}
 
-		PRVec3 p3 = vertices->v3.p;
+		PRVec3 p3 = v3.p;
 		if ( scale != nullptr ) p3 = p3 * *scale;
 		vv.push_back ( p3.x ); vv.push_back ( p3.y ); vv.push_back ( p3.z );
 
@@ -2870,15 +2865,12 @@ void generateTriangleModel ( void * data, unsigned dataSize, PRModelProperty pro
 		}
 
 		if ( properties & PRModelProperty_TexCoord ) {
-			vv.push_back ( vertices->v3.t.x );
-			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - vertices->v3.t.y : vertices->v3.t.y );
+			vv.push_back ( v3.t.x );
+			vv.push_back ( tcs == PRModelTexCoord_ST ? 1 - v3.t.y : v3.t.y );
 		}
 
 		if ( properties & PRModelProperty_Diffuse ) {
-			vv.push_back ( vertices->v3.d.x );
-			vv.push_back ( vertices->v3.d.y );
-			vv.push_back ( vertices->v3.d.z );
-			vv.push_back ( vertices->v3.d.w );
+			vv.push_back ( v3.d.x ); vv.push_back ( v3.d.y ); vv.push_back ( v3.d.z ); vv.push_back ( v3.d.w );
 		}
 
 		++vertices;
@@ -2997,12 +2989,12 @@ void generateRect ( PRModelProperty properties, PRModelEncircling circling, PRMo
 	void** result, unsigned * length )
 {
 	vertex rect [] = {
-		{ { -0.5f, -0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
-		{ { +0.5f, -0.5f, 0 }, { 1, 0 }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, 0 }, { 1, 1 }, { 1, 1, 1, 1 } },
-		{ { +0.5f, +0.5f, 0 }, { 1, 1 }, { 1, 1, 1, 1 } },
-		{ { -0.5f, +0.5f, 0 }, { 0, 1 }, { 1, 1, 1, 1 } },
-		{ { -0.5f, -0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, +0.5f, 0 }, { 0, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, 0 }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1, 0 }, { 1, 1, 1, 1 } },
+		{ { -0.5f, -0.5f, 0 }, { 0, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, -0.5f, 0 }, { 1, 1 }, { 1, 1, 1, 1 } },
+		{ { +0.5f, +0.5f, 0 }, { 1, 0 }, { 1, 1, 1, 1 } },
 	};
 	generateTriangleModel ( rect, sizeof ( rect ), properties, circling, tcs, scale, result, length );
 }

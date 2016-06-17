@@ -1,152 +1,95 @@
-#define POLYRAM_OPENGL
+#define POLYRAM_D3D11
 #include "polyram.h"
 
 class MyScene : public PRGame
 {
 public:
-	GLuint vertexArrayObject, vertexBufferObject;
-	int vertexCount;
-	GLuint vertexShader, fragmentShader, program;
+	ID3D11Buffer * vertexBuffer;
+	ID3D11InputLayout * inputLayout;
+	ID3D11VertexShader * vertexShader;
+	ID3D11PixelShader * pixelShader;
+	ID3D11Texture2D * texture;
+	ID3D11ShaderResourceView * textureShaderResourceView;
 
 public:
 	void onInitialize ()
 	{
-		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
+		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-		glEnable ( GL_DEPTH_TEST );
-		glEnable ( GL_CULL_FACE );
-		glFrontFace ( GL_CCW );
+		PRModelGenerator rect ( PRModelType_Rectangle, PRModelProperty_Position | PRModelProperty_TexCoord );
+		D3D11_BUFFER_DESC vertexBufferDesc = { rect.getDataSize (), D3D11_USAGE_DEFAULT,
+			D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
+		D3D11_SUBRESOURCE_DATA vertexBufferInput = { rect.getData (), rect.getDataSize () };
+		graphicsContext->d3dDevice->CreateBuffer ( &vertexBufferDesc, &vertexBufferInput, &vertexBuffer );
 
-		GLchar buffer [ 1024 ];
-		GLint bufferLength;
+		void * shaderData;
+		unsigned shaderDataLength;
+		PRGetRawData ( std::string ( "MyVertexShader.cso" ), &shaderData, &shaderDataLength );
+		graphicsContext->d3dDevice->CreateVertexShader ( shaderData, shaderDataLength, nullptr, &vertexShader );
+		D3D11_INPUT_ELEMENT_DESC inputElements [] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		graphicsContext->d3dDevice->CreateInputLayout ( inputElements, _countof ( inputElements ),
+			shaderData, shaderDataLength, &inputLayout );
+		SAFE_DELETE ( shaderData );
 
-		const GLchar * vertexShaderString = "#version 330\n"
-			"in vec3 in_pos;\n"
-			"in vec3 in_nor;\n"
-			"uniform mat4 world;\n"
-			"uniform mat4 view;\n"
-			"uniform mat4 proj;\n"
-			"uniform vec3 worldLightPosition;\n"
-			"out vec3 out_col;\n"
-			"void main () {\n"
-			"	gl_Position = vec4 ( in_pos, 1 );\n"
-			"	gl_Position = world * gl_Position;\n"
-			"	\n"
-			"	vec3 lightDir = gl_Position.xyz - worldLightPosition;\n"
-			"	lightDir = normalize ( lightDir );\n"
-			"	\n"
-			"	gl_Position = proj * view * gl_Position;\n"
-			"	\n"
-			"	vec3 nor = mat3 ( world ) * in_nor;\n"
-			"	nor = normalize ( nor );"
-			"	out_col = vec3 ( 1, 1, 1 ) * dot ( -lightDir, nor );\n"
-			"}";
-		vertexShader = glCreateShader ( GL_VERTEX_SHADER );
-		GLint vertexShaderStringLength = strlen ( vertexShaderString );
-		glShaderSource ( vertexShader, 1, &vertexShaderString, &vertexShaderStringLength );
-		glCompileShader ( vertexShader );
-		glGetShaderInfoLog ( vertexShader, 1024, &bufferLength, buffer );
-		if ( bufferLength > 0 )
-			PRLog ( buffer );
-		const GLchar * fragmentShaderString = "#version 330\n"
-			"in vec3 out_col;"
-			"void main () {\n"
-			"	gl_FragColor = vec4 ( clamp ( out_col, 0, 1 ), 1 );\n"
-			"}";
-		fragmentShader = glCreateShader ( GL_FRAGMENT_SHADER );
-		GLint fragmentShaderStringLength = strlen ( fragmentShaderString );
-		glShaderSource ( fragmentShader, 1, &fragmentShaderString, &fragmentShaderStringLength );
-		glCompileShader ( fragmentShader );
-		glGetShaderInfoLog ( vertexShader, 1024, &bufferLength, buffer );
-		if ( bufferLength > 0 )
-			PRLog ( buffer );
+		PRGetRawData ( std::string ( "MyPixelShader.cso" ), &shaderData, &shaderDataLength );
+		HRESULT returnCode = graphicsContext->d3dDevice->CreatePixelShader ( shaderData, shaderDataLength, nullptr, &pixelShader );
+		SAFE_DELETE ( shaderData );
 
-		program = glCreateProgram ();
-		glAttachShader ( program, vertexShader );
-		glAttachShader ( program, fragmentShader );
-		glLinkProgram ( program );
-		glGetProgramInfoLog ( program, 1024, &bufferLength, buffer );
-		if ( bufferLength > 0 )
-			PRLog ( buffer );
-		
-		glGenVertexArrays ( 1, &vertexArrayObject );
-		glBindVertexArray ( vertexArrayObject );
+		void * textureData;
+		unsigned textureWidth, textureHeight;
+		PRGetImageData ( std::string ( "test.jpg" ), &textureData, &textureWidth, &textureHeight );
+		D3D11_TEXTURE2D_DESC textureDesc = { 0, };
+		textureDesc.ArraySize = 1;
+		textureDesc.Width = textureWidth;
+		textureDesc.Height = textureHeight;
+		textureDesc.MipLevels = 1;
+		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+		textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		D3D11_SUBRESOURCE_DATA textureInput = { textureData, textureWidth * sizeof ( int ),
+			textureWidth * textureHeight * sizeof ( int ) };
+		graphicsContext->d3dDevice->CreateTexture2D ( &textureDesc, &textureInput, &texture );
 
-		PRModelGenerator * gen = new PRModelGenerator ( std::string ( "bunny.obj" ), PRModelEncircling_RightHand, PRModelTexCoord_ST );
-		glGenBuffers ( 1, &vertexBufferObject );
-		glBindBuffer ( GL_ARRAY_BUFFER, vertexBufferObject );
+		graphicsContext->d3dDevice->CreateShaderResourceView ( texture, nullptr, &textureShaderResourceView );
 
-		glBufferData ( GL_ARRAY_BUFFER, gen->getDataSize (), gen->getData (), GL_STATIC_DRAW );
-
-		glEnableVertexAttribArray ( glGetAttribLocation ( program, "in_pos" ) );
-		glVertexAttribPointer ( glGetAttribLocation ( program, "in_pos" ), 3, GL_FLOAT, false, 24, 0 );
-		int offset = sizeof ( float ) * 3;
-		if ( gen->getProperties () & PRModelProperty_Normal )
-		{
-			glEnableVertexAttribArray ( glGetAttribLocation ( program, "in_nor" ) );
-			glVertexAttribPointer ( glGetAttribLocation ( program, "in_nor" ), 3, GL_FLOAT, false, 24, ( void* ) offset );
-			offset += sizeof ( float ) * 3;
-		}
-		if ( gen->getProperties () & PRModelProperty_TexCoord )
-		{
-			glEnableVertexAttribArray ( glGetAttribLocation ( program, "in_tex" ) );
-			glVertexAttribPointer ( glGetAttribLocation ( program, "in_tex" ), 2, GL_FLOAT, false, 24, ( void* ) offset );
-			offset += sizeof ( float ) * 2;
-		}
-
-		glBindVertexArray ( 0 );
-
-		vertexCount = gen->getDataSize () / offset;
-
-		delete gen;
+		delete [] textureData;
 	}
 
 	void onDestroy ()
 	{
-		glDeleteProgram ( program );
-		glDeleteShader ( fragmentShader );
-		glDeleteShader ( vertexShader );
-
-		glDeleteVertexArrays ( 1, &vertexArrayObject );
-		glDeleteBuffers ( 1, &vertexBufferObject );
+		textureShaderResourceView->Release ();
+		texture->Release ();
+		pixelShader->Release ();
+		vertexShader->Release ();
+		inputLayout->Release ();
+		vertexBuffer->Release ();
 	}
 
 	void onDraw ( double dt )
 	{
-		GETGRAPHICSCONTEXT ( PRGraphicsContext_OpenGL );
+		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-		glClearColor ( 0, 0, 0, 1 );
-		glClearDepth ( 1 );
-		glClear ( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		float clearColor [] = { 0, 0, 0, 1 };
+		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor );
+		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_DEPTH, 1, 0 );
 
-		glUseProgram ( program );
-		PRMat world, temp;
-		//PRVec3 scale ( 0.1f, 0.1f, 0.1f );
-		//PRMat::createScale ( &scale, &world );
-		static float rot = 0;
-		rot += ( dt / 3 );
-		PRMat::createRotationY ( rot, &temp );
-		//PRMat::multiply ( &world, &temp, &world );
-		glUniformMatrix4fv ( glGetUniformLocation ( program, "world" ), 1, false, ( GLfloat* ) &temp );
+		graphicsContext->immediateContext->VSSetShader ( vertexShader, nullptr, 0 );
+		graphicsContext->immediateContext->PSSetShader ( pixelShader, nullptr, 0 );
+		graphicsContext->immediateContext->PSSetShaderResources ( 0, 1, &textureShaderResourceView );
 
-		PRMat view;
-		PRMat::createLookAtRH ( &PRVec3 ( 4, 4, 4 ), &PRVec3 ( 0, 0, 0 ), &PRVec3 ( 0, 1, 0 ), &view );
-		glUniformMatrix4fv ( glGetUniformLocation ( program, "view" ), 1, false, ( GLfloat* ) &view );
+		unsigned stride = sizeof ( PRVec3 ) + sizeof ( PRVec2 ), offset = 0;
+		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &vertexBuffer, &stride, &offset );
+		graphicsContext->immediateContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		graphicsContext->immediateContext->IASetInputLayout ( inputLayout );
 
-		PRMat proj;
-		PRMat::createPerspectiveFieldOfViewRH ( PR_PIover4, 1280 / 720.f, 0.001f, 1000.0f, &proj );
-		glUniformMatrix4fv ( glGetUniformLocation ( program, "proj" ), 1, false, ( GLfloat* ) &proj );
+		graphicsContext->immediateContext->Draw ( 6, 0 );
 
-		PRVec3 worldLightPosition ( 10, 10, 10 );
-		glUniform3f ( glGetUniformLocation ( program, "worldLightPosition" ),
-			worldLightPosition.x, worldLightPosition.y, worldLightPosition.z );
-
-		//glPolygonMode ( GL_FRONT_AND_BACK, GL_LINE );
-
-		glBindVertexArray ( vertexArrayObject );
-		glDrawArrays ( GL_TRIANGLES, 0, vertexCount );
-
-		graphicsContext->swapBuffers ();
+		graphicsContext->dxgiSwapChain->Present ( 0, 0 );
 	}
 };
 
@@ -156,9 +99,10 @@ MAIN_FUNC_RTTP MAIN_FUNC_NAME ( MAIN_FUNC_ARGS )
 	try {
 		MyScene scene;
 		std::string title ( "Test" );
-		PRApp app ( &scene, PRRendererType_OpenGL2, 1280, 720, title );
+		PRApp app ( &scene, PRRendererType_Direct3D11, 1280, 720, title );
 		app.run ();
-	} catch ( std::exception & ex ) {
+	}
+	catch ( std::exception & ex ) {
 		PRLog ( ex.what () );
 	}
 }
