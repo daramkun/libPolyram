@@ -2406,7 +2406,7 @@ void PRMat::createOrthographicLH ( float w, float h, float zn, float zf, PRMat *
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
 		0, 0, 1 / ( zf - zn ), 0,
-		0, 0, -zn / ( zf - zn ), 0
+		0, 0, zn / ( zn - zf ), 1
 	);
 }
 void PRMat::createOrthographicRH ( float w, float h, float zn, float zf, PRMat * result ) {
@@ -2414,7 +2414,7 @@ void PRMat::createOrthographicRH ( float w, float h, float zn, float zf, PRMat *
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
 		0, 0, 1 / ( zn - zf ), 0,
-		0, 0, -zn / ( zn - zf ), 0
+		0, 0, zn / ( zn - zf ), 1
 	);
 }
 void PRMat::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
@@ -2422,7 +2422,7 @@ void PRMat::createOrthographicOffCenterLH ( float l, float r, float b, float t, 
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
 		0, 0, 1 / ( zf - zn ), 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zf - zn ), 1
+		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zn / ( zn - zf ), 1
 	);
 }
 void PRMat::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
@@ -2430,7 +2430,7 @@ void PRMat::createOrthographicOffCenterRH ( float l, float r, float b, float t, 
 		2 / ( r - l ), 0, 0, 0,
 		0, 2 / ( t - b ), 0, 0,
 		0, 0, 1 / ( zn - zf ), 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), -zn / ( zn - zf ), 1
+		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zn / ( zn - zf ), 1
 	);
 }
 void PRMat::createPerspectiveLH ( float w, float h, float zn, float zf, PRMat * result ) {
