@@ -26,5 +26,11 @@
     <FxCompile Include="MyPixelShader.hlsl">
       <Filter>리소스 파일</Filter>
     </FxCompile>
+    <FxCompile Include="MyVertexShaderRT.hlsl">
+      <Filter>리소스 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="MyPixelShaderRT.hlsl">
+      <Filter>리소스 파일</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -23,6 +23,7 @@
     <ClInclude Include="GL\wglew.h" />
     <ClInclude Include="polyram.h" />
     <ClInclude Include="polyram_d3d11.h" />
+    <ClInclude Include="polyram_opengl.h" />
     <ClInclude Include="wglext.h" />
   </ItemGroup>
   <ItemGroup>
