@@ -1,225 +1,222 @@
 #define POLYRAM_D3D11
 #include "polyram.h"
+#include "polyram_d3d11.h"
+#include <Xinput.h>
+#pragma comment ( lib, "XInput.lib" )
+
+struct MyConstantBuffer { PRMat world, view, proj; };
+
+class Camera3D {
+private:
+	PRVec3 moveUnit;
+	float yaw, pitch, roll;
+	bool isFlyingMode;
+	PRVec3 camPos;
+
+public:
+	Camera3D () : yaw ( 0 ), pitch ( 0 ), roll ( 0 ), isFlyingMode ( false ) { }
+
+	void strafe ( float unit ) { moveUnit.x += unit; }
+	void fly ( float unit ) { moveUnit.y += unit; }
+	void walk ( float unit ) { moveUnit.z += unit; }
+	void setYaw ( float unit ) { yaw += unit; }
+	void setPitch ( float unit ) { pitch += unit; }
+	void setRoll ( float unit ) { roll += unit; }
+
+	void setPos ( PRVec3 _camPos ) { camPos = _camPos; }
+	PRVec3 getPos () { return camPos; }
+
+	void getMatrix ( PRMat * result ) {
+		PRVec3 tempVec;
+		PRQuat q ( yaw, isFlyingMode ? pitch : 0, 0 );
+		PRMat tempMat ( q );
+		PRVec3::transform ( &moveUnit, &tempMat, &tempVec );
+		camPos = camPos + tempVec;
+
+		q = PRQuat ( yaw, pitch, roll );
+		tempMat = PRMat ( q );
+
+		PRVec3 target, upVec;
+		PRVec3::transform ( &PRVec3 ( 0, 0, -1 ), &tempMat, &target );
+		PRVec3::transform ( &PRVec3 ( 0, 1, 0 ), &tempMat, &upVec );
+
+		PRVec3 t = target + camPos;
+		PRMat::createLookAtLH ( &camPos, &t, &upVec, result );
+		moveUnit = PRVec3 ( 0, 0, 0 );
+	}
+};
 
 class MyScene : public PRGame
 {
 public:
-	ID3D11Buffer * vertexBuffer;
+	ID3D11Buffer * sphereVB, * rectVB;
+	int sphereVBSize, rectVBSize;
 	ID3D11InputLayout * inputLayout;
 	ID3D11VertexShader * vertexShader;
 	ID3D11PixelShader * pixelShader;
-	ID3D11Texture2D * texture;
-	ID3D11ShaderResourceView * textureSRV;
-
-	ID3D11RenderTargetView * renderTarget;
-	ID3D11Texture2D * renderTargetBuffer;
-	ID3D11ShaderResourceView * renderTargetBufferSRV;
-	ID3D11SamplerState * samplerState;
-	ID3D11VertexShader * renderTargetVertexShader;
-	ID3D11PixelShader * renderTargetPixelShader;
-	ID3D11InputLayout * renderTargetInputLayout;
-	ID3D11Buffer * renderTargetConstantBuffer;
-	ID3D11DepthStencilState * depthStencilState;
+	ID3D11Buffer * vertexCB, * pixelCB;
+	ID3D11DepthStencilState * standardDSS, * stencilDSS1, * stencilDSS2;
 	ID3D11RasterizerState * rasterizerState;
+
+	Camera3D camera;
 
 public:
 	void onInitialize ()
 	{
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-		PRModelGenerator rect ( PRModelType_Rectangle, PRModelProperty_Position | PRModelProperty_TexCoord );
-		D3D11_BUFFER_DESC vertexBufferDesc = { rect.getDataSize (), D3D11_USAGE_DEFAULT,
-			D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
-		D3D11_SUBRESOURCE_DATA vertexBufferInput = { rect.getData (), rect.getDataSize () };
-		graphicsContext->d3dDevice->CreateBuffer ( &vertexBufferDesc, &vertexBufferInput, &vertexBuffer );
+		camera.setPos ( PRVec3 ( -1, 0, 2 ) );
 
-		void * shaderData;
-		unsigned shaderDataLength;
-		PRGetRawData ( std::string ( "MyVertexShader.cso" ), &shaderData, &shaderDataLength );
-		graphicsContext->d3dDevice->CreateVertexShader ( shaderData, shaderDataLength, nullptr, &vertexShader );
+		PRModelGenerator sphere ( PRModelType_Sphere, PRModelProperty_Position );
+		sphereVB = PRCreateVertexBuffer ( graphicsContext->d3dDevice, sphere.getData (), sphere.getDataSize () );
+		sphereVBSize = sphere.getDataSize () / sizeof ( PRVec3 );
+
+		PRModelGenerator rect ( PRModelType_Rectangle, PRModelProperty_Position );
+		rectVB = PRCreateVertexBuffer ( graphicsContext->d3dDevice, rect.getData (), rect.getDataSize () );
+		rectVBSize = rect.getDataSize () / sizeof ( PRVec3 );
+
 		D3D11_INPUT_ELEMENT_DESC inputElements [] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		graphicsContext->d3dDevice->CreateInputLayout ( inputElements, _countof ( inputElements ),
-			shaderData, shaderDataLength, &inputLayout );
-		SAFE_DELETE ( shaderData );
+		PRLoadShader ( graphicsContext->d3dDevice, std::string ( "MyVertexShader.cso" ), std::string ( "MyPixelShader.cso" ),
+			&vertexShader, &pixelShader, inputElements, _countof ( inputElements ), &inputLayout );
 
-		PRGetRawData ( std::string ( "MyPixelShader.cso" ), &shaderData, &shaderDataLength );
-		graphicsContext->d3dDevice->CreatePixelShader ( shaderData, shaderDataLength, nullptr, &pixelShader );
-		SAFE_DELETE ( shaderData );
-
-		void * textureData;
-		unsigned textureWidth, textureHeight;
-		PRGetImageData ( std::string ( "test.jpg" ), &textureData, &textureWidth, &textureHeight );
-
-		D3D11_TEXTURE2D_DESC textureDesc = { 0, };
-		textureDesc.ArraySize = 1;
-		textureDesc.Width = textureWidth;
-		textureDesc.Height = textureHeight;
-		textureDesc.MipLevels = 1;
-		textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		textureDesc.SampleDesc.Count = 1;
-		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-		textureDesc.Usage = D3D11_USAGE_DEFAULT;
-		textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		D3D11_SUBRESOURCE_DATA textureSubResource = { textureData, textureWidth * sizeof ( int ),
-			textureWidth * textureHeight * sizeof ( int ) };
-		graphicsContext->d3dDevice->CreateTexture2D ( &textureDesc, &textureSubResource, &texture );
-
-		delete [] textureData;
-
-		graphicsContext->d3dDevice->CreateShaderResourceView ( texture, nullptr, &textureSRV );
-
-		D3D11_TEXTURE2D_DESC renderTargetDesc = { 0, };
-		renderTargetDesc.ArraySize = 1;
-		renderTargetDesc.Width = 1280;
-		renderTargetDesc.Height = 720;
-		renderTargetDesc.MipLevels = 1;
-		renderTargetDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		renderTargetDesc.SampleDesc.Count = 1;
-		renderTargetDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-		renderTargetDesc.Usage = D3D11_USAGE_DEFAULT;
-		renderTargetDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-		graphicsContext->d3dDevice->CreateTexture2D ( &renderTargetDesc, nullptr, &renderTargetBuffer );
-
-		graphicsContext->d3dDevice->CreateRenderTargetView ( renderTargetBuffer, nullptr, &renderTarget );
-
-		graphicsContext->d3dDevice->CreateShaderResourceView ( renderTargetBuffer, nullptr, &renderTargetBufferSRV );
-
-		D3D11_SAMPLER_DESC samplerDesc;
-		memset ( &samplerDesc, 0, sizeof ( D3D11_SAMPLER_DESC ) );
-		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		samplerDesc.MinLOD = -FLT_MAX;
-		samplerDesc.MaxLOD = FLT_MAX;
-		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		graphicsContext->d3dDevice->CreateSamplerState ( &samplerDesc, &samplerState );
-
-		PRGetRawData ( std::string ( "MyVertexShaderRT.cso" ), &shaderData, &shaderDataLength );
-		graphicsContext->d3dDevice->CreateVertexShader ( shaderData, shaderDataLength, nullptr, &renderTargetVertexShader );
-		D3D11_INPUT_ELEMENT_DESC inputElementsRT [] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-		graphicsContext->d3dDevice->CreateInputLayout ( inputElementsRT, _countof ( inputElementsRT ),
-			shaderData, shaderDataLength, &renderTargetInputLayout );
-		SAFE_DELETE ( shaderData );
-
-		PRGetRawData ( std::string ( "MyPixelShaderRT.cso" ), &shaderData, &shaderDataLength );
-		graphicsContext->d3dDevice->CreatePixelShader ( shaderData, shaderDataLength, nullptr, &renderTargetPixelShader );
-		SAFE_DELETE ( shaderData );
-
-		D3D11_BUFFER_DESC constantBufferDesc = { 0, };
-		constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constantBufferDesc.ByteWidth = sizeof ( PRMat ) * 2;
-		constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		graphicsContext->d3dDevice->CreateBuffer ( &constantBufferDesc, nullptr, &renderTargetConstantBuffer );
-
-		D3D11_DEPTH_STENCIL_DESC depthStencilDesc = { 0, };
-		depthStencilDesc.DepthEnable = false;
-		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-		depthStencilDesc.StencilEnable = true;
-		depthStencilDesc.StencilReadMask = 0xFF;
-		depthStencilDesc.StencilWriteMask = 0xFF;
-		depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-		depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-		depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-		depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-		depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-		graphicsContext->d3dDevice->CreateDepthStencilState ( &depthStencilDesc, &depthStencilState );
+		vertexCB = PRCreateConstantBuffer<MyConstantBuffer> ( graphicsContext->d3dDevice );
+		pixelCB = PRCreateConstantBuffer<PRVec4> ( graphicsContext->d3dDevice );
 
 		D3D11_RASTERIZER_DESC rasterizerDesc;
 		memset ( &rasterizerDesc, 0, sizeof ( D3D11_RASTERIZER_DESC ) );
 		rasterizerDesc.CullMode = D3D11_CULL_NONE;
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerDesc.DepthClipEnable = false;
-		rasterizerDesc.FrontCounterClockwise = false;
 		graphicsContext->d3dDevice->CreateRasterizerState ( &rasterizerDesc, &rasterizerState );
+
+		D3D11_DEPTH_STENCIL_DESC dsDesc = { 0, };
+		dsDesc.DepthEnable = true;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		graphicsContext->d3dDevice->CreateDepthStencilState ( &dsDesc, &standardDSS );
+
+		memset ( &dsDesc, 0, sizeof ( D3D11_DEPTH_STENCIL_DESC ) );
+		dsDesc.DepthEnable = true;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDesc.StencilEnable = true;
+		dsDesc.StencilReadMask = 0xffffffff;
+		dsDesc.StencilWriteMask = 0xffffffff;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+		memcpy ( &dsDesc.BackFace, &dsDesc.FrontFace, sizeof ( D3D11_DEPTH_STENCILOP_DESC ) );
+		graphicsContext->d3dDevice->CreateDepthStencilState ( &dsDesc, &stencilDSS1 );
+
+		memset ( &dsDesc, 0, sizeof ( D3D11_DEPTH_STENCIL_DESC ) );
+		dsDesc.DepthEnable = false;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDesc.StencilEnable = true;
+		dsDesc.StencilReadMask = 0xffffffff;
+		dsDesc.StencilWriteMask = 0xffffffff;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_EQUAL;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+		memcpy ( &dsDesc.BackFace, &dsDesc.FrontFace, sizeof ( D3D11_DEPTH_STENCILOP_DESC ) );
+		graphicsContext->d3dDevice->CreateDepthStencilState ( &dsDesc, &stencilDSS2 );
 	}
 
 	void onDestroy ()
 	{
+		stencilDSS2->Release ();
+		stencilDSS1->Release ();
+		standardDSS->Release ();
 		rasterizerState->Release ();
-		depthStencilState->Release ();
-		renderTargetConstantBuffer->Release ();
-		renderTargetInputLayout->Release ();
-		renderTargetPixelShader->Release ();
-		renderTargetVertexShader->Release ();
-		samplerState->Release ();
-		renderTargetBufferSRV->Release ();
-		renderTarget->Release ();
-		renderTargetBuffer->Release ();
-		textureSRV->Release ();
-		texture->Release ();
+		pixelCB->Release ();
+		vertexCB->Release ();
 		pixelShader->Release ();
 		vertexShader->Release ();
 		inputLayout->Release ();
-		vertexBuffer->Release ();
+		sphereVB->Release ();
+	}
+
+	void onUpdate ( double dt )
+	{
+		XINPUT_STATE xinputState;
+		if ( XInputGetState ( 0, &xinputState ) == ERROR_SUCCESS )
+		{
+			float lX = xinputState.Gamepad.sThumbLX / 32767.f;
+			float lY = xinputState.Gamepad.sThumbLY / 32767.f;
+			lX = ( abs ( lX ) < 0.5f ? 0 : lX ) * dt;
+			lY = ( abs ( lY ) < 0.5f ? 0 : lY ) * dt;
+
+			camera.walk ( -lY );
+			camera.strafe ( -lX );
+
+			float rX = xinputState.Gamepad.sThumbRX / 32767.f;
+			float rY = xinputState.Gamepad.sThumbRY / 32767.f;
+			rX = ( abs ( rX ) < 0.5f ? 0 : rX ) * dt;
+			rY = ( abs ( rY ) < 0.5f ? 0 : rY ) * dt;
+
+			camera.setYaw ( rX );
+			camera.setPitch ( rY );
+		}
 	}
 
 	void onDraw ( double dt )
 	{
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-		float clearColor [] = { 1, 0, 1, 1 };
-		ID3D11ShaderResourceView * pSRV [] = { nullptr };
-		graphicsContext->immediateContext->PSSetShaderResources ( 0, 1, pSRV );
-		graphicsContext->immediateContext->OMSetRenderTargets ( 1, &renderTarget, nullptr );
-		graphicsContext->immediateContext->ClearRenderTargetView ( renderTarget, clearColor );
+		float clearColor [] = { 0, 0, 0, 1 };
+		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor );
+		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_DEPTH, 1, 0 );
 
 		graphicsContext->immediateContext->VSSetShader ( vertexShader, nullptr, 0 );
 		graphicsContext->immediateContext->PSSetShader ( pixelShader, nullptr, 0 );
-		graphicsContext->immediateContext->PSSetShaderResources ( 0, 1, &textureSRV );
-		graphicsContext->immediateContext->PSSetSamplers ( 0, 1, &samplerState );
 
-		unsigned stride = sizeof ( PRVec3 ) + sizeof ( PRVec2 ), offset = 0;
-		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &vertexBuffer, &stride, &offset );
+		graphicsContext->immediateContext->RSSetState ( rasterizerState );
+
 		graphicsContext->immediateContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		graphicsContext->immediateContext->IASetInputLayout ( inputLayout );
 
-		graphicsContext->immediateContext->OMSetDepthStencilState ( nullptr, 1 );
+		// Draw Magenta Sphere
+		MyConstantBuffer cb;
+		PRMat::createTranslate ( &PRVec3 ( -0.5f, 0, 0 ), &cb.world );
+		camera.getMatrix ( &cb.view );
+		PRMat::createPerspectiveFieldOfViewLH ( PR_PIover4, 1280 / 720.0f, 0.001f, 1000.0f, &cb.proj );
+		graphicsContext->immediateContext->UpdateSubresource ( vertexCB, 0, nullptr, &cb, sizeof ( MyConstantBuffer ), 0 );
+		graphicsContext->immediateContext->VSSetConstantBuffers ( 0, 1, &vertexCB );
+		graphicsContext->immediateContext->UpdateSubresource ( pixelCB, 0, nullptr, &PRVec4 ( 1, 0, 1, 1 ), sizeof ( PRVec4 ), 0 );
+		graphicsContext->immediateContext->PSSetConstantBuffers ( 0, 1, &pixelCB );
 
-		graphicsContext->immediateContext->Draw ( 6, 0 );
+		unsigned stride = sizeof ( PRVec3 ), offset = 0;
+		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &sphereVB, &stride, &offset );
 
-		float clearColor1 [] = { 0, 0, 0, 1 };
-		graphicsContext->immediateContext->OMSetRenderTargets ( 1, &graphicsContext->renderTargetView, nullptr );
-		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor1 );
+		graphicsContext->immediateContext->OMSetDepthStencilState ( standardDSS, 0x1 );
+		graphicsContext->immediateContext->Draw ( sphereVBSize, 0 );
 
-		struct { PRMat world; PRMat proj; } cb;
-		PRMat temp;
-		PRMat::createTranslate ( &PRVec3 ( 0.5f, 0.5f ), &cb.world );
-		PRMat::createScale ( &PRVec3 ( 1280, 720, 1 ), &temp );
-		cb.world = PRMat::multiply ( cb.world, temp );
-		//PRMat::createTranslate ( &PRVec3 ( 0.5f, 0.5f ), &cb.world );
-		//PRMat::createScale ( &PRVec3 ( 1280, 720, 1 ), &cb.world );
-		PRMat::createOrthographicOffCenterLH ( 0, 1280, 720, 0, 0.001f, 1000.0f, &cb.proj );
-		//PRMat::createPerspectiveFieldOfViewLH ( PR_PIover4, 1280 / 720.0f, 0.001f, 1000.0f, &cb.proj );
-		//cb.world = cb.world.transpose ();
-		//cb.proj = cb.proj.transpose ();
-		graphicsContext->immediateContext->UpdateSubresource ( renderTargetConstantBuffer, 0, nullptr, &cb, sizeof ( PRMat ) * 2, 0 );
+		// Draw To Stencil Buffer
+		PRMat::createRotationY ( PRToRadian ( 90 ), &cb.world );
+		graphicsContext->immediateContext->UpdateSubresource ( vertexCB, 0, nullptr, &cb, sizeof ( MyConstantBuffer ), 0 );
+		graphicsContext->immediateContext->UpdateSubresource ( pixelCB, 0, nullptr, &PRVec4 ( 0.7f, 0.7f, 0.7f, 1 ), sizeof ( PRVec4 ), 0 );
 
-		graphicsContext->immediateContext->VSSetShader ( renderTargetVertexShader, nullptr, 0 );
-		graphicsContext->immediateContext->VSSetConstantBuffers ( 0, 1, &renderTargetConstantBuffer );
-		graphicsContext->immediateContext->PSSetShader ( renderTargetPixelShader, nullptr, 0 );
-		graphicsContext->immediateContext->PSSetShaderResources ( 0, 1, &renderTargetBufferSRV );
-		graphicsContext->immediateContext->PSSetSamplers ( 0, 1, &samplerState );
+		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &rectVB, &stride, &offset );
 
-		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &vertexBuffer, &stride, &offset );
-		graphicsContext->immediateContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		graphicsContext->immediateContext->IASetInputLayout ( renderTargetInputLayout );
+		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_STENCIL, 1, 0 );
+		graphicsContext->immediateContext->OMSetDepthStencilState ( stencilDSS1, 0x1 );
+		graphicsContext->immediateContext->Draw ( rectVBSize, 0 );
 
-		graphicsContext->immediateContext->OMSetDepthStencilState ( depthStencilState, 1 );
-		graphicsContext->immediateContext->RSSetState ( rasterizerState );
+		// Draw White Sphere with Stencil Comparison
+		PRMat::createTranslate ( &PRVec3 ( 0.5f, 0, 0 ), &cb.world );
+		graphicsContext->immediateContext->UpdateSubresource ( vertexCB, 0, nullptr, &cb, sizeof ( MyConstantBuffer ), 0 );
+		graphicsContext->immediateContext->UpdateSubresource ( pixelCB, 0, nullptr, &PRVec4 ( 1, 1, 1, 1 ), sizeof ( PRVec4 ), 0 );
 
-		graphicsContext->immediateContext->Draw ( 6, 0 );
+		graphicsContext->immediateContext->IASetVertexBuffers ( 0, 1, &sphereVB, &stride, &offset );
 
+		graphicsContext->immediateContext->OMSetDepthStencilState ( stencilDSS2, 0x1 );
+		graphicsContext->immediateContext->Draw ( sphereVBSize, 0 );
+
+		// Present
 		graphicsContext->dxgiSwapChain->Present ( 0, 0 );
 	}
 };

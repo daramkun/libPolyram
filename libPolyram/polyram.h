@@ -911,9 +911,9 @@ public:
 	~PRModelGenerator ();
 
 public:
-	PRModelProperty getProperties ();
-	const void* getData ();
-	unsigned getDataSize ();
+	PRModelProperty getProperties () const;
+	const void* getData () const;
+	unsigned getDataSize () const;
 
 private:
 	PRModelProperty m_properties;

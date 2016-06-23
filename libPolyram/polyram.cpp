@@ -2012,13 +2012,16 @@ PRQuat::PRQuat ( const PRVec2 & v, float z, float w ) : x ( v.x ), y ( v.y ), z 
 PRQuat::PRQuat ( const PRVec3 & v, float w ) : x ( v.x ), y ( v.y ), z ( v.z ), w ( w ) { }
 PRQuat::PRQuat ( const PRVec4 & v ) : x ( v.x ), y ( v.y ), z ( v.z ), w ( v.w ) { }
 PRQuat::PRQuat ( float yaw, float pitch, float roll ) {
-	float num9 = roll * 0.5f, num6 = sinf ( num9 ), num5 = cosf ( num9 );
-	float num8 = pitch * 0.5f, num4 = sinf ( num8 ), num3 = cosf ( num8 );
-	float num7 = yaw * 0.5f, num2 = sinf ( num7 ), num = cosf ( num7 );
-	x = ( ( num * num4 ) * num5 ) + ( ( num2 * num3 ) * num6 );
-	y = ( ( num2 * num3 ) * num5 ) - ( ( num * num4 ) * num6 );
-	z = ( ( num * num3 ) * num6 ) - ( ( num2 * num4 ) * num5 );
-	w = ( ( num * num3 ) * num5 ) + ( ( num2 * num4 ) * num6 );
+	float halfRoll = roll * 0.5f, halfPitch = pitch * 0.5f, halfYaw = yaw * 0.5f;
+	
+	float sinRoll = sin ( halfRoll ), cosRoll = cos ( halfRoll );
+	float sinPitch = sin ( halfPitch ), cosPitch = cos ( halfPitch );
+	float sinYaw = sin ( halfYaw ), cosYaw = cos ( halfYaw );
+	
+	x = ( cosYaw * sinPitch * cosRoll ) + ( sinYaw * cosPitch * sinRoll );
+	y = ( sinYaw * cosPitch * cosRoll ) - ( cosYaw * sinPitch * sinRoll );
+	z = ( cosYaw * cosPitch * sinRoll ) - ( sinYaw * sinPitch * cosRoll );
+	w = ( cosYaw * cosPitch * cosRoll ) + ( sinYaw * sinPitch * sinRoll );
 }
 PRQuat::PRQuat ( const PRMat & m ) {
 	float num8 = ( m._11 + m._22 ) + m._33;
@@ -2804,9 +2807,9 @@ PRModelGenerator::PRModelGenerator ( std::string & filename, PRModelEncircling c
 	m_properties = prop;
 }
 
-PRModelProperty PRModelGenerator::getProperties () { return m_properties; }
-const void* PRModelGenerator::getData () { return m_data; }
-unsigned PRModelGenerator::getDataSize () { return m_dataSize; }
+PRModelProperty PRModelGenerator::getProperties () const { return m_properties; }
+const void* PRModelGenerator::getData () const { return m_data; }
+unsigned PRModelGenerator::getDataSize () const { return m_dataSize; }
 
 PRModelGenerator::~PRModelGenerator () { SAFE_DELETE_ARRAY ( m_data ); }
 
@@ -3003,8 +3006,8 @@ void generateSphere ( PRModelProperty properties, PRModelEncircling circling, PR
 	void** result, unsigned * length ) {
 	// Source from "http://stackoverflow.com/questions/5988686/creating-a-3d-sphere-in-opengl-using-visual-c"
 
-	const unsigned rings = scale == nullptr ? 20 : ( unsigned ) scale->x * 10;
-	const unsigned sectors = scale == nullptr ? 20 : ( unsigned ) scale->y * 10;
+	const unsigned rings = scale == nullptr ? 40 : ( unsigned ) scale->x * 40;
+	const unsigned sectors = scale == nullptr ? 40 : ( unsigned ) scale->y * 40;
 
 	float const R = 1.0f / ( float ) ( rings - 1 );
 	float const S = 1.0f / ( float ) ( sectors - 1 );
@@ -3061,7 +3064,7 @@ void generateSphere ( PRModelProperty properties, PRModelEncircling circling, PR
 
 void generateCircle ( PRModelProperty properties, PRModelEncircling circling, PRModelTexCoord tcs, const PRVec3 * scale,
 	void** result, unsigned * length ) {
-	unsigned sectors = scale == nullptr ? 20 : ( unsigned ) PRMax ( scale->x, scale->y ) * 10;
+	unsigned sectors = scale == nullptr ? 40 : ( unsigned ) PRMax ( scale->x, scale->y ) * 40;
 
 	std::vector<vertex> vertices;
 	for ( float r = 0; r <= PR_2PI; r += ( PR_2PI / sectors ) ) {

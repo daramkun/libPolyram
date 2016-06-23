@@ -36,14 +36,14 @@ ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, std::string & fil
 
 	D3D11_TEXTURE2D_DESC desc = { 0, };
 	desc.ArraySize = 1;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.Width = width;
 	desc.Height = height;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 	desc.MipLevels = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
 	D3D11_SUBRESOURCE_DATA subresData = { data, width * sizeof ( int ), width * height * sizeof ( int ) };
 
@@ -57,7 +57,7 @@ ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, std::string & fil
 
 bool PRLoadShader ( ID3D11Device * d3dDevice, std::string & vertexShaderFilename, std::string & pixelShaderFilename,
 	ID3D11VertexShader ** vertexShader, ID3D11PixelShader ** pixelShader,
-	D3D11_INPUT_ELEMENT_DESC * inputElements = nullptr, int inputElementSize = 0, ID3D11InputLayout ** inputLayout = nullptr ) {
+	const D3D11_INPUT_ELEMENT_DESC * inputElements = nullptr, int inputElementSize = 0, ID3D11InputLayout ** inputLayout = nullptr ) {
 	void * data;
 	unsigned dataSize;
 
@@ -86,6 +86,36 @@ bool PRLoadShader ( ID3D11Device * d3dDevice, std::string & vertexShaderFilename
 	delete [] data;
 
 	return true;
+}
+
+ID3D11Buffer* PRCreateVertexBuffer ( ID3D11Device * d3dDevice, const void * data, unsigned dataSize ) {
+	D3D11_BUFFER_DESC vertexBufferDesc = { dataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
+	D3D11_SUBRESOURCE_DATA vertexBufferInput = { data, dataSize };
+
+	ID3D11Buffer * buffer;
+	d3dDevice->CreateBuffer ( &vertexBufferDesc, &vertexBufferInput, &buffer );
+	
+	return buffer;
+}
+
+ID3D11Buffer* PRCreateVertexBuffer ( ID3D11Device * d3dDevice, const PRModelGenerator * gen ) {
+	D3D11_BUFFER_DESC vertexBufferDesc = { gen->getDataSize (), D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
+	D3D11_SUBRESOURCE_DATA vertexBufferInput = { gen->getData (), gen->getDataSize () };
+
+	ID3D11Buffer * buffer;
+	d3dDevice->CreateBuffer ( &vertexBufferDesc, &vertexBufferInput, &buffer );
+
+	return buffer;
+}
+
+ID3D11Buffer* PRCreateIndexBuffer ( ID3D11Device * d3dDevice, const void * data, unsigned dataSize ) {
+	D3D11_BUFFER_DESC vertexBufferDesc = { dataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_INDEX_BUFFER, 0, 0, 0 };
+	D3D11_SUBRESOURCE_DATA vertexBufferInput = { data, dataSize };
+
+	ID3D11Buffer * buffer;
+	d3dDevice->CreateBuffer ( &vertexBufferDesc, &vertexBufferInput, &buffer );
+
+	return buffer;
 }
 
 template<typename T>
