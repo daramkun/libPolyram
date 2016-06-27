@@ -3,6 +3,8 @@
 #include "polyram_d3d11.h"
 #include <vector>
 #include <thread>
+#include <atomic>
+#pragma comment ( lib, "winmm.lib" )
 
 struct MyConstantBuffer { PRMat world, view, proj; PRVec4 col; };
 
@@ -54,19 +56,25 @@ public:
 
 	void onDraw ( double dt )
 	{
+		static int count = 8;
+		count += 8;
+
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
 		float clearColor [] = { 0, 0, 0, 1 };
 		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor );
 		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_DEPTH, 1, 0 );
 
-		//std::vector<ID3D11CommandList*> commandLists;
+		std::atomic<unsigned> drawnCount = 0;
+
 		ID3D11CommandList* commandLists [ 8 ] = { 0, };
 		std::thread independentThread ( [ & ] ()
 		{
 #pragma omp parallel for
 			for ( int i = 0; i < 8; ++i )
 			{
+				srand ( timeGetTime () );
+
 				ID3D11DeviceContext * deferredContext;
 				graphicsContext->d3dDevice->CreateDeferredContext ( 0, &deferredContext );
 
@@ -90,26 +98,27 @@ public:
 				deferredContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 				deferredContext->IASetInputLayout ( inputLayout );
 
-				for ( int i = 0; i < 20000 / 8; ++i )
+				for ( int j = 0; j < /*2000*/count / 8; ++j )
 				{
-					MyConstantBuffer cb;
-					PRMat::createTranslate ( &PRVec3 ( -0.5f, 0, 0 ), &cb.world );
-					PRMat::createLookAtLH ( &PRVec3 ( 0, 0, 1 ), &PRVec3 ( 0, 0, 0 ), &PRVec3 ( 0, 1, 0 ), &cb.view );
-					PRMat::createPerspectiveFieldOfViewLH ( PR_PIover4, 1280 / 720.0f, 0.001f, 1000.0f, &cb.proj );
-					cb.col = PRVec4 ( 1, 1, 1, 1 );
+					
 					D3D11_MAPPED_SUBRESOURCE mappedResource;
-					if ( deferredContext->Map ( vertexCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource ) == S_OK )
-					{
-						memcpy ( mappedResource.pData, &cb, sizeof ( MyConstantBuffer ) );
-						deferredContext->Unmap ( vertexCB, 0 );
-					}
+					deferredContext->Map ( vertexCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource );
+					MyConstantBuffer * cb = ( MyConstantBuffer* ) mappedResource.pData;
+					PRVec3 translate ( ( rand () % 100 - 50 ), ( rand () % 100 - 50 ), ( rand () % 100 - 50 ) );
+					PRMat::createTranslate ( &translate, &cb->world );
+					PRMat::createLookAtLH ( &PRVec3 ( 0, 100, 100 ), &PRVec3 ( 0, 0, 0 ), &PRVec3 ( 0, 1, 0 ), &cb->view );
+					PRMat::createPerspectiveFieldOfViewLH ( PR_PIover4, 1280 / 720.0f, 0.001f, 1000.0f, &cb->proj );
+					cb->col = PRVec4 ( ( rand () % 255 ) / 255.f, ( rand () % 255 ) / 255.f, ( rand () % 255 ) / 255.f, 1 );
+					deferredContext->Unmap ( vertexCB, 0 );
+					deferredContext->VSSetConstantBuffers ( 0, 1, &vertexCB );
 
 					deferredContext->Draw ( sphereVBSize, 0 );
+
+					++drawnCount;
 				}
 
 				ID3D11CommandList * commandList;
 				deferredContext->FinishCommandList ( false, &commandList );
-				//commandLists.push_back ( commandList );
 				commandLists [ i ] = commandList;
 
 				deferredContext->Release ();
@@ -117,15 +126,15 @@ public:
 		} );
 		independentThread.join ();
 
-		//for ( auto i = commandLists.begin (); i != commandLists.end (); ++i )
 		for ( int i = 0; i < 8; ++i )
-		{
 			graphicsContext->immediateContext->ExecuteCommandList ( commandLists [ i ], false );
-			commandLists [ i ]->Release ();
-		}
 
-		// Present
-		graphicsContext->dxgiSwapChain->Present ( 0, 0 );
+		graphicsContext->dxgiSwapChain->Present ( 1, 0 );
+
+		for ( int i = 0; i < 8; ++i )
+			commandLists [ i ]->Release ();
+
+		PRLog ( "Drawn Count: %d", drawnCount );
 	}
 };
 
