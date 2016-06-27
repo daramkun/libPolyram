@@ -119,11 +119,15 @@ ID3D11Buffer* PRCreateIndexBuffer ( ID3D11Device * d3dDevice, const void * data,
 }
 
 template<typename T>
-ID3D11Buffer* PRCreateConstantBuffer ( ID3D11Device * d3dDevice ) {
+ID3D11Buffer* PRCreateConstantBuffer ( ID3D11Device * d3dDevice, bool allowDeferred = false ) {
 	D3D11_BUFFER_DESC desc = { 0, };
 	desc.ByteWidth = sizeof ( T );
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	if ( allowDeferred )
+	{
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	}
 
 	ID3D11Buffer * buffer;
 	d3dDevice->CreateBuffer ( &desc, nullptr, &buffer );
