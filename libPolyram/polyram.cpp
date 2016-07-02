@@ -2578,8 +2578,8 @@ FILE* PR_openFile ( std::string & filename, const char * openmode ) {
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
-	char path [ 1024 ];
-	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
+	char path [ 4096 ];
+	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 4096 ) )
 		throw std::runtime_error ( "Cannot get resource directory path." );
 	CFRelease ( resourceURL );
 
@@ -2590,10 +2590,10 @@ FILE* PR_openFile ( std::string & filename, const char * openmode ) {
 	USES_CONVERSION;
 #endif
 
-	char fullpath [ 2048 ] = { 0, };
+	char fullpath [ 4096 ] = { 0, };
 #if PRPlatformMicrosoftWindowsRT
-	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
-	strcat_s ( fullpath, 2048, "\\" );
+	strcat_s ( fullpath, 4096, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
+	strcat_s ( fullpath, 4096, "\\" );
 #endif
 	strcat ( fullpath, filename.c_str () );
 
@@ -2606,8 +2606,8 @@ bool PRGetImageData ( std::string & filename, void ** buffer, unsigned * width, 
 #if PRPlatformAppleFamily
 	CFBundleRef mainBundle = CFBundleGetMainBundle ();
 	CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL ( mainBundle );
-	char path [ 1024 ];
-	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 1024 ) )
+	char path [ 4096 ];
+	if ( !CFURLGetFileSystemRepresentation ( resourceURL, true, ( UInt8 * ) path, 4096 ) )
 		throw std::runtime_error ( "Cannot get resource directory path." );
 	CFRelease ( resourceURL );
 
@@ -2630,12 +2630,12 @@ bool PRGetImageData ( std::string & filename, void ** buffer, unsigned * width, 
 	IWICBitmapFrameDecode * frameDecode;
 	IWICFormatConverter * formatConverter;
 
-	char fullpath [ 2048 ] = { 0, };
+	char fullpath [ 4096 ] = { 0, };
 #if PRPlatformMicrosoftWindowsRT
-	strcat_s ( fullpath, 2048, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
-	strcat_s ( fullpath, 2048, "\\Assets\\" );
+	strcat_s ( fullpath, 4096, W2A ( Windows::ApplicationModel::Package::Current->InstalledLocation->Path->Data () ) );
+	strcat_s ( fullpath, 4096, "\\Assets\\" );
 #endif
-	strcat_s ( fullpath, 2048, filename.c_str () );
+	strcat_s ( fullpath, 4096, filename.c_str () );
 
 	if ( FAILED ( CoCreateInstance ( CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, ( void** ) &factory ) ) )
 		return false;
