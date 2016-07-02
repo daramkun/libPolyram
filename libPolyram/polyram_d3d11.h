@@ -88,6 +88,55 @@ bool PRLoadShader ( ID3D11Device * d3dDevice, std::string & vertexShaderFilename
 	return true;
 }
 
+ID3D11VertexShader* PRLoadVertexShader ( ID3D11Device * d3dDevice, std::string & shaderFilename )
+{
+	void * data;
+	unsigned dataSize;
+
+	ID3D11VertexShader* vertexShader;
+	PRGetRawData ( shaderFilename, &data, &dataSize );
+	d3dDevice->CreateVertexShader ( data, dataSize, nullptr, &vertexShader );
+	delete [] data;
+	
+	return vertexShader;
+}
+ID3D11PixelShader* PRLoadPixelShader ( ID3D11Device * d3dDevice, std::string & shaderFilename )
+{
+	void * data;
+	unsigned dataSize;
+
+	ID3D11PixelShader* pixelShader;
+	PRGetRawData ( shaderFilename, &data, &dataSize );
+	d3dDevice->CreatePixelShader ( data, dataSize, nullptr, &pixelShader );
+	delete [] data;
+
+	return pixelShader;
+}
+ID3D11GeometryShader* PRLoadGeometryShader ( ID3D11Device * d3dDevice, std::string & shaderFilename )
+{
+	void * data;
+	unsigned dataSize;
+
+	ID3D11GeometryShader* geometryShader;
+	PRGetRawData ( shaderFilename, &data, &dataSize );
+	d3dDevice->CreateGeometryShader ( data, dataSize, nullptr, &geometryShader );
+	delete [] data;
+
+	return geometryShader;
+}
+ID3D11ComputeShader* PRLoadComputeShader ( ID3D11Device * d3dDevice, std::string & shaderFilename )
+{
+	void * data;
+	unsigned dataSize;
+
+	ID3D11ComputeShader* computeShader;
+	PRGetRawData ( shaderFilename, &data, &dataSize );
+	d3dDevice->CreateComputeShader ( data, dataSize, nullptr, &computeShader );
+	delete [] data;
+
+	return computeShader;
+}
+
 ID3D11Buffer* PRCreateVertexBuffer ( ID3D11Device * d3dDevice, const void * data, unsigned dataSize ) {
 	D3D11_BUFFER_DESC vertexBufferDesc = { dataSize, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
 	D3D11_SUBRESOURCE_DATA vertexBufferInput = { data, dataSize };

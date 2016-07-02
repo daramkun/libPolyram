@@ -1,140 +1,123 @@
 #define POLYRAM_D3D11
+#define _CRT_SECURE_NO_WARNINGS
 #include "polyram.h"
 #include "polyram_d3d11.h"
-#include <vector>
-#include <thread>
-#include <atomic>
-#pragma comment ( lib, "winmm.lib" )
-
-struct MyConstantBuffer { PRMat world, view, proj; PRVec4 col; };
+#include <ctime>
 
 class MyScene : public PRGame
 {
 public:
-	ID3D11Buffer * sphereVB;
-	int sphereVBSize;
-	ID3D11InputLayout * inputLayout;
-	ID3D11VertexShader * vertexShader;
-	ID3D11PixelShader * pixelShader;
-	ID3D11Buffer * vertexCB;
-	ID3D11RasterizerState * rasterizerState;
+	ID3D11Buffer * buffer1, * buffer2;
+	ID3D11ShaderResourceView * textureSRV;
+	ID3D11UnorderedAccessView * textureUAV;
+	ID3D11ComputeShader * computeShader;
 
 public:
 	void onInitialize ()
 	{
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-		PRModelGenerator sphere ( PRModelType_Sphere, PRModelProperty_Position );
-		sphereVB = PRCreateVertexBuffer ( graphicsContext->d3dDevice, sphere.getData (), sphere.getDataSize () );
-		sphereVBSize = sphere.getDataSize () / sizeof ( PRVec3 );
+#define BUFFER_SIZE			2048
 
-		D3D11_INPUT_ELEMENT_DESC inputElements [] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-		PRLoadShader ( graphicsContext->d3dDevice, std::string ( "MyVertexShader.cso" ), std::string ( "MyPixelShader.cso" ),
-			&vertexShader, &pixelShader, inputElements, _countof ( inputElements ), &inputLayout );
+		D3D11_BUFFER_DESC buffDesc = { 0, };
+		buffDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+		buffDesc.Usage = D3D11_USAGE_DEFAULT;
+		buffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+		buffDesc.ByteWidth = sizeof ( float ) * BUFFER_SIZE;
+		buffDesc.StructureByteStride = sizeof ( float );
+		buffDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+		float ti [ BUFFER_SIZE ] = { 0, };
+		for ( int i = 0; i < BUFFER_SIZE; ++i )
+			ti [ i ] = i + 1;
+		D3D11_SUBRESOURCE_DATA initialData = { ti, BUFFER_SIZE * sizeof ( float ), 0 };
+		graphicsContext->d3dDevice->CreateBuffer ( &buffDesc, &initialData, &buffer1 );
+		graphicsContext->d3dDevice->CreateBuffer ( &buffDesc, nullptr, &buffer2 );
 
-		vertexCB = PRCreateConstantBuffer<MyConstantBuffer> ( graphicsContext->d3dDevice, true );
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+		memset ( &srvDesc, 0, sizeof ( D3D11_SHADER_RESOURCE_VIEW_DESC ) );
+		srvDesc.Buffer.NumElements = 1;
+		srvDesc.Buffer.ElementWidth = BUFFER_SIZE;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+		graphicsContext->d3dDevice->CreateShaderResourceView ( buffer1, &srvDesc, &textureSRV );
 
-		D3D11_RASTERIZER_DESC rasterizerDesc;
-		memset ( &rasterizerDesc, 0, sizeof ( D3D11_RASTERIZER_DESC ) );
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.DepthClipEnable = false;
-		graphicsContext->d3dDevice->CreateRasterizerState ( &rasterizerDesc, &rasterizerState );
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+		memset ( &uavDesc, 0, sizeof ( D3D11_UNORDERED_ACCESS_VIEW_DESC ) );
+		uavDesc.Buffer.NumElements = BUFFER_SIZE;
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.Flags = 
+		graphicsContext->d3dDevice->CreateUnorderedAccessView ( buffer2, &uavDesc, &textureUAV );
+
+		computeShader = PRLoadComputeShader ( graphicsContext->d3dDevice, std::string ( "MyComputeShader.cso" ) );
+
+		graphicsContext->immediateContext->CSSetShader ( computeShader, nullptr, 0 );
+		graphicsContext->immediateContext->CSSetShaderResources ( 0, 1, &textureSRV );
+		graphicsContext->immediateContext->CSSetUnorderedAccessViews ( 0, 1, &textureUAV, nullptr );
+
+#define LOOPCOUNT			500000
+
+		clock_t begin = clock ();
+		for ( int i = 0; i < LOOPCOUNT; ++i )
+			graphicsContext->immediateContext->Dispatch ( BUFFER_SIZE, 1, 1 );
+		clock_t end = clock ();
+
+		FILE * fp = fopen ( "GPU_Proceed.txt", "wt" );
+		fprintf ( fp, "Compute Shader Running time: %ds\n", ( end - begin ) / CLOCKS_PER_SEC );
+		D3D11_MAPPED_SUBRESOURCE mappedResource;
+		graphicsContext->immediateContext->Map ( buffer2, 0, D3D11_MAP_READ, 0, &mappedResource );
+		float * b = ( float * ) mappedResource.pData;
+
+		for ( int i = 0; i < BUFFER_SIZE; ++i )
+			fprintf ( fp, "sqrt(%f) = %f\n", ( float ) ( i + 1 ), b [ i ] );
+
+		graphicsContext->immediateContext->Unmap ( buffer2, 0 );
+		fclose ( fp );
+
+		////////////////////////////////////////////////
+
+		float cputest [ BUFFER_SIZE ] = { 0, }, cputest2 [ BUFFER_SIZE ];
+		for ( int i = 0; i < BUFFER_SIZE; ++i )
+			cputest [ i ] = i + 1;
+
+		begin = clock ();
+		for ( int i = 0; i < LOOPCOUNT; ++i )
+		{
+//#pragma omp parallel for
+			for ( int j = 0; j < BUFFER_SIZE; ++j )
+				cputest2 [ j ] = sqrt ( cputest [ j ] );
+		}
+		end = clock ();
+
+		fp = fopen ( "CPU_Proceed.txt", "wt" );
+		fprintf ( fp, "CPU Running time: %ds\n", ( end - begin ) / CLOCKS_PER_SEC );
+
+		for ( int i = 0; i < BUFFER_SIZE; ++i )
+			fprintf ( fp, "sqrt(%f) = %f\n", ( float ) ( i + 1 ), cputest2 [ i ] );
+
+		fclose ( fp );
+
+		PostQuitMessage ( 0 );
 	}
 
 	void onDestroy ()
 	{
-		rasterizerState->Release ();
-		vertexCB->Release ();
-		pixelShader->Release ();
-		vertexShader->Release ();
-		inputLayout->Release ();
-		sphereVB->Release ();
+		computeShader->Release ();
+		textureUAV->Release ();
+		textureSRV->Release ();
+		buffer2->Release ();
+		buffer1->Release ();
 	}
 
 	void onDraw ( double dt )
 	{
-		static int count = 8;
-		count += 8;
-
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
 		float clearColor [] = { 0, 0, 0, 1 };
 		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor );
 		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_DEPTH, 1, 0 );
 
-		std::atomic<unsigned> drawnCount = 0;
 
-		ID3D11CommandList* commandLists [ 8 ] = { 0, };
-		std::thread independentThread ( [ & ] ()
-		{
-#pragma omp parallel for
-			for ( int i = 0; i < 8; ++i )
-			{
-				srand ( timeGetTime () );
-
-				ID3D11DeviceContext * deferredContext;
-				graphicsContext->d3dDevice->CreateDeferredContext ( 0, &deferredContext );
-
-				deferredContext->OMSetRenderTargets ( 1, &graphicsContext->renderTargetView, graphicsContext->depthStencilView );
-
-				D3D11_VIEWPORT viewport = { 0, };
-				viewport.Width = 1280;
-				viewport.Height = 720;
-				viewport.MaxDepth = 1;
-				deferredContext->RSSetViewports ( 1, &viewport );
-
-				deferredContext->VSSetShader ( vertexShader, nullptr, 0 );
-				deferredContext->PSSetShader ( pixelShader, nullptr, 0 );
-
-				deferredContext->VSSetConstantBuffers ( 0, 1, &vertexCB );
-
-				deferredContext->RSSetState ( rasterizerState );
-
-				unsigned stride = sizeof ( PRVec3 ), offset = 0;
-				deferredContext->IASetVertexBuffers ( 0, 1, &sphereVB, &stride, &offset );
-				deferredContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-				deferredContext->IASetInputLayout ( inputLayout );
-
-				for ( int j = 0; j < /*2000*/count / 8; ++j )
-				{
-					
-					D3D11_MAPPED_SUBRESOURCE mappedResource;
-					deferredContext->Map ( vertexCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource );
-					MyConstantBuffer * cb = ( MyConstantBuffer* ) mappedResource.pData;
-					PRVec3 translate ( ( rand () % 100 - 50 ), ( rand () % 100 - 50 ), ( rand () % 100 - 50 ) );
-					PRMat::createTranslate ( &translate, &cb->world );
-					PRMat::createLookAtLH ( &PRVec3 ( 0, 100, 100 ), &PRVec3 ( 0, 0, 0 ), &PRVec3 ( 0, 1, 0 ), &cb->view );
-					PRMat::createPerspectiveFieldOfViewLH ( PR_PIover4, 1280 / 720.0f, 0.001f, 1000.0f, &cb->proj );
-					cb->col = PRVec4 ( ( rand () % 255 ) / 255.f, ( rand () % 255 ) / 255.f, ( rand () % 255 ) / 255.f, 1 );
-					deferredContext->Unmap ( vertexCB, 0 );
-					deferredContext->VSSetConstantBuffers ( 0, 1, &vertexCB );
-
-					deferredContext->Draw ( sphereVBSize, 0 );
-
-					++drawnCount;
-				}
-
-				ID3D11CommandList * commandList;
-				deferredContext->FinishCommandList ( false, &commandList );
-				commandLists [ i ] = commandList;
-
-				deferredContext->Release ();
-			}
-		} );
-		independentThread.join ();
-
-		for ( int i = 0; i < 8; ++i )
-			graphicsContext->immediateContext->ExecuteCommandList ( commandLists [ i ], false );
 
 		graphicsContext->dxgiSwapChain->Present ( 1, 0 );
-
-		for ( int i = 0; i < 8; ++i )
-			commandLists [ i ]->Release ();
-
-		PRLog ( "Drawn Count: %d", drawnCount );
 	}
 };
 

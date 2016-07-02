@@ -3,6 +3,7 @@
 struct VERTEX_IN
 {
 	float3 position : POSITION;
+	float4 color : COLOR;
 };
 
 struct VERTEX_OUT
@@ -11,21 +12,10 @@ struct VERTEX_OUT
 	float4 color : COLOR;
 };
 
-cbuffer MyConstantBuffer : register( b0 )
-{
-	float4x4 world : WORLD;
-	float4x4 view : VIEW;
-	float4x4 proj : PROJECTION;
-	float4 color;
-};
-
 VERTEX_OUT main ( VERTEX_IN input )
 {
 	VERTEX_OUT ret;
 	ret.position = float4 ( input.position, 1 );
-	ret.position = mul ( ret.position, world );
-	ret.position = mul ( ret.position, view );
-	ret.position = mul ( ret.position, proj );
-	ret.color = color;
+	ret.color = input.color;
 	return ret;
 }
