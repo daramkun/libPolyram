@@ -18,7 +18,7 @@ ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, DXGI_FORMAT forma
 	desc.Width = width;
 	desc.Height = height;
 	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 	desc.MipLevels = 1;
 	desc.SampleDesc.Count = 1;
 	
@@ -41,7 +41,7 @@ ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, std::string & fil
 	desc.MipLevels = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 

@@ -2216,10 +2216,12 @@ void PRMat::invert ( const PRMat * m, PRMat * result ) {
 	result->_44 = ( n1 * n36 - n2 * n38 + n3 * n39 ) * n27;
 }
 void PRMat::transpose ( const PRMat * m, PRMat * result ) {
-	result->_11 = m->_11; result->_12 = m->_21; result->_13 = m->_31; result->_14 = m->_41;
-	result->_21 = m->_12; result->_22 = m->_22; result->_23 = m->_32; result->_24 = m->_42;
-	result->_31 = m->_13; result->_32 = m->_23; result->_33 = m->_33; result->_34 = m->_43;
-	result->_41 = m->_14; result->_42 = m->_24; result->_43 = m->_34; result->_44 = m->_44;
+	*result = PRMat (
+		m->_11, m->_21, m->_31, m->_41,
+		m->_12, m->_22, m->_32, m->_42,
+		m->_13, m->_23, m->_33, m->_43,
+		m->_14, m->_24, m->_34, m->_44
+	);
 }
 void PRMat::determinant ( const PRMat * m, float * result ) {
 	float n22 = m->_11, n21 = m->_12, n20 = m->_13, n19 = m->_14, n12 = m->_21, n11 = m->_22, n10 = m->_23, n9 = m->_24;
@@ -2237,16 +2239,20 @@ PRMat PRMat::transpose ( const PRMat & m ) { COPIEDMETHOD1 ( PRMat, transpose, &
 float PRMat::determinant ( const PRMat & m ) { COPIEDMETHOD1 ( float, determinant, &m ); }
 
 void PRMat::add ( const PRMat * v1, const PRMat * v2, PRMat * result ) {
-	result->_11 = v1->_11 + v2->_11; result->_12 = v1->_12 + v2->_12; result->_13 = v1->_13 + v2->_13; result->_14 = v1->_14 + v2->_14;
-	result->_21 = v1->_21 + v2->_21; result->_22 = v1->_22 + v2->_22; result->_23 = v1->_23 + v2->_23; result->_24 = v1->_24 + v2->_24;
-	result->_31 = v1->_31 + v2->_31; result->_32 = v1->_32 + v2->_32; result->_33 = v1->_33 + v2->_33; result->_34 = v1->_34 + v2->_34;
-	result->_41 = v1->_41 + v2->_41; result->_42 = v1->_42 + v2->_42; result->_43 = v1->_43 + v2->_43; result->_44 = v1->_44 + v2->_44;
+	*result = PRMat (
+		v1->_11 + v2->_11, v1->_12 + v2->_12, v1->_13 + v2->_13, v1->_14 + v2->_14,
+		v1->_21 + v2->_21, v1->_22 + v2->_22, v1->_23 + v2->_23, v1->_24 + v2->_24,
+		v1->_31 + v2->_31, v1->_32 + v2->_32, v1->_33 + v2->_33, v1->_34 + v2->_34,
+		v1->_41 + v2->_41, v1->_42 + v2->_42, v1->_43 + v2->_43, v1->_44 + v2->_44
+	);
 }
 void PRMat::subtract ( const PRMat * v1, const PRMat * v2, PRMat * result ) {
-	result->_11 = v1->_11 - v2->_11; result->_12 = v1->_12 - v2->_12; result->_13 = v1->_13 - v2->_13; result->_14 = v1->_14 - v2->_14;
-	result->_21 = v1->_21 - v2->_21; result->_22 = v1->_22 - v2->_22; result->_23 = v1->_23 - v2->_23; result->_24 = v1->_24 - v2->_24;
-	result->_31 = v1->_31 - v2->_31; result->_32 = v1->_32 - v2->_32; result->_33 = v1->_33 - v2->_33; result->_34 = v1->_34 - v2->_34;
-	result->_41 = v1->_41 - v2->_41; result->_42 = v1->_42 - v2->_42; result->_43 = v1->_43 - v2->_43; result->_44 = v1->_44 - v2->_44;
+	*result = PRMat (
+		v1->_11 - v2->_11, v1->_12 - v2->_12, v1->_13 - v2->_13, v1->_14 - v2->_14,
+		v1->_21 - v2->_21, v1->_22 - v2->_22, v1->_23 - v2->_23, v1->_24 - v2->_24,
+		v1->_31 - v2->_31, v1->_32 - v2->_32, v1->_33 - v2->_33, v1->_34 - v2->_34,
+		v1->_41 - v2->_41, v1->_42 - v2->_42, v1->_43 - v2->_43, v1->_44 - v2->_44
+	);
 }
 void PRMat::negate ( const PRMat * v1, PRMat * result ) {
 	result->_11 = -v1->_11; result->_12 = -v1->_12; result->_13 = -v1->_13; result->_14 = -v1->_14;
@@ -2255,46 +2261,50 @@ void PRMat::negate ( const PRMat * v1, PRMat * result ) {
 	result->_41 = -v1->_41; result->_42 = -v1->_42; result->_43 = -v1->_43; result->_44 = -v1->_44;
 }
 void PRMat::multiply ( const PRMat * v1, const PRMat * v2, PRMat * result ) {
-	result->_11 = ( ( ( v1->_11 * v2->_11 ) + ( v1->_12 * v2->_21 ) ) + ( v1->_13 * v2->_31 ) ) + ( v1->_14 * v2->_41 );
-	result->_12 = ( ( ( v1->_11 * v2->_12 ) + ( v1->_12 * v2->_22 ) ) + ( v1->_13 * v2->_32 ) ) + ( v1->_14 * v2->_42 );
-	result->_13 = ( ( ( v1->_11 * v2->_13 ) + ( v1->_12 * v2->_23 ) ) + ( v1->_13 * v2->_33 ) ) + ( v1->_14 * v2->_43 );
-	result->_14 = ( ( ( v1->_11 * v2->_14 ) + ( v1->_12 * v2->_24 ) ) + ( v1->_13 * v2->_34 ) ) + ( v1->_14 * v2->_44 );
-	result->_21 = ( ( ( v1->_21 * v2->_11 ) + ( v1->_22 * v2->_21 ) ) + ( v1->_23 * v2->_31 ) ) + ( v1->_24 * v2->_41 );
-	result->_22 = ( ( ( v1->_21 * v2->_12 ) + ( v1->_22 * v2->_22 ) ) + ( v1->_23 * v2->_32 ) ) + ( v1->_24 * v2->_42 );
-	result->_23 = ( ( ( v1->_21 * v2->_13 ) + ( v1->_22 * v2->_23 ) ) + ( v1->_23 * v2->_33 ) ) + ( v1->_24 * v2->_43 );
-	result->_24 = ( ( ( v1->_21 * v2->_14 ) + ( v1->_22 * v2->_24 ) ) + ( v1->_23 * v2->_34 ) ) + ( v1->_24 * v2->_44 );
-	result->_31 = ( ( ( v1->_31 * v2->_11 ) + ( v1->_32 * v2->_21 ) ) + ( v1->_33 * v2->_31 ) ) + ( v1->_34 * v2->_41 );
-	result->_32 = ( ( ( v1->_31 * v2->_12 ) + ( v1->_32 * v2->_22 ) ) + ( v1->_33 * v2->_32 ) ) + ( v1->_34 * v2->_42 );
-	result->_33 = ( ( ( v1->_31 * v2->_13 ) + ( v1->_32 * v2->_23 ) ) + ( v1->_33 * v2->_33 ) ) + ( v1->_34 * v2->_43 );
-	result->_34 = ( ( ( v1->_31 * v2->_14 ) + ( v1->_32 * v2->_24 ) ) + ( v1->_33 * v2->_34 ) ) + ( v1->_34 * v2->_44 );
-	result->_41 = ( ( ( v1->_41 * v2->_11 ) + ( v1->_42 * v2->_21 ) ) + ( v1->_43 * v2->_31 ) ) + ( v1->_44 * v2->_41 );
-	result->_42 = ( ( ( v1->_41 * v2->_12 ) + ( v1->_42 * v2->_22 ) ) + ( v1->_43 * v2->_32 ) ) + ( v1->_44 * v2->_42 );
-	result->_43 = ( ( ( v1->_41 * v2->_13 ) + ( v1->_42 * v2->_23 ) ) + ( v1->_43 * v2->_33 ) ) + ( v1->_44 * v2->_43 );
-	result->_44 = ( ( ( v1->_41 * v2->_14 ) + ( v1->_42 * v2->_24 ) ) + ( v1->_43 * v2->_34 ) ) + ( v1->_44 * v2->_44 );
+	float _11 = ( ( ( v1->_11 * v2->_11 ) + ( v1->_12 * v2->_21 ) ) + ( v1->_13 * v2->_31 ) ) + ( v1->_14 * v2->_41 );
+	float _12 = ( ( ( v1->_11 * v2->_12 ) + ( v1->_12 * v2->_22 ) ) + ( v1->_13 * v2->_32 ) ) + ( v1->_14 * v2->_42 );
+	float _13 = ( ( ( v1->_11 * v2->_13 ) + ( v1->_12 * v2->_23 ) ) + ( v1->_13 * v2->_33 ) ) + ( v1->_14 * v2->_43 );
+	float _14 = ( ( ( v1->_11 * v2->_14 ) + ( v1->_12 * v2->_24 ) ) + ( v1->_13 * v2->_34 ) ) + ( v1->_14 * v2->_44 );
+	float _21 = ( ( ( v1->_21 * v2->_11 ) + ( v1->_22 * v2->_21 ) ) + ( v1->_23 * v2->_31 ) ) + ( v1->_24 * v2->_41 );
+	float _22 = ( ( ( v1->_21 * v2->_12 ) + ( v1->_22 * v2->_22 ) ) + ( v1->_23 * v2->_32 ) ) + ( v1->_24 * v2->_42 );
+	float _23 = ( ( ( v1->_21 * v2->_13 ) + ( v1->_22 * v2->_23 ) ) + ( v1->_23 * v2->_33 ) ) + ( v1->_24 * v2->_43 );
+	float _24 = ( ( ( v1->_21 * v2->_14 ) + ( v1->_22 * v2->_24 ) ) + ( v1->_23 * v2->_34 ) ) + ( v1->_24 * v2->_44 );
+	float _31 = ( ( ( v1->_31 * v2->_11 ) + ( v1->_32 * v2->_21 ) ) + ( v1->_33 * v2->_31 ) ) + ( v1->_34 * v2->_41 );
+	float _32 = ( ( ( v1->_31 * v2->_12 ) + ( v1->_32 * v2->_22 ) ) + ( v1->_33 * v2->_32 ) ) + ( v1->_34 * v2->_42 );
+	float _33 = ( ( ( v1->_31 * v2->_13 ) + ( v1->_32 * v2->_23 ) ) + ( v1->_33 * v2->_33 ) ) + ( v1->_34 * v2->_43 );
+	float _34 = ( ( ( v1->_31 * v2->_14 ) + ( v1->_32 * v2->_24 ) ) + ( v1->_33 * v2->_34 ) ) + ( v1->_34 * v2->_44 );
+	float _41 = ( ( ( v1->_41 * v2->_11 ) + ( v1->_42 * v2->_21 ) ) + ( v1->_43 * v2->_31 ) ) + ( v1->_44 * v2->_41 );
+	float _42 = ( ( ( v1->_41 * v2->_12 ) + ( v1->_42 * v2->_22 ) ) + ( v1->_43 * v2->_32 ) ) + ( v1->_44 * v2->_42 );
+	float _43 = ( ( ( v1->_41 * v2->_13 ) + ( v1->_42 * v2->_23 ) ) + ( v1->_43 * v2->_33 ) ) + ( v1->_44 * v2->_43 );
+	float _44 = ( ( ( v1->_41 * v2->_14 ) + ( v1->_42 * v2->_24 ) ) + ( v1->_43 * v2->_34 ) ) + ( v1->_44 * v2->_44 );
+	*result = PRMat ( _11, _12, _13, _14, _21, _22, _23, _24, _31, _32, _33, _34, _41, _42, _43, _44 );
 }
 void PRMat::multiply ( const PRMat * v1, float v2, PRMat * result ) {
-	result->_11 = v1->_11 * v2; result->_12 = v1->_12 * v2; result->_13 = v1->_13 * v2; result->_14 = v1->_14 * v2;
-	result->_21 = v1->_21 * v2; result->_22 = v1->_22 * v2; result->_23 = v1->_23 * v2; result->_24 = v1->_24 * v2;
-	result->_31 = v1->_31 * v2; result->_32 = v1->_32 * v2; result->_33 = v1->_33 * v2; result->_34 = v1->_34 * v2;
-	result->_41 = v1->_41 * v2; result->_42 = v1->_42 * v2; result->_43 = v1->_43 * v2; result->_44 = v1->_44 * v2;
+	*result = PRMat (
+		v1->_11 * v2, v1->_12 * v2, v1->_13 * v2, v1->_14 * v2,
+		v1->_21 * v2, v1->_22 * v2, v1->_23 * v2, v1->_24 * v2,
+		v1->_31 * v2, v1->_32 * v2, v1->_33 * v2, v1->_34 * v2,
+		v1->_41 * v2, v1->_42 * v2, v1->_43 * v2, v1->_44 * v2
+	);
 }
 void PRMat::multiply ( float v1, const PRMat * v2, PRMat * result ) {
-	result->_11 = v2->_11 * v1; result->_12 = v2->_12 * v1; result->_13 = v2->_13 * v1; result->_14 = v2->_14 * v1;
-	result->_21 = v2->_21 * v1; result->_22 = v2->_22 * v1; result->_23 = v2->_23 * v1; result->_24 = v2->_24 * v1;
-	result->_31 = v2->_31 * v1; result->_32 = v2->_32 * v1; result->_33 = v2->_33 * v1; result->_34 = v2->_34 * v1;
-	result->_41 = v2->_41 * v1; result->_42 = v2->_42 * v1; result->_43 = v2->_43 * v1; result->_44 = v2->_44 * v1;
+	multiply ( v2, v1, result );
 }
 void PRMat::divide ( const PRMat * v1, const PRMat * v2, PRMat * result ) {
-	result->_11 = v1->_11 / v2->_11; result->_12 = v1->_12 / v2->_12; result->_13 = v1->_13 / v2->_13; result->_14 = v1->_14 / v2->_14;
-	result->_21 = v1->_21 / v2->_21; result->_22 = v1->_22 / v2->_22; result->_23 = v1->_23 / v2->_23; result->_24 = v1->_24 / v2->_24;
-	result->_31 = v1->_31 / v2->_31; result->_32 = v1->_32 / v2->_32; result->_33 = v1->_33 / v2->_33; result->_34 = v1->_34 / v2->_34;
-	result->_41 = v1->_41 / v2->_41; result->_42 = v1->_42 / v2->_42; result->_43 = v1->_43 / v2->_43; result->_44 = v1->_44 / v2->_44;
+	*result = PRMat (
+		v1->_11 / v2->_11, v1->_12 / v2->_12, v1->_13 / v2->_13, v1->_14 / v2->_14,
+		v1->_21 / v2->_21, v1->_22 / v2->_22, v1->_23 / v2->_23, v1->_24 / v2->_24,
+		v1->_31 / v2->_31, v1->_32 / v2->_32, v1->_33 / v2->_33, v1->_34 / v2->_34,
+		v1->_41 / v2->_41, v1->_42 / v2->_42, v1->_43 / v2->_43, v1->_44 / v2->_44
+	);
 }
 void PRMat::divide ( const PRMat * v1, float v2, PRMat * result ) {
-	result->_11 = v1->_11 / v2; result->_12 = v1->_12 / v2; result->_13 = v1->_13 / v2; result->_14 = v1->_14 / v2;
-	result->_21 = v1->_21 / v2; result->_22 = v1->_22 / v2; result->_23 = v1->_23 / v2; result->_24 = v1->_24 / v2;
-	result->_31 = v1->_31 / v2; result->_32 = v1->_32 / v2; result->_33 = v1->_33 / v2; result->_34 = v1->_34 / v2;
-	result->_41 = v1->_41 / v2; result->_42 = v1->_42 / v2; result->_43 = v1->_43 / v2; result->_44 = v1->_44 / v2;
+	*result = PRMat (
+		v1->_11 / v2, v1->_12 / v2, v1->_13 / v2, v1->_14 / v2,
+		v1->_21 / v2, v1->_22 / v2, v1->_23 / v2, v1->_24 / v2,
+		v1->_31 / v2, v1->_32 / v2, v1->_33 / v2, v1->_34 / v2,
+		v1->_41 / v2, v1->_42 / v2, v1->_43 / v2, v1->_44 / v2
+	);
 }
 
 PRMat PRMat::add ( const PRMat & v1, const PRMat & v2 ) { COPIEDMETHOD2 ( PRMat, add, &v1, &v2 ); }
@@ -2404,84 +2414,110 @@ PRMat PRMat::createLookAtRH ( const PRVec3 & position, const PRVec3 & target, co
 	createLookAtRH ( &position, &target, &upVector, &temp );
 	return temp;
 }
+
+#include <DirectXMath.h>
 void PRMat::createOrthographicLH ( float w, float h, float zn, float zf, PRMat * result ) {
+	float fRange = 1.0f / ( zf - zn );
 	*result = PRMat (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
-		0, 0, 1 / ( zf - zn ), 0,
-		0, 0, zn / ( zn - zf ), 1
+		0, 0, fRange, 0,
+		0, 0, zn * -fRange, 1
 	);
 }
 void PRMat::createOrthographicRH ( float w, float h, float zn, float zf, PRMat * result ) {
+	float fRange = 1.0f / ( zn - zf );
 	*result = PRMat (
 		2 / w, 0, 0, 0,
 		0, 2 / h, 0, 0,
-		0, 0, 1 / ( zn - zf ), 0,
-		0, 0, zn / ( zn - zf ), 1
+		0, 0, fRange, 0,
+		0, 0, zn * fRange, 1
 	);
 }
 void PRMat::createOrthographicOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
+	float reciprocalWidth = 1.f / ( r - l );
+	float reciprocalHeight = 1.f / ( t - b );
+	float fRange = 1.0f / ( zf - zn );
 	*result = PRMat (
-		2 / ( r - l ), 0, 0, 0,
-		0, 2 / ( t - b ), 0, 0,
-		0, 0, 1 / ( zf - zn ), 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zn / ( zn - zf ), 1
+		reciprocalWidth + reciprocalWidth, 0, 0, 0,
+		0, reciprocalHeight + reciprocalHeight, 0, 0,
+		0, 0, fRange, 0,
+		-( l + r ) * reciprocalWidth, -( t + b ) * reciprocalHeight, zn * -fRange, 1
 	);
 }
 void PRMat::createOrthographicOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
+	float reciprocalWidth = 1.f / ( r - l );
+	float reciprocalHeight = 1.f / ( t - b );
+	float fRange = 1.0f / ( zn - zf );
 	*result = PRMat (
-		2 / ( r - l ), 0, 0, 0,
-		0, 2 / ( t - b ), 0, 0,
-		0, 0, 1 / ( zn - zf ), 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zn / ( zn - zf ), 1
+		reciprocalWidth + reciprocalWidth, 0, 0, 0,
+		0, reciprocalHeight + reciprocalHeight, 0, 0,
+		0, 0, fRange, 0,
+		-( l + r ) * reciprocalWidth, -( t + b ) * reciprocalHeight, zn * fRange, 1
 	);
 }
 void PRMat::createPerspectiveLH ( float w, float h, float zn, float zf, PRMat * result ) {
+	float twoNearZ = zn + zn;
+	float fRange = zf / ( zf - zn );
 	*result = PRMat (
-		2 * zn / w, 0, 0, 0,
-		0, 2 * zn / h, 0, 0,
-		0, 0, zf / ( zf - zn ), 1,
-		0, 0, zn * zf / ( zf - zn ), 0
+		twoNearZ / w, 0, 0, 0,
+		0, twoNearZ / h, 0, 0,
+		0, 0, fRange, 1,
+		0, 0, zn * -fRange, 0
 	);
 }
 void PRMat::createPerspectiveRH ( float w, float h, float zn, float zf, PRMat * result ) {
+	float twoNearZ = zn + zn;
+	float fRange = zf / ( zn - zf );
 	*result = PRMat (
-		2 * zn / w, 0, 0, 0,
-		0, 2 * zn / h, 0, 0,
-		0, 0, zf / ( zn - zf ), 1,
-		0, 0, zn * zf / ( zn - zf ), 0
+		twoNearZ / w, 0, 0, 0,
+		0, twoNearZ / h, 0, 0,
+		0, 0, fRange, -1,
+		0, 0, zn * fRange, 0
 	);
 }
 void PRMat::createPerspectiveOffCenterLH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
+	float twoNearZ = zn + zn;
+	float reciprocalWidth = 1.f / ( r - l );
+	float reciprocalHeight = 1.f / ( t - b );
+	float fRange = zf / ( zf - zn );
 	*result = PRMat (
-		2 * zn / ( r - l ), 0, 0, 0,
-		0, 2 * zn / ( t - b ), 0, 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( b - t ), zf / ( zf - zn ), 1,
-		0, 0, zn * zf / ( zf - zn ), 1 );
+		twoNearZ * reciprocalWidth, 0, 0, 0,
+		0, twoNearZ * reciprocalHeight, 0, 0,
+		-( l + r ) * reciprocalWidth, -( t + b ) * reciprocalHeight, fRange, 1,
+		0, 0, zn * -fRange, 0
+	);
 }
 void PRMat::createPerspectiveOffCenterRH ( float l, float r, float b, float t, float zn, float zf, PRMat * result ) {
+	float twoNearZ = zn + zn;
+	float reciprocalWidth = 1.f / ( r - l );
+	float reciprocalHeight = 1.f / ( t - b );
+	float fRange = zf / ( zn - zf );
 	*result = PRMat (
-		2 * zn / ( r - l ), 0, 0, 0,
-		0, 2 * zn / ( t - b ), 0, 0,
-		( l + r ) / ( l - r ), ( t + b ) / ( t - b ), zf / ( zn - zf ), 1,
-		0, 0, zn * zf / ( zn - zf ), 1 );
+		twoNearZ * reciprocalWidth, 0, 0, 0,
+		0, twoNearZ * reciprocalHeight, 0, 0,
+		-( l + r ) * reciprocalWidth, -( t + b ) * reciprocalHeight, fRange, -1,
+		0, 0, zn * fRange, 0
+	);
 }
 void PRMat::createPerspectiveFieldOfViewLH ( float fov, float aspect, float zn, float zf, PRMat * result ) {
 	float ys = 1 / tanf ( fov * 0.5f ), xs = ys / aspect;
+	float fRange = zf / ( zf - zn );
 	*result = PRMat (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
-		0, 0, zf / ( zf - zn ), 1,
-		0, 0, ( -zn * zf ) / ( zf - zn ), 0
+		0, 0, fRange, 1,
+		0, 0, zn * -fRange, 0
 	);
 }
 void PRMat::createPerspectiveFieldOfViewRH ( float fov, float aspect, float zn, float zf, PRMat * result ) {
 	float ys = 1 / tanf ( fov * 0.5f ), xs = ys / aspect;
+	float fRange = zf / ( zn - zf );
 	*result = PRMat (
 		xs, 0, 0, 0,
 		0, ys, 0, 0,
-		0, 0, zf / ( zn - zf ), -1,
-		0, 0, ( zn * zf ) / ( zn - zf ), 0
+		0, 0, fRange, -1,
+		0, 0, zn * fRange, 0
 	);
 }
 PRMat PRMat::createOrthographicLH ( float w, float h, float zn, float zf ) {
