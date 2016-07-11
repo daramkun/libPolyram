@@ -184,4 +184,171 @@ ID3D11Buffer* PRCreateConstantBuffer ( ID3D11Device * d3dDevice, bool allowDefer
 	return buffer;
 }
 
+ID3D11Buffer* PRCreateVertexBufferFor2D ( ID3D11Device * d3dDevice, unsigned width, unsigned height ) {
+	struct { PRVec3 pos; PRVec2 tex; } vertices [] = {
+		{ { 0, ( float ) height, 0 }, { 0, 1 } },
+		{ { ( float ) width, ( float ) height, 0 }, { 1, 1 } },
+		{ { 0, 0, 0 }, { 0, 0 } },
+		{ { 0, 0, 0 }, { 0, 0 } },
+		{ { ( float ) width, ( float ) height, 0 }, { 1, 1 } },
+		{ { ( float ) width, 0, 0 }, { 1, 0 } },
+	};
+	return PRCreateVertexBuffer ( d3dDevice, vertices, sizeof ( vertices ) );
+}
+
+#if !PRPlatformMicrosoftWindowsRT
+#include <d3dcompiler.h>
+#pragma comment ( lib, "d3dcompiler.lib" )
+bool PRCreateShadersFor2D ( ID3D11Device * d3dDevice, ID3D11VertexShader ** vertexShader, ID3D11PixelShader ** pixelShader,
+	ID3D11InputLayout ** inputLayout ) {
+
+	const char * shaderText = SHADERT (
+#pragma pack_matrix(row_major)\n
+
+		struct VERTEX_IN {
+			float3 position : POSITION;
+			float2 texcoord : TEXCOORD;
+		};
+
+		struct PIXEL_IN {
+			float4 position : SV_POSITION;
+			float2 texcoord : TEXCOOORD;
+		};
+
+		cbuffer WorldProjection {
+			float4x4 world : WORLD;
+			float4x4 proj : PROJECTION;
+		};
+
+		PIXEL_IN vs_main ( VERTEX_IN input ) {
+			PIXEL_IN ret;
+			ret.position = float4 ( input.position, 1 );
+			ret.position = mul ( ret.position, world );
+			ret.position = mul ( ret.position, proj );
+			ret.texcoord = input.texcoord;
+			return ret;
+		}
+
+		Texture2D texture_input;
+		SamplerState sampler_input;
+
+		float4 ps_main ( PIXEL_IN input ) : SV_TARGET {
+			return texture_input.Sample ( sampler_input, input.texcoord );
+		}
+	);
+
+	ID3DBlob * compiledVertexShader, * compiledPixelShader, * errorMsg;
+	D3DCompile ( shaderText, strlen ( shaderText ), nullptr, nullptr, nullptr, "vs_main", "vs_5_0", 0, 0, &compiledVertexShader, &errorMsg );
+	D3DCompile ( shaderText, strlen ( shaderText ), nullptr, nullptr, nullptr, "ps_main", "ps_5_0", 0, 0, &compiledPixelShader, nullptr );
+
+	D3D11_INPUT_ELEMENT_DESC inputElements [] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	if ( FAILED ( d3dDevice->CreateVertexShader ( compiledVertexShader->GetBufferPointer (), compiledVertexShader->GetBufferSize (),
+		nullptr, vertexShader ) ) ) {
+		compiledPixelShader->Release ();
+		compiledVertexShader->Release ();
+		return false;
+	}
+
+	if ( inputElements != nullptr ) {
+		if ( FAILED ( d3dDevice->CreateInputLayout ( inputElements, _countof ( inputElements ),
+			compiledVertexShader->GetBufferPointer (), compiledVertexShader->GetBufferSize (), inputLayout ) ) ) {
+			( *vertexShader )->Release ();
+			compiledPixelShader->Release ();
+			compiledVertexShader->Release ();
+			return false;
+		}
+	}
+
+	compiledVertexShader->Release ();
+
+	if ( FAILED ( d3dDevice->CreatePixelShader ( compiledPixelShader->GetBufferPointer (), compiledPixelShader->GetBufferSize (),
+		nullptr, pixelShader ) ) ) {
+		( *vertexShader )->Release ();
+		( *inputLayout )->Release ();
+		compiledPixelShader->Release ();
+		return false;
+	}
+
+	compiledPixelShader->Release ();
+
+	return true;
+}
+#endif
+
+class PRDraw2DUtility
+{
+private:
+	ID3D11Buffer * vertexBuffer;
+	ID3D11Buffer * constantBuffer;
+
+	ID3D11VertexShader * vertexShader;
+	ID3D11PixelShader * pixelShader;
+	ID3D11InputLayout * inputLayout;
+
+	ID3D11SamplerState * samplerState;
+
+	unsigned width, height;
+
+	struct WorldProjection { PRMat world, proj; };
+
+public:
+	PRDraw2DUtility ( ID3D11Device * d3dDevice, bool allowDeferredContext = false ) {
+		PRCreateShadersFor2D ( d3dDevice, &vertexShader, &pixelShader, &inputLayout );
+		vertexBuffer = PRCreateVertexBufferFor2D ( d3dDevice, 1, 1 );
+		constantBuffer = PRCreateConstantBuffer<WorldProjection> ( d3dDevice, allowDeferredContext );
+
+		D3D11_SAMPLER_DESC samplerDesc;
+		memset ( &samplerDesc, 0, sizeof ( D3D11_SAMPLER_DESC ) );
+		samplerDesc.AddressU = samplerDesc.AddressV = samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		samplerDesc.MinLOD = -FLT_MAX;
+		samplerDesc.MaxLOD = FLT_MAX;
+		samplerDesc.MaxAnisotropy = 1;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		d3dDevice->CreateSamplerState ( &samplerDesc, &samplerState );
+	}
+
+	~PRDraw2DUtility () {
+		SAFE_RELEASE ( samplerState );
+
+		SAFE_RELEASE ( inputLayout );
+		SAFE_RELEASE ( pixelShader );
+		SAFE_RELEASE ( vertexShader );
+
+		SAFE_RELEASE ( constantBuffer );
+		SAFE_RELEASE ( vertexBuffer );
+	}
+
+public:
+	void SetResolution ( unsigned width, unsigned height ) { this->width = width; this->height = height; }
+
+	void Ready ( ID3D11DeviceContext * deviceContext ) {
+		deviceContext->VSSetShader ( vertexShader, nullptr, 0 );
+		deviceContext->VSSetConstantBuffers ( 0, 1, &constantBuffer );
+		deviceContext->PSSetShader ( pixelShader, nullptr, 0 );
+		deviceContext->PSSetSamplers ( 0, 1, &samplerState );
+
+		deviceContext->IASetInputLayout ( inputLayout );
+		deviceContext->IASetPrimitiveTopology ( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		unsigned stride = sizeof ( PRVec3 ) + sizeof ( PRVec2 ), offset = 0;
+		deviceContext->IASetVertexBuffers ( 0, 1, &vertexBuffer, &stride, &offset );
+	}
+
+	void Draw ( ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView * srv, PRMat & world ) {
+		WorldProjection wp;
+		PRMat::createScale ( &PRVec3 ( width, height, 1 ), &wp.world );
+		PRMat::multiply ( &wp.world, &world, &wp.world );
+		PRMat::createOrthographicOffCenterLH ( 0, width, height, 0, 0.001f, 1000.0f, &wp.proj );
+		deviceContext->UpdateSubresource ( constantBuffer, 0, nullptr, &wp, sizeof ( WorldProjection ), 0 );
+
+		deviceContext->PSSetShaderResources ( 0, 1, &srv );
+
+		deviceContext->Draw ( 6, 0 );
+	}
+};
+
 #endif

@@ -925,6 +925,9 @@ private:
 #define SAFE_DELETE(x)			if ( x ) delete x; x = nullptr;
 #define SAFE_DELETE_ARRAY(x)	if ( x ) delete [] ( char * ) x; x = nullptr;
 
+#define SHADERVT(version, text)	"#version " #version "\n" #text
+#define SHADERT(text)			#text
+
 #define PR_Epsilon				1.19209290E-07F
 #define PR_NaN					NAN;
 #define PR_PositiveInfinite		HUGE_VALF

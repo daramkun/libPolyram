@@ -1,110 +1,40 @@
 #define POLYRAM_D3D11
-#define _CRT_SECURE_NO_WARNINGS
 #include "polyram.h"
 #include "polyram_d3d11.h"
-#include <ctime>
+
+struct MyConstantBuffer { PRMat world, proj; };
 
 class MyScene : public PRGame
 {
 public:
-	ID3D11Buffer * buffer1, * buffer2;
+	ID3D11Texture2D * texture;
 	ID3D11ShaderResourceView * textureSRV;
-	ID3D11UnorderedAccessView * textureUAV;
-	ID3D11ComputeShader * computeShader;
+	PRDraw2DUtility * draw2DUtil;
+	ID3D11RasterizerState * rasterizerState;
 
 public:
 	void onInitialize ()
 	{
 		GETGRAPHICSCONTEXT ( PRGraphicsContext_Direct3D11 );
 
-#define BUFFER_SIZE			2048
+		texture = PRCreateTexture2D ( graphicsContext->d3dDevice, std::string ( "Test1.jpg" ) );
+		graphicsContext->d3dDevice->CreateShaderResourceView ( texture, nullptr, &textureSRV );
 
-		D3D11_BUFFER_DESC buffDesc = { 0, };
-		buffDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-		buffDesc.Usage = D3D11_USAGE_DEFAULT;
-		buffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-		buffDesc.ByteWidth = sizeof ( float ) * BUFFER_SIZE;
-		buffDesc.StructureByteStride = sizeof ( float );
-		buffDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-		float ti [ BUFFER_SIZE ] = { 0, };
-		for ( int i = 0; i < BUFFER_SIZE; ++i )
-			ti [ i ] = i + 1;
-		D3D11_SUBRESOURCE_DATA initialData = { ti, BUFFER_SIZE * sizeof ( float ), 0 };
-		graphicsContext->d3dDevice->CreateBuffer ( &buffDesc, &initialData, &buffer1 );
-		graphicsContext->d3dDevice->CreateBuffer ( &buffDesc, nullptr, &buffer2 );
+		draw2DUtil = new PRDraw2DUtility ( graphicsContext->d3dDevice );
 
-		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-		memset ( &srvDesc, 0, sizeof ( D3D11_SHADER_RESOURCE_VIEW_DESC ) );
-		srvDesc.Buffer.NumElements = 1;
-		srvDesc.Buffer.ElementWidth = BUFFER_SIZE;
-		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-		graphicsContext->d3dDevice->CreateShaderResourceView ( buffer1, &srvDesc, &textureSRV );
-
-		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-		memset ( &uavDesc, 0, sizeof ( D3D11_UNORDERED_ACCESS_VIEW_DESC ) );
-		uavDesc.Buffer.NumElements = BUFFER_SIZE;
-		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-		uavDesc.Buffer.Flags = 
-		graphicsContext->d3dDevice->CreateUnorderedAccessView ( buffer2, &uavDesc, &textureUAV );
-
-		computeShader = PRLoadComputeShader ( graphicsContext->d3dDevice, std::string ( "MyComputeShader.cso" ) );
-
-		graphicsContext->immediateContext->CSSetShader ( computeShader, nullptr, 0 );
-		graphicsContext->immediateContext->CSSetShaderResources ( 0, 1, &textureSRV );
-		graphicsContext->immediateContext->CSSetUnorderedAccessViews ( 0, 1, &textureUAV, nullptr );
-
-#define LOOPCOUNT			500000
-
-		clock_t begin = clock ();
-		for ( int i = 0; i < LOOPCOUNT; ++i )
-			graphicsContext->immediateContext->Dispatch ( BUFFER_SIZE, 1, 1 );
-		clock_t end = clock ();
-
-		FILE * fp = fopen ( "GPU_Proceed.txt", "wt" );
-		fprintf ( fp, "Compute Shader Running time: %ds\n", ( end - begin ) / CLOCKS_PER_SEC );
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		graphicsContext->immediateContext->Map ( buffer2, 0, D3D11_MAP_READ, 0, &mappedResource );
-		float * b = ( float * ) mappedResource.pData;
-
-		for ( int i = 0; i < BUFFER_SIZE; ++i )
-			fprintf ( fp, "sqrt(%f) = %f\n", ( float ) ( i + 1 ), b [ i ] );
-
-		graphicsContext->immediateContext->Unmap ( buffer2, 0 );
-		fclose ( fp );
-
-		////////////////////////////////////////////////
-
-		float cputest [ BUFFER_SIZE ] = { 0, }, cputest2 [ BUFFER_SIZE ];
-		for ( int i = 0; i < BUFFER_SIZE; ++i )
-			cputest [ i ] = i + 1;
-
-		begin = clock ();
-		for ( int i = 0; i < LOOPCOUNT; ++i )
-		{
-//#pragma omp parallel for
-			for ( int j = 0; j < BUFFER_SIZE; ++j )
-				cputest2 [ j ] = sqrt ( cputest [ j ] );
-		}
-		end = clock ();
-
-		fp = fopen ( "CPU_Proceed.txt", "wt" );
-		fprintf ( fp, "CPU Running time: %ds\n", ( end - begin ) / CLOCKS_PER_SEC );
-
-		for ( int i = 0; i < BUFFER_SIZE; ++i )
-			fprintf ( fp, "sqrt(%f) = %f\n", ( float ) ( i + 1 ), cputest2 [ i ] );
-
-		fclose ( fp );
-
-		PostQuitMessage ( 0 );
+		D3D11_RASTERIZER_DESC rasterizerDesc;
+		memset ( &rasterizerDesc, 0, sizeof ( D3D11_RASTERIZER_DESC ) );
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		graphicsContext->d3dDevice->CreateRasterizerState ( &rasterizerDesc, &rasterizerState );
 	}
 
 	void onDestroy ()
 	{
-		computeShader->Release ();
-		textureUAV->Release ();
+		rasterizerState->Release ();
+		SAFE_DELETE ( draw2DUtil );
 		textureSRV->Release ();
-		buffer2->Release ();
-		buffer1->Release ();
+		texture->Release ();
 	}
 
 	void onDraw ( double dt )
@@ -115,7 +45,11 @@ public:
 		graphicsContext->immediateContext->ClearRenderTargetView ( graphicsContext->renderTargetView, clearColor );
 		graphicsContext->immediateContext->ClearDepthStencilView ( graphicsContext->depthStencilView, D3D11_CLEAR_DEPTH, 1, 0 );
 
+		graphicsContext->immediateContext->RSSetState ( rasterizerState );
 
+		draw2DUtil->SetResolution ( 1280, 720 );
+		draw2DUtil->Ready ( graphicsContext->immediateContext );
+		draw2DUtil->Draw ( graphicsContext->immediateContext, textureSRV, PRMat () );
 
 		graphicsContext->dxgiSwapChain->Present ( 1, 0 );
 	}
