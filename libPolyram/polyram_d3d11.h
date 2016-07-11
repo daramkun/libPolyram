@@ -3,6 +3,8 @@
 
 #include "polyram.h"
 
+#ifdef POLYRAM_D3D11
+
 ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, DXGI_FORMAT format, unsigned width, unsigned height ) {
 	UINT bindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if ( format == DXGI_FORMAT_D16_UNORM || format == DXGI_FORMAT_D24_UNORM_S8_UINT ||
@@ -350,5 +352,7 @@ public:
 		deviceContext->Draw ( 6, 0 );
 	}
 };
+
+#endif
 
 #endif

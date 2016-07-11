@@ -235,12 +235,16 @@ namespace polyram {
 
 		virtual void Run () {
 			switch ( rendererType ) {
+#if defined ( POLYRAM_D3D11 )
 			case PRRendererType_Direct3D11:
 				PRApp::sharedApp ()->setGraphicsContext ( new PRGraphicsContext_Direct3D11 ( PRApp::sharedApp () ) );
 				break;
+#endif
+#if defined ( POLYRAM_D3D12 )
 			case PRRendererType_Direct3D12:
 				PRApp::sharedApp ()->setGraphicsContext ( new PRGraphicsContext_Direct3D12 ( PRApp::sharedApp () ) );
 				break;
+#endif
 			default:
 				throw std::runtime_error ( "Cannot use this renderer version in this platform." );
 			}
@@ -436,13 +440,21 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 		throw std::runtime_error ( "Failed create window." );
 
 	switch ( rendererType ) {
+#if defined ( POLYRAM_D3D9 )
 	case PRRendererType_Direct3D9: m_graphicsContext = new PRGraphicsContext_Direct3D9 ( this ); break;
+#endif
+#if defined ( POLYRAM_D3D11 )
 	case PRRendererType_Direct3D11: m_graphicsContext = new PRGraphicsContext_Direct3D11 ( this ); break;
+#endif
+#if defined ( POLYRAM_D3D12 )
 	case PRRendererType_Direct3D12: m_graphicsContext = new PRGraphicsContext_Direct3D12 ( this ); break;
+#endif
+#if defined ( POLYRAM_OPENGL )
 	case PRRendererType_OpenGL1:
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+#endif
 	//case PRRendererType_Vulkan1: m_graphicsContext = new PRGraphicsContext_Vulkan ( this ); break;
 	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
@@ -469,11 +481,15 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 	[window makeKeyWindow];
 
 	switch ( rendererType ) {
+#if defined ( POLYRAM_OPENGL )
 	case PRRendererType_OpenGL1:
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+#endif
+#if defined ( POLYRAM_METAL )
 	case PRRendererType_Metal: m_graphicsContext = new PRGraphicsContext_Metal ( this ); break;
+#endif
 	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
 #elif PRPlatformUNIX
@@ -511,10 +527,12 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 	XMapWindow ( display, window );
 
 	switch ( rendererType ) {
+#if defined ( POLYRAM_OPENGL )
 	case PRRendererType_OpenGL1:
 	case PRRendererType_OpenGL2:
 	case PRRendererType_OpenGL3:
 	case PRRendererType_OpenGL4: m_graphicsContext = new PRGraphicsContext_OpenGL ( this, rendererType ); break;
+#endif
 	default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 	}
 #elif PRPlatformAppleiOS
@@ -532,12 +550,14 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 			if ( engine->app->window != nullptr )
 			{
 				switch ( PRApp::sharedApp ()->m_rendererType ) {
+#if defined ( POLYRAM_OPENGL )
 				case PRRendererType_OpenGLES1:
 				case PRRendererType_OpenGLES2:
 				case PRRendererType_OpenGLES3:
 					PRApp::sharedApp ()->m_graphicsContext =
 						new PRGraphicsContext_OpenGL ( PRApp::sharedApp (), PRApp::sharedApp ()->m_rendererType );
 					break;
+#endif
 				default: throw std::runtime_error ( "Illegal Graphics Renderer." );
 				}
 			}
@@ -1126,7 +1146,6 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApp * app ) {
 					throw std::runtime_error ( "Failed create Device." );
 
 		dxgiAdapter->Release ();
-		dxgiFactory->Release ();
 
 		D3D12_COMMAND_QUEUE_DESC commandQueueDesc = { };
 		commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -1157,6 +1176,7 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApp * app ) {
 			throw std::runtime_error ( "Failed create Swap Chain." );
 		if ( FAILED ( dxgiSwapChain->QueryInterface ( __uuidof ( IDXGISwapChain3 ), ( void** ) &this->dxgiSwapChain ) ) )
 			throw std::runtime_error ( "Cannot query interface from IDXGISwapChain to IDXGISwapChain3." );
+
 #elif PRPlatformMicrosoftWindowsRT
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0, };
 		swapChainDesc.Width = windowWidth;
@@ -1193,7 +1213,7 @@ PRGraphicsContext_Direct3D12::PRGraphicsContext_Direct3D12 ( PRApp * app ) {
 		D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart ();
 		for ( UINT n = 0; n < 2; n++ )
 		{
-			if ( FAILED ( dxgiSwapChain->GetBuffer ( n, __uuidof ( ID3D12Resource ), ( void** ) &renderTargets [ n ] ) ) )
+			if ( FAILED ( this->dxgiSwapChain->GetBuffer ( n, __uuidof ( ID3D12Resource ), ( void** ) &renderTargets [ n ] ) ) )
 				throw std::runtime_error ( "Failed create Render Target View." );
 			d3dDevice->CreateRenderTargetView ( renderTargets [ n ], nullptr, descriptorHandle );
 			descriptorHandle.ptr += descriptorHandleIncrementSize;
@@ -2359,21 +2379,11 @@ void PRMat::createRotationZ ( float r, PRMat * result ) {
 		0, 0, 0, 1
 	);
 }
-PRMat PRMat::createTranslate ( const PRVec3 & v ) {
-	COPIEDMETHOD1 ( PRMat, createTranslate, &v );
-}
-PRMat PRMat::createScale ( const PRVec3 & v ) {
-	COPIEDMETHOD1 ( PRMat, createScale, &v );
-}
-PRMat PRMat::createRotationX ( float r ) {
-	COPIEDMETHOD1 ( PRMat, createRotationX, r );
-}
-PRMat PRMat::createRotationY ( float r ) {
-	COPIEDMETHOD1 ( PRMat, createRotationY, r );
-}
-PRMat PRMat::createRotationZ ( float r ) {
-	COPIEDMETHOD1 ( PRMat, createRotationZ, r );
-}
+PRMat PRMat::createTranslate ( const PRVec3 & v ) { COPIEDMETHOD1 ( PRMat, createTranslate, &v ); }
+PRMat PRMat::createScale ( const PRVec3 & v ) { COPIEDMETHOD1 ( PRMat, createScale, &v ); }
+PRMat PRMat::createRotationX ( float r ) { COPIEDMETHOD1 ( PRMat, createRotationX, r ); }
+PRMat PRMat::createRotationY ( float r ) { COPIEDMETHOD1 ( PRMat, createRotationY, r ); }
+PRMat PRMat::createRotationZ ( float r ) { COPIEDMETHOD1 ( PRMat, createRotationZ, r ); }
 void PRMat::createLookAtLH ( const PRVec3 * position, const PRVec3 * target, const PRVec3 * upVector, PRMat * result ) {
 	PRVec3 zaxis;
 	PRVec3::subtract ( target, position, &zaxis );

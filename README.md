@@ -4,7 +4,7 @@ libPolyram is a Little Framework for Study of 3D Programming. Name from "Polygon
 ## Dependencies
 ### Windows NT Desktop
 * Windows 7 or higher (if you use DirectX 12, require the Windows 10)
-* Windows SDK (7 or higher, if you use DirectX 12, require the Windows 10 SDK)
+* Windows SDK (8 or higher, if you use DirectX 12, require the Windows 10 SDK)
 * C++ Compiler with C++11 standard support.
 * GLEW (for OpenGL 2.0 or higher)
 * Vulkan SDK (for Vulkan), not support yet.
