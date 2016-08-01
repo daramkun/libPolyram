@@ -5,9 +5,12 @@
 
 #ifdef POLYRAM_D3D11
 
-ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, DXGI_FORMAT format, unsigned width, unsigned height ) {
+ID3D11Texture2D* PRCreateTexture2D ( ID3D11Device * d3dDevice, DXGI_FORMAT format, unsigned width, unsigned height,
+	UINT userBindFlags = 0 ) {
 	UINT bindFlags = D3D11_BIND_SHADER_RESOURCE;
-	if ( format == DXGI_FORMAT_D16_UNORM || format == DXGI_FORMAT_D24_UNORM_S8_UINT ||
+	if ( userBindFlags != 0 )
+		bindFlags |= userBindFlags;
+	else if ( format == DXGI_FORMAT_D16_UNORM || format == DXGI_FORMAT_D24_UNORM_S8_UINT ||
 		format == DXGI_FORMAT_D32_FLOAT || format == DXGI_FORMAT_D32_FLOAT_S8X24_UINT )
 		bindFlags |= D3D11_BIND_DEPTH_STENCIL;
 	else
@@ -328,10 +331,10 @@ public:
 public:
 	void SetResolution ( unsigned width, unsigned height ) { this->width = width; this->height = height; }
 
-	void Ready ( ID3D11DeviceContext * deviceContext ) {
+	void Ready ( ID3D11DeviceContext * deviceContext, ID3D11PixelShader * customPixelShader = nullptr ) {
 		deviceContext->VSSetShader ( vertexShader, nullptr, 0 );
 		deviceContext->VSSetConstantBuffers ( 0, 1, &constantBuffer );
-		deviceContext->PSSetShader ( pixelShader, nullptr, 0 );
+		deviceContext->PSSetShader ( customPixelShader ? customPixelShader : pixelShader, nullptr, 0 );
 		deviceContext->PSSetSamplers ( 0, 1, &samplerState );
 
 		deviceContext->IASetInputLayout ( inputLayout );
@@ -350,6 +353,27 @@ public:
 		deviceContext->PSSetShaderResources ( 0, 1, &srv );
 
 		deviceContext->Draw ( 6, 0 );
+	}
+
+	void Draw ( ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView ** srv, unsigned count, PRMat & world ) {
+		WorldProjection wp;
+		PRMat::createScale ( &PRVec3 ( width, height, 1 ), &wp.world );
+		PRMat::multiply ( &wp.world, &world, &wp.world );
+		PRMat::createOrthographicOffCenterLH ( 0, width, height, 0, 0.001f, 1000.0f, &wp.proj );
+		deviceContext->UpdateSubresource ( constantBuffer, 0, nullptr, &wp, sizeof ( WorldProjection ), 0 );
+
+		deviceContext->PSSetShaderResources ( 0, count, srv );
+
+		deviceContext->Draw ( 6, 0 );
+	}
+
+	void Done ( ID3D11DeviceContext * deviceContext ) {
+		ID3D11Buffer * cbuff = nullptr;
+		ID3D11SamplerState * ss = nullptr;
+		ID3D11ShaderResourceView * srv [] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+		deviceContext->VSSetConstantBuffers ( 0, 1, &cbuff );
+		deviceContext->PSSetSamplers ( 0, 1, &ss );
+		deviceContext->PSSetShaderResources ( 0, 8, srv );
 	}
 };
 
