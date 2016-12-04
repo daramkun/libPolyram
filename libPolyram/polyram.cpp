@@ -14,6 +14,7 @@ void PRGame::onKeyUp ( PRKey key ) { }
 void PRGame::onMouseDown ( PRMButton button, int x, int y ) { }
 void PRGame::onMouseUp ( PRMButton button, int x, int y ) { }
 void PRGame::onMouseMove ( PRMButton button, int x, int y ) { }
+void PRGame::onMouseMoveRelative ( int x, int y ) { }
 void PRGame::onMouseWheel ( int wheelX, int wheelY ) { }
 void PRGame::onTouchDown ( int pid, int x, int y ) { }
 void PRGame::onTouchUp ( int pid, int x, int y ) { }
@@ -357,15 +358,6 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 	wndClass.hCursor = LoadCursor ( nullptr, IDC_ARROW );
 	wndClass.lpfnWndProc = static_cast<WNDPROC> ( [] ( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ) -> LRESULT {
 		switch ( uMsg ) {
-		case WM_KEYDOWN:
-			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onKeyDown ( keyConv ( ( int ) wParam ) );
-			break;
-		case WM_KEYUP:
-			if ( PRApp::sharedApp ()->getGame () )
-				PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( ( int ) wParam ) );
-			break;
-
 		case WM_LBUTTONDOWN:
 			g_MouseButton |= PRMButton_Left;
 			if ( PRApp::sharedApp ()->getGame () )
@@ -409,6 +401,36 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 				PRApp::sharedApp ()->getGame ()->onMouseWheel ( ( int ) GET_WHEEL_DELTA_WPARAM ( wParam ) / WHEEL_DELTA, 0 );
 			break;
 
+		case WM_INPUT: {
+				UINT dwSize = 0;
+				GetRawInputData ( ( HRAWINPUT ) lParam, RID_INPUT, NULL, &dwSize, sizeof ( RAWINPUTHEADER ) );
+				BYTE * lpb = new BYTE [ dwSize ];
+				RAWINPUT * raw = ( RAWINPUT* ) lpb;
+				raw->data.mouse.usFlags = MOUSE_MOVE_ABSOLUTE;
+
+				if ( GetRawInputData ( ( HRAWINPUT ) lParam, RID_INPUT, lpb, &dwSize, sizeof ( RAWINPUTHEADER ) ) != dwSize )
+					PRLog ( "Cannot get raw input data." );
+
+
+				switch ( raw->header.dwType ) {
+				case RIM_TYPEKEYBOARD:
+					if ( ( raw->data.keyboard.Flags & RI_KEY_BREAK ) == 0 )
+						PRApp::sharedApp ()->getGame ()->onKeyDown ( keyConv ( ( int ) raw->data.keyboard.VKey ) );
+					else
+						PRApp::sharedApp ()->getGame ()->onKeyUp ( keyConv ( ( int ) raw->data.keyboard.VKey ) );
+					break;
+
+				case RIM_TYPEMOUSE:
+					if ( raw->data.mouse.lLastX != 0 || raw->data.mouse.lLastY != 0 )
+						PRApp::sharedApp ()->getGame ()->onMouseMoveRelative ( raw->data.mouse.lLastX, raw->data.mouse.lLastY );
+
+					break;
+				}
+
+				delete [] lpb;
+			}
+			break;
+
 		case WM_ACTIVATE:
 			if ( PRApp::sharedApp ()->getGame () ) {
 				if ( wParam != WA_INACTIVE ) PRApp::sharedApp ()->getGame ()->onActivated ();
@@ -438,6 +460,13 @@ PRApp::PRApp ( PRGame * game, PRRendererType rendererType, int width, int height
 		WS_OVERLAPPEDWINDOW, x, y, _width, _height, nullptr, nullptr, wndClass.hInstance, nullptr );
 	if ( m_hWnd == 0 )
 		throw std::runtime_error ( "Failed create window." );
+
+	RAWINPUTDEVICE rawInput [ 2 ] = {
+		{ 0x01, 0x06, /* RIDEV_NOLEGACY */0, 0 },			// Keyboard
+		{ 0x01, 0x02, /* RIDEV_NOLEGACY */0, 0 },			// Mouse
+	};
+	if ( RegisterRawInputDevices ( rawInput, 2, sizeof ( RAWINPUTDEVICE ) ) == 0 )
+		throw std::runtime_error ( "Cannot use Raw Input for Keyboard and mouse." );
 
 	switch ( rendererType ) {
 #if defined ( POLYRAM_D3D9 )
@@ -748,7 +777,7 @@ void PRApp::run () {
 	MSG msg;
 	while ( IsWindow ( m_hWnd ) ) {
 		if ( PeekMessage ( &msg, NULL, 0, 0, PM_NOREMOVE ) ) {
-			if ( !GetMessage ( &msg, NULL, 0, 0 ) )break;
+			if ( !GetMessage ( &msg, NULL, 0, 0 ) ) break;
 			TranslateMessage ( &msg );
 			DispatchMessage ( &msg );
 		}
@@ -773,6 +802,7 @@ void PRApp::run () {
 
 	while ( window.isVisible ) {
 		NSEvent * event = [ [ NSApplication sharedApp ] nextEventMatchingMask:NSAnyEventMask untilDate : nil inMode : NSDefaultRunLoopMode dequeue : YES ];
+		int relativeX, relativeY;
 		switch ( event.type ) {
 		case NSKeyDown:
 			if ( LqLauncher::getInstance ()->getGame () )
@@ -815,9 +845,14 @@ void PRApp::run () {
 			break;
 
 		case NSMouseMoved:
+			relativeX = ( ( int ) event.locationInWindow.x ) - g_MouseX;
+			relativeY = ( ( int ) event.locationInWindow.y ) - g_MouseY;
 			g_MouseX = ( int ) event.locationInWindow.x; g_MouseY = ( int ) event.locationInWindow.y;
 			if ( PRApp::sharedApp ()->getGame () )
+			{
 				PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) g_MouseButton, g_MouseX, g_MouseY );
+				PRApp::sharedApp ()->getGame ()->onMouseMoveRelative ( relativeX, relativeY );
+			}
 			break;
 
 		default: break;
@@ -840,7 +875,8 @@ void PRApp::run () {
 	while ( loopflag ) {
 		if ( XPending ( display ) ) {
 			XNextEvent ( display, &xev );
-
+			
+			int relativeX, relativeY;
 			switch ( xev.type ) {
 			case KeyPress:
 				if ( PRApp::sharedApp ()->getGame () )
@@ -877,9 +913,14 @@ void PRApp::run () {
 			}
 								break;
 			case MotionNotify:
+				relativeX = xev.xmotion.x - g_MouseX;
+				relativeY = xev.xmotion.y - g_MouseY;
 				g_MouseX = xev.xmotion.x; g_MouseY = xev.xmotion.x;
 				if ( PRApp::sharedApp ()->getGame () )
+				{
 					PRApp::sharedApp ()->getGame ()->onMouseMove ( ( PRMButton ) g_MouseButton, g_MouseX, g_MouseY );
+					PRApp::sharedApp ()->getGame ()->onMouseMoveRelative ( relativeX, relativeY );
+				}
 				break;
 
 			case ClientMessage: loopflag = false; break;

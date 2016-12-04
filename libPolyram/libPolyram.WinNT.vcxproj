@@ -34,7 +34,7 @@
     <ProjectGuid>{EF94FCA5-92D6-4601-9CDF-A3B13725A565}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libPolyram</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
     <ProjectName>libPolyram.WinNT</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -20,16 +20,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="MyVertexShader.hlsl">
+    <FxCompile Include="BunnyVS.hlsl">
       <Filter>리소스 파일</Filter>
     </FxCompile>
-    <FxCompile Include="MyPixelShader.hlsl">
+    <FxCompile Include="BunnyPS.hlsl">
       <Filter>리소스 파일</Filter>
     </FxCompile>
-    <FxCompile Include="MyGeometryShader.hlsl">
-      <Filter>리소스 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="MyComputeShader.hlsl">
+    <FxCompile Include="DeferredPS.hlsl">
       <Filter>리소스 파일</Filter>
     </FxCompile>
   </ItemGroup>
